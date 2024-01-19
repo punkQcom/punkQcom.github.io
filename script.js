@@ -26,12 +26,16 @@ function changeTextAndCount() {
 function saveToGist() {
     // Prepare data to be saved
     const data = {
-        clickCounter: clickCounter
+        files: {
+            'clickcounter.json': {
+                content: JSON.stringify({ clickCounter: clickCounter })
+            }
+        }
     };
 
     // Update Gist using GitHub API
-    fetch(GIST_RAW_API, {
-        method: 'PUT',
+    fetch(GIST_API, {
+        method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer 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'
@@ -42,7 +46,7 @@ function saveToGist() {
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        return response.text();
+        return response.json();
     })
     .then(data => console.log('Counter saved to Gist:', data))
     .catch(error => console.error('Error saving counter to Gist:', error));
