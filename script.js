@@ -84,33 +84,4 @@ fetch(GIST_RAW_API)
 })
 .catch(error => console.error('Error loading counter from Gist:', error));
 
-
-
-// Function to check the guess
-function checkGuess() {
-    var userGuess = document.getElementById('userGuess').value;
-  
-    if (userGuess === '') {
-      alert('Please enter a number.');
-      return;
-    }
-  
-    attempts++;
-  
-    if (parseInt(userGuess) === secretNumber) {
-      document.getElementById('result').innerText = 'Congratulations! You guessed the number in ' + attempts + ' attempts.';
-      startGame(); // Start a new game
-    } else {
-      document.getElementById('result').innerText = 'Try again.';
-  
-      if (attempts >= 3) {
-        document.getElementById('result').innerText = 'Sorry, you ran out of attempts. The correct number was ' + secretNumber + '.';
-        startGame(); // Start a new game
-      }
-    }
-  }
-  
-  // Initialize text and count on page load
-  document.addEventListener('DOMContentLoaded', function () {
-    startGame();
-  });
+});
