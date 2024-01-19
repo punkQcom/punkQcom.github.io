@@ -108,13 +108,12 @@ function checkGuess() {
         startGame(); // Start a new game
       }
     }
+  }
+  
+  // Initialize text and count on page load
+  document.addEventListener('DOMContentLoaded', function () {
+    startGame();
   });
-
-// Initialize the game on page load
-document.addEventListener('DOMContentLoaded', function () {
-  startGame();
-});
-
 
 // Closing brace for the outer 'DOMContentLoaded' event listener
 });
