@@ -53,3 +53,18 @@ a:hover {
 button:hover {
     background-color: #218838;
 }
+
+/* Add some spacing between sections */
+section {
+    margin-top: 20px;
+}
+
+/* Style for the section headings */
+h2 {
+    color: #333;
+}
+
+/* Style for the section content */
+p {
+    color: #666;
+}
