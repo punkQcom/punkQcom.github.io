@@ -1,3 +1,8 @@
+body, h1, h2, p, ul, li, button {
+    margin: 0;
+    padding: 0;
+}
+
 body {
     body {
         font-family: 'Roboto', Tahoma, Geneva, Verdana, sans-serif;
@@ -5,9 +10,40 @@ body {
     }
     
     background-color: #f8f9fa;
+    color: #333;
     text-align: center;
     margin: 10vh auto;
 }
+
+/* Container for the whole page */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Calendar styles */
+#calendar {
+    margin-bottom: 20px;
+}
+
+/* Resource list styles */
+#resource-list {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+/* Reservation form styles */
+#reservation-form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
 
 h1 {
     color: #007bff;
@@ -54,6 +90,12 @@ button:hover {
     background-color: #218838;
 }
 
+/* Responsive styles */
+@media (max-width: 768px) {
+    #resource-list, #reservation-form {
+        margin-right: 0;
+    }
+
 /* Add some spacing between sections */
 section {
     margin-top: 20px;
@@ -68,3 +110,4 @@ h2 {
 p {
     color: #666;
 }
+
