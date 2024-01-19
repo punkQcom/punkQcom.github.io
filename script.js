@@ -1,6 +1,6 @@
 // Update Gist API URL with raw content
 const GIST_ID = 'c1a20b4538ecb4eff6ed744c8c98e94a';
-const GIST_API = `https://gist.githubusercontent.com/${GIST_ID}/raw/clickcounter.json`;
+const GIST_RAW_API = `https://gist.githubusercontent.com/${GIST_ID}/raw/clickcounter.json`;
 
 // Variable to store click count
 var clickCounter = 0;
@@ -29,7 +29,7 @@ function saveToGist() {
     };
 
     // Update Gist using GitHub API
-    fetch(GIST_API, {
+    fetch(GIST_RAW_API, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ function saveToGist() {
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        return response.text();  // Use response.text() instead of response.json()
+        return response.text();
     })
     .then(data => console.log('Counter saved to Gist:', data))
     .catch(error => console.error('Error saving counter to Gist:', error));
@@ -50,7 +50,7 @@ function saveToGist() {
 // Initialize text and count on page load
 document.addEventListener('DOMContentLoaded', function () {
     // Load the click count from GitHub Gist
-    fetch(GIST_API)
+    fetch(GIST_RAW_API)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -71,5 +71,3 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(error => console.error('Error loading counter from Gist:', error));
 });
-
-
