@@ -114,6 +114,3 @@ function checkGuess() {
   document.addEventListener('DOMContentLoaded', function () {
     startGame();
   });
-
-// Closing brace for the outer 'DOMContentLoaded' event listener
-});
