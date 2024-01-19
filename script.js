@@ -4,8 +4,8 @@ function changeTextAndCount() {
     clickCounter++;
 
     if (clickCounter % 2 === 1) {
-        document.getElementById('clickButton').innerText = 'Hello, World!';
+        document.getElementById('outputText').innerText = 'Hello, World!';
     } else {
-        document.getElementById('clickButton').innerText = 'Click me (' + clickCounter + ')';
+        document.getElementById('outputText').innerText = 'Click me (' + clickCounter + ')';
     }
 }
