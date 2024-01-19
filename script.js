@@ -8,6 +8,11 @@ const GITHUB_TOKEN = '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'; // Replace with
 // Variable to store click count
 var clickCounter = 0;
 
+// Variables to Guess the Number Game
+var secretNumber;
+var attempts = 0;
+
+
 // Function to change text and count
 function changeTextAndCount() {
     clickCounter++;
@@ -81,9 +86,6 @@ fetch(GIST_RAW_API)
 .catch(error => console.error('Error loading counter from Gist:', error));
 
 
-// Guess the Number Game
-var secretNumber;
-var attempts = 0;
 
 function startGame() {
   // Generate a random number between 1 and 10
