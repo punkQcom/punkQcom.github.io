@@ -23,7 +23,7 @@ function saveToGist() {
     // Prepare data to be saved
     const data = {
         files: {
-            'counter.json': {
+            'clickcounter.json': {
                 content: JSON.stringify({ clickCounter })
             }
         }
