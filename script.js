@@ -34,11 +34,16 @@ function saveToGist() {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': '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'
+            'Authorization': 'Bearer YOUR_GITHUB_TOKEN'
         },
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => console.log('Counter saved to Gist:', data))
     .catch(error => console.error('Error saving counter to Gist:', error));
 }
@@ -47,11 +52,15 @@ function saveToGist() {
 document.addEventListener('DOMContentLoaded', function () {
     // Load the click count from GitHub Gist
     fetch(GIST_API)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
-            clickCounter = data.files['counter.json'].content
-                ? JSON.parse(data.files['counter.json'].content).clickCounter
-                : 0;
+            const counterContent = data.files && data.files['counter.json'] && data.files['counter.json'].content;
+            clickCounter = counterContent ? JSON.parse(counterContent).clickCounter : 0;
 
             // Set initial text and count
             if (clickCounter % 2 === 1) {
@@ -63,3 +72,4 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(error => console.error('Error loading counter from Gist:', error));
 });
+
