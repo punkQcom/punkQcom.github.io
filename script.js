@@ -5,8 +5,6 @@ const GIST_RAW_API = `https://gist.githubusercontent.com/punkQcom/${GIST_ID}/raw
 // GitHub Personal Access Token
 const GITHUB_TOKEN = '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'; // Replace with your actual token
 
-
-
 // Variable to store click count
 var clickCounter = 0;
 // Variables to Guess the Number Game
@@ -124,3 +122,5 @@ document.addEventListener('DOMContentLoaded', function () {
   startGame();
 });
 
+
+});
