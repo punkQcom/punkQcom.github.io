@@ -1,7 +1,9 @@
 // Update Gist API URL with raw content
-const GIST_API = `https://api.github.com/gists/c1a20b4538ecb4eff6ed744c8c98e94a`;
 const GIST_ID = 'c1a20b4538ecb4eff6ed744c8c98e94a';
 const GIST_RAW_API = `https://gist.githubusercontent.com/punkQcom/${GIST_ID}/raw/clickcounter.json`;
+
+// GitHub Personal Access Token
+const GITHUB_TOKEN = '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'; // Replace with your actual token
 
 // Variable to store click count
 var clickCounter = 0;
@@ -26,19 +28,15 @@ function changeTextAndCount() {
 function saveToGist() {
     // Prepare data to be saved
     const data = {
-        files: {
-            'clickcounter.json': {
-                content: JSON.stringify({ clickCounter: clickCounter })
-            }
-        }
+        clickCounter: clickCounter
     };
 
-    // Update Gist using GitHub API
-    fetch(GIST_API, {
+    // Update Gist using GitHub REST API
+    fetch(`https://api.github.com/gists/${GIST_ID}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer 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'
+            'Authorization': `token ${GITHUB_TOKEN}`
         },
         body: JSON.stringify(data)
     })
