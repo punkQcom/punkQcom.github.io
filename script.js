@@ -123,4 +123,5 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
+// Closing brace for the outer 'DOMContentLoaded' event listener
 });
