@@ -1,6 +1,6 @@
 // Update Gist API URL with raw content
 const GIST_ID = 'c1a20b4538ecb4eff6ed744c8c98e94a';
-const GIST_API = `https://gist.githubusercontent.com/${GIST_ID}/raw/counter.json`;
+const GIST_API = `https://gist.githubusercontent.com/${GIST_ID}/raw/clickcounter.json`;
 
 // Variable to store click count
 var clickCounter = 0;
@@ -71,3 +71,5 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(error => console.error('Error loading counter from Gist:', error));
 });
+
+
