@@ -1,5 +1,13 @@
 // Move the function definition outside of any other scope
 
+var clickCounter = 0;
+
+function incrementCounter() {
+    clickCounter++;
+    document.getElementById('clickButton').innerText = 'Click me (' + clickCounter + ')';
+}
+
+
 function changeText() {
     // Get the heading element by its id
     const helloTextElement = document.getElementById('helloText');
