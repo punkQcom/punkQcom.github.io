@@ -52,25 +52,27 @@ function saveToGist() {
 
 // Initialize text and count on page load
 document.addEventListener('DOMContentLoaded', function () {
-    // Load the click count from GitHub Gist
-    fetch(GIST_RAW_API)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Extract clickCounter from the Gist data
-            clickCounter = data.clickCounter || 0;
+  // Load the click count from GitHub Gist
+fetch(GIST_RAW_API)
+.then(response => {
+    if (!response.ok) {
+        console.error('Error loading counter from Gist:', response.status, response.statusText);
+        throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return response.json();
+})
+.then(data => {
+    // Extract clickCounter from the Gist data
+    clickCounter = data.clickCounter || 0;
 
-            // Set initial text and count
-            if (clickCounter % 2 === 1) {
-                document.getElementById('helloText').innerText = 'Hello, Marko!';
-            } else {
-                document.getElementById('helloText').innerText = 'Hello, World!';
-            }
-            document.getElementById('clickButton').innerText = 'Click me (' + clickCounter + ')';
-        })
-        .catch(error => console.error('Error loading counter from Gist:', error));
+    // Set initial text and count
+    if (clickCounter % 2 === 1) {
+        document.getElementById('helloText').innerText = 'Hello, Marko!';
+    } else {
+        document.getElementById('helloText').innerText = 'Hello, World!';
+    }
+    document.getElementById('clickButton').innerText = 'Click me (' + clickCounter + ')';
+})
+.catch(error => console.error('Error loading counter from Gist:', error));
+
 });
