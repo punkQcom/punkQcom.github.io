@@ -33,7 +33,7 @@ function saveToGist() {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': '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'
+            'Authorization': 'Bearer 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'
         },
         body: JSON.stringify(data)
     })
