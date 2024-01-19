@@ -34,7 +34,7 @@ function saveToGist() {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer YOUR_GITHUB_TOKEN'
+            'Authorization': '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'
         },
         body: JSON.stringify(data)
     })
