@@ -1,5 +1,5 @@
 // Replace 'YOUR_GIST_ID' with the actual gist ID
-const GIST_ID = 'c1a20b4538ecb4eff6ed744c8c98e94a';
+const GIST_ID = 'punkQcom/c1a20b4538ecb4eff6ed744c8c98e94a.js';
 const GIST_API = `https://api.github.com/gists/${GIST_ID}`;
 
 var clickCounter = 0;
