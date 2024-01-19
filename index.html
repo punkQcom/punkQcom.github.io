@@ -6,14 +6,18 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <title>Hello World</title>
+     <!-- Include FullCalendar library -->
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" integrity="sha512-KxHsZLRsVPq1dUGKGIDa6StfkiRUst8aS7sAfb/BxTQzOF5iR9LOaUzYfm5O7tvbAAQfak6D5e+6UWq1YK7lIw==" crossorigin="anonymous" />
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js" integrity="sha512-bOYa7KMgA3s8Ae4YxY3xSwvv62/Ak9p+Cu90D/D5tz0tZIQZU0G7Agd0v8EMj7n7zqvQ6PZ2Vz3WA9D/TFzWg==" crossorigin="anonymous"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js" integrity="sha512-Ph7s8kfoPTLs5Ph9gIzaG/XIz4umro8JX5oDkAf+uVQJs7OHZntXs+EdZ8Jcvim8bV/oA4N98NmWGmDbxUW2wQ==" crossorigin="anonymous"></script>
+    <title>punkQ.com</title>
 </head>
-<!-- Add a button with an onclick attribute -->
 <body>
     <nav>
         <ul>
             <li><a href="#home">Home</a></li>
             <li><a href="#about">About</a></li>
+            <li><a href="#reservation">Reservation system</a></li>
             <li><a href="#contact">Contact</a></li>
         </ul>
     </nav>
@@ -28,11 +32,26 @@
         <p>This is the about section. Add information about your website or team.</p>
     </section>
 
+    <section id="reservation-section">
+        <h2>Reserve resource</h2>
+        <p>This is the reservation section. Provide creservation details or a form here.</p>
+    </section>
+
+
+    <div id="calendar"></div>
+    <div id="resource-list"></div>
+    <div id="reservation-form">
+        <h2>Make a Reservation</h2>
+        <!-- Reservation form inputs go here -->
+        <button onclick="submitReservation()">Submit Reservation</button>
+    </div>
+    
     <section id="contact-section">
         <h2>Contact Us</h2>
         <p>This is the contact section. Provide contact details or a form here.</p>
     </section>
 
+    <!-- Add a button with an onclick attribute -->
     <h1 id="helloText">Hello, World!</h1>
     <button onclick="changeText()">Click me</button>
     <script src="script.js"></script>
