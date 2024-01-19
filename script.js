@@ -1,6 +1,6 @@
 // Update Gist API URL with raw content
 const GIST_ID = 'c1a20b4538ecb4eff6ed744c8c98e94a';
-const GIST_RAW_API = `https://gist.githubusercontent.com/${GIST_ID}/raw/clickcounter.json`;
+const GIST_RAW_API = `https://gist.githubusercontent.com/punkQcom/${GIST_ID}/raw/clickcounter.json`;
 
 // Variable to store click count
 var clickCounter = 0;
