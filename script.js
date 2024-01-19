@@ -3,7 +3,7 @@ const GIST_ID = 'c1a20b4538ecb4eff6ed744c8c98e94a';
 const GIST_RAW_API = `https://gist.githubusercontent.com/punkQcom/${GIST_ID}/raw/clickcounter.json`;
 
 // GitHub Personal Access Token
-const GITHUB_TOKEN = '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'; // Replace with your actual token
+const GITHUB_TOKEN = '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'; // Replace with your actual token
 
 // Variable to store click count
 var clickCounter = 0;
