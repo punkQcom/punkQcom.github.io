@@ -86,14 +86,7 @@ fetch(GIST_RAW_API)
 
 
 
-function startGame() {
-  // Generate a random number between 1 and 10
-  secretNumber = Math.floor(Math.random() * 10) + 1;
-  attempts = 0;
-  document.getElementById('gameInfo').innerText = 'Try to guess the number between 1 and 10:';
-  document.getElementById('result').innerText = '';
-}
-
+// Function to check the guess
 function checkGuess() {
     var userGuess = document.getElementById('userGuess').value;
   
@@ -115,7 +108,7 @@ function checkGuess() {
         startGame(); // Start a new game
       }
     }
-  }
+  });
 
 // Initialize the game on page load
 document.addEventListener('DOMContentLoaded', function () {
