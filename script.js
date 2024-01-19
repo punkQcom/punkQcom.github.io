@@ -34,7 +34,7 @@ function saveToGist() {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': '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'
+            'Authorization': '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'
         },
         body: JSON.stringify(data)
     })
