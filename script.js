@@ -1,6 +1,8 @@
 // Move the function definition outside of any other scope
 
 var clickCounter = 0;
+var isHelloWorld = true;
+
 
 function incrementCounter() {
     clickCounter++;
@@ -9,17 +11,17 @@ function incrementCounter() {
 
 
 function changeText() {
-    // Get the heading element by its id
-    const helloTextElement = document.getElementById('helloText');
-
-    // Check the current text content
-    if (helloTextElement.textContent === 'Hello, World!') {
-        // If the current text is "Hello, World!", change it to "Hello, GPT-3!"
-        helloTextElement.textContent = 'Hello, GPT-3!';
+    if (isHelloWorld) {
+        // Toggle between "Hello, World!" and "Hello, GPT-3!"
+        document.getElementById('clickButton').innerText = 'Click me (0)';
+        isHelloWorld = false;
     } else {
-        // If the current text is not "Hello, World!", change it back to "Hello, World!"
-        helloTextElement.textContent = 'Hello, World!';
+        // Increment the counter
+        clickCounter++;
+        document.getElementById('clickButton').innerText = 'Click me (' + clickCounter + ')';
+        isHelloWorld = true;
     }
+    
 }
 
 // You can add more JavaScript code here if needed
