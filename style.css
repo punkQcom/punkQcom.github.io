@@ -76,13 +76,17 @@ p {
     color: #666;
 }
 
-/* Add this to your existing CSS or create a new CSS file */
-#dice {
+#dice-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* This ensures the container takes the full height of the viewport */
+  }
+  
+  #dice {
     font-size: 24px;
-    margin-top: 10px;
     padding: 10px;
     border: 1px solid #000;
     width: 60px;
     text-align: center;
   }
-  
