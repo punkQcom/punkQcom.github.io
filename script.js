@@ -28,6 +28,19 @@ function changeTextAndCount() {
     saveToGist();
 }
 
+// Function to roll the dice
+function rollDice() {
+  // Get the dice element
+  var diceElement = document.getElementById('dice');
+
+  // Generate a random number between 1 and 6
+  var randomNumber = Math.floor(Math.random() * 6) + 1;
+
+  // Set the dice element's inner HTML to display the rolled number
+  diceElement.innerHTML = 'Rolled: ' + randomNumber;
+}
+
+
 // Function to save click count to Gist
 function saveToGist() {
     // Prepare data to be saved
