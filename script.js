@@ -34,10 +34,23 @@ function rollDice() {
   var diceElement = document.getElementById('dice');
 
   // Generate a random number between 1 and 6
-  var randomNumber = Math.floor(Math.random() * 6) + 1;
+  // var randomNumber = Math.floor(Math.random() * 6) + 1;
 
   // Set the dice element's inner HTML to display the rolled number
-  diceElement.innerHTML = 'Rolled: ' + randomNumber;
+  // diceElement.innerHTML = 'Rolled: ' + randomNumber;
+
+  // Use FontAwesome classes for dice faces (e.g., fa-dice-one, fa-dice-two, etc.)
+  var randomNumber = Math.floor(Math.random() * 6) + 1;
+  var diceFaceClass = `fa-dice-${randomNumber}`;
+
+  // Update the class attribute of the dice icon based on the rolled number
+  diceElement.className = `fas ${diceFaceClass} rolling`;
+
+  // After a short delay, remove the rolling class to stop the animation
+  setTimeout(() => {
+    diceElement.classList.remove('rolling');
+  }, 500);
+
 }
 
 
