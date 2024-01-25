@@ -83,10 +83,24 @@ p {
     height: 10vh; /* This ensures the container takes the full height of the viewport */
   }
   
+ /*
   #dice {
     font-size: 24px;
     padding: 10px;
     border: 1px solid #000;
     width: 60px;
     text-align: center;
+*/
+
+#dice {
+    font-size: 100px; /* Adjust the size of the dice icon */
+    color: #333; /* Set the color of the dice icon */
+    transition: transform 0.5s ease-out;
+  }
+  
+  #dice.rolling {
+    transform: rotate(360deg);
+  }
+
+
   }
