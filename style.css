@@ -19,6 +19,20 @@ h1 {
     color: #007bff;
 }
 
+.link-button {
+    color: #ffffff; /* Set the text color */
+    background-color: #007bff; /* Set the background color */
+    padding: 10px 20px; /* Add padding to the button */
+    border-radius: 5px; /* Add rounded corners */
+    text-decoration: none; /* Remove underline */
+    display: inline-block; /* Make it behave like a block element */
+    margin-top: 10px; /* Add some margin for spacing */
+}
+
+.link-button:hover {
+    background-color: #0056b3; /* Change background color on hover */
+}
+
 button {
     padding: 10px 20px;
     font-size: 16px;
@@ -27,6 +41,10 @@ button {
     border: none;
     cursor: pointer;
     transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #218838;
 }
 
 nav {
@@ -55,10 +73,6 @@ a:hover {
     color: #f0f0f0;
 }
 
-
-button:hover {
-    background-color: #218838;
-}
 
 
 /* Add some spacing between sections */
