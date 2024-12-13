@@ -3,7 +3,7 @@ const GIST_ID = 'c1a20b4538ecb4eff6ed744c8c98e94a';
 const GIST_RAW_API = `https://gist.githubusercontent.com/punkQcom/${GIST_ID}/raw/clickcounter.json`;
 
 // GitHub Personal Access Token
-const GITHUB_TOKEN = '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'; // Replace with your actual token
+const GITHUB_TOKEN = 'REDACTED_TOKEN'; // Replace with your actual token
 
 // Variable to store click count
 var clickCounter = 0;
@@ -24,9 +24,38 @@ function changeTextAndCount() {
 
     document.getElementById('clickButton').innerText = 'Click me (' + clickCounter + ')';
 
-    // Save the click count to GitHub Gist
-    saveToGist();
+
+// Function to save click count to Gist
+function saveToGist() {
+  // Prepare data to be saved
+  const data = {
+      files: {
+          "clickcounter.json": {
+              content: JSON.stringify({ clickCounter: clickCounter })
+          }
+      }
+  };
+
+  // Update Gist using GitHub REST API
+  fetch(`https://api.github.com/gists/${GIST_ID}`, {
+      method: 'PATCH',
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `token ${GITHUB_TOKEN}`
+      },
+      body: JSON.stringify(data)
+  })
+  .then(response => {
+      if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+  })
+  .then(data => console.log('Counter saved to Gist:', data))
+  .catch(error => console.error('Error saving counter to Gist:', error));
 }
+
+
 
 // Function to roll the dice
 function rollDice() {
