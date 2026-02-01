@@ -2,8 +2,7 @@
 const GIST_ID = 'c1a20b4538ecb4eff6ed744c8c98e94a';
 const GIST_RAW_API = `https://gist.githubusercontent.com/punkQcom/${GIST_ID}/raw/clickcounter.json`;
 
-// GitHub Personal Access Token
-//const GITHUB_TOKEN = 'REDACTED_TOKEN'; // Replace with your actual token
+// GitHub Personal Access Token (use environment variable, do not hardcode)
 
 require('dotenv').config();
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
