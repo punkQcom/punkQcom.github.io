@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;600&display=swap">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <!-- Dices-->
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-5mLE2i/HL/b6z0TMjkF8R5ZlYLQz3Qa9qC0ET/V6lIok6bAM0C4RaPexlNf+5zFaZ5PQhVlMKL8owA8JdIfAZfA==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
@@ -16,38 +16,102 @@
        <title>punkQ.com</title>
 </head>
 <body>
-    <nav>
-        <ul>
-            <li><a href="#home">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#contact">Contact</a></li>
-            <li><a href="/privacy">Privacy</a></li>
-            <li><a href="/terms">Terms</a></li>
-        </ul>
-    </nav>
+    <header class="topbar">
+        <div class="brand">punkQ.com</div>
+        <nav class="nav">
+            <a href="#features">Features</a>
+            <a href="#workflow">Workflow</a>
+            <a href="#trust">Trust</a>
+            <a href="#contact">Contact</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
+        </nav>
+    </header>
 
-    <section id="home">
-        <h2>VST Collaboration</h2>
-        <p>Share files directly inside your DAW. Simple sign-in, fast uploads, and clear folder structure.</p>
-    </section>
+    <main>
+        <section id="hero" class="hero">
+            <div class="hero-content">
+                <p class="eyebrow">VST Collaboration</p>
+                <h1>Share files inside your DAW, not in a browser.</h1>
+                <p class="lead">A lightweight plugin for musicians who collaborate. Sign in, drop files, and keep sessions moving without leaving your creative flow.</p>
+                <div class="cta-row">
+                    <a class="cta primary" href="#contact">Get in touch</a>
+                    <a class="cta ghost" href="#features">See features</a>
+                </div>
+                <div class="badge-row">
+                    <span>Google</span>
+                    <span>Microsoft</span>
+                    <span>GitHub</span>
+                </div>
+            </div>
+            <div class="hero-card">
+                <div class="card-head">What you get</div>
+                <ul>
+                    <li>Secure sign-in with multiple providers.</li>
+                    <li>Drag-and-drop uploads.</li>
+                    <li>Folder management built for sessions.</li>
+                    <li>Simple sharing for teams and collaborators.</li>
+                </ul>
+            </div>
+        </section>
 
-    <section id="about">
-        <h2>About</h2>
-        <p>VST Collaboration is a lightweight plugin that makes it easy to upload, organize, and share project files without leaving your creative workflow.</p>
-    </section>
+        <section id="features" class="section">
+            <h2>Features built for music creators</h2>
+            <div class="grid">
+                <div class="tile">
+                    <h3>Sign in fast</h3>
+                    <p>Authenticate with Google, Microsoft, or GitHub. No extra accounts to remember.</p>
+                </div>
+                <div class="tile">
+                    <h3>Organize cleanly</h3>
+                    <p>Create folders per project, keep stems tidy, and share only what’s needed.</p>
+                </div>
+                <div class="tile">
+                    <h3>Drop & upload</h3>
+                    <p>Drag files straight from your file manager into the plugin.</p>
+                </div>
+            </div>
+        </section>
 
-    <section id="features">
-        <h2>Features</h2>
-        <p>Secure sign-in with Google, Microsoft, and GitHub.</p>
-        <p>Drag-and-drop uploads, folder management, and clear file lists.</p>
-        <p>Designed for music creators who collaborate across DAWs.</p>
-    </section>
-      
-    <section id="contact">
-        <h2>Contact</h2>
-        <p>Email: marko.lahtonen@punkq.com</p>
-    </section>
+        <section id="workflow" class="section highlight">
+            <h2>Workflow first</h2>
+            <p class="lead">VST Collaboration stays out of the way. Uploads happen where you already work, inside your DAW.</p>
+            <div class="steps">
+                <div>
+                    <span class="step-number">01</span>
+                    <p>Sign in</p>
+                </div>
+                <div>
+                    <span class="step-number">02</span>
+                    <p>Upload files</p>
+                </div>
+                <div>
+                    <span class="step-number">03</span>
+                    <p>Share with collaborators</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="trust" class="section">
+            <h2>Transparent and secure</h2>
+            <p>We use standard OAuth flows and store only what’s needed to run the service. You can read more in the privacy policy.</p>
+            <div class="link-row">
+                <a href="/privacy">Privacy policy</a>
+                <a href="/terms">Terms of service</a>
+            </div>
+        </section>
+
+        <section id="contact" class="section contact">
+            <h2>Contact</h2>
+            <p>Questions or feedback? Email us.</p>
+            <a class="cta primary" href="mailto:marko.lahtonen@punkq.com">marko.lahtonen@punkq.com</a>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <span>© 2026 punkQ.com</span>
+        <span>VST Collaboration</span>
+    </footer>
 
 </body>
 </html>
