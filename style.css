@@ -60,6 +60,7 @@ a {
     z-index: 1;
     text-transform: uppercase;
     letter-spacing: 4px;
+    text-indent: 4px;
     font-size: 12px;
     color: var(--glow);
     font-weight: 600;
