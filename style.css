@@ -89,6 +89,7 @@ h1 {
     align-items: center;
     color: var(--muted);
     font-size: 14px;
+    margin-top: 16px;
 }
 
 .meta a {
