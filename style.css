@@ -37,15 +37,14 @@ a {
 }
 
 .pulse-ring {
-    width: 220px;
-    height: 220px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
+    width: 240px;
+    height: 240px;
     position: absolute;
     top: 15%;
     left: 50%;
     transform: translateX(-50%);
-    box-shadow: 0 0 60px rgba(94, 228, 255, 0.2);
+    color: var(--border);
+    filter: drop-shadow(0 0 40px rgba(94, 228, 255, 0.25));
     animation: pulse 3.5s ease-in-out infinite;
 }
 
