@@ -19,6 +19,13 @@
     <main class="coming-soon">
         <div class="q-hero">
             <svg class="pulse-ring" viewBox="0 0 260 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="q-glow">
+                        <stop offset="0%" stop-color="rgba(94, 228, 255, 0.15)"/>
+                        <stop offset="80%" stop-color="rgba(94, 228, 255, 0)"/>
+                    </radialGradient>
+                </defs>
+                <circle cx="130" cy="130" r="90" fill="url(#q-glow)"/>
                 <circle cx="130" cy="130" r="92" stroke="currentColor" stroke-width="1.5"/>
                 <rect x="182" y="192" width="42" height="22" rx="11" ry="11"
                       transform="rotate(45, 203, 203)"
@@ -27,7 +34,8 @@
             <p class="eyebrow">VST Collaboration</p>
         </div>
         <h1>Coming soon.</h1>
-        <p class="lead">A new way to share project files inside your DAW. Stay tuned.</p>
+        <p class="lead">A new way to share project files inside your DAW.</p>
+        <p class="lead">Stay tuned.</p>
         <div class="meta">
             <a href="/privacy/">Privacy</a>
             <span>•</span>
