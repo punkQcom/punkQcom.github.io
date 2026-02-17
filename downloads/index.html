@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap">
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <title>Downloads - punkQ.com</title>
+</head>
+<body>
+    <main class="legal-page">
+        <div class="legal-header">
+            <a class="back-link" href="../">← Back</a>
+            <h1>Downloads</h1>
+            <p>Version 0.7.4.0 — February 17, 2026</p>
+        </div>
+
+        <section class="legal-section">
+            <div class="download-cards">
+                <div class="download-card">
+                    <h2>macOS (Apple Silicon)</h2>
+                    <p>arm64 — 12.0 MB</p>
+                    <a class="download-btn" href="latest/vstcollaboration-macOS-arm64.zip" download>Download for macOS</a>
+                </div>
+                <div class="download-card">
+                    <h2>Windows</h2>
+                    <p>x86_64 — 3.6 MB</p>
+                    <a class="download-btn" href="latest/vstcollaboration-Windows-x86_64.zip" download>Download for Windows</a>
+                </div>
+            </div>
+
+            <h2>Installation — macOS</h2>
+            <ol>
+                <li>Extract the downloaded zip file</li>
+                <li>Copy <code>vstcollaboration.vst3</code> to <code>~/Library/Audio/Plug-Ins/VST3/</code></li>
+                <li>Remove the quarantine flag:<br>
+                    <code>xattr -cr ~/Library/Audio/Plug-Ins/VST3/vstcollaboration.vst3</code></li>
+                <li>Restart your DAW</li>
+            </ol>
+            <br>
+
+            <h2>Installation — Windows</h2>
+            <ol>
+                <li>Extract the downloaded zip file</li>
+                <li>Copy <code>vstcollaboration.vst3</code> to <code>C:\Program Files\Common Files\VST3\</code></li>
+                <li>Restart your DAW</li>
+            </ol>
+            <br>
+
+            <h2>System Requirements</h2>
+            <p>macOS: Apple Silicon (arm64), macOS 11+</p>
+            <p>Windows: x86_64, Windows 10+</p>
+            <br>
+
+            <h2>Supported DAWs</h2>
+            <p>Any DAW with VST3 support — Ableton Live, FL Studio, Logic Pro, Reaper, Cubase, Studio One, Bitwig, and more.</p>
+        </section>
+    </main>
+</body>
+</html>
