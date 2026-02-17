@@ -82,6 +82,18 @@ h1 {
     line-height: 1.6;
 }
 
+.meta-download {
+    text-align: center;
+    margin-top: 24px;
+}
+
+.meta-download .download-link {
+    color: var(--glow);
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+}
+
 .meta {
     display: flex;
     gap: 12px;
