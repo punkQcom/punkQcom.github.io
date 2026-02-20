@@ -319,7 +319,8 @@ h1 {
 }
 
 .pricing-card li {
-    padding: 4px 0;
+    padding: 4px 0 4px 24px;
+    text-indent: -24px;
 }
 
 .pricing-card li::before {
