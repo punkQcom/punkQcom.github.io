@@ -285,8 +285,68 @@ h1 {
     opacity: 1;
 }
 
+.pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.pricing-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pricing-card h2 {
+    font-size: 20px;
+    margin-top: 0;
+}
+
+.pricing-card ul {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 16px;
+    flex-grow: 1;
+}
+
+.pricing-card li {
+    padding: 4px 0;
+}
+
+.pricing-card li::before {
+    content: "\2713  ";
+    color: var(--glow);
+}
+
+.pricing-highlight {
+    border-color: var(--glow);
+    box-shadow: 0 0 20px rgba(94, 228, 255, 0.1);
+}
+
+.pricing-price {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 8px 0 16px;
+}
+
+.pricing-price span {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--muted);
+}
+
 @media (max-width: 600px) {
-    .download-cards {
+    .download-cards,
+    .pricing-grid {
         grid-template-columns: 1fr;
     }
 }
