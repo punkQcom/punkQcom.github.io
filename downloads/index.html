@@ -10,6 +10,11 @@
 </head>
 <body>
     <main class="legal-page">
+        <div id="checkout-success" class="success-banner" style="display:none;">
+            Subscription activated! Restart your DAW or reload the plugin to see your updated plan.
+            <button class="success-dismiss" onclick="this.parentElement.style.display='none';history.replaceState(null,'',location.pathname);">&times;</button>
+        </div>
+        <script>if(location.search.includes('checkout=success'))document.getElementById('checkout-success').style.display='flex';</script>
         <div class="legal-header">
             <a class="back-link" href="../">← Back</a>
             <h1>Downloads</h1>
@@ -31,6 +36,7 @@
             </div>
 
             <h2>Installation — macOS</h2>
+            <p class="note-box">Your browser may show "Suspicious download blocked" for the macOS zip. This is normal for unsigned plugins — click the warning and choose "Keep" or "Download suspicious file" to proceed.</p>
             <p>The zip contains a <code>vstcollaboration.vst3</code> folder:</p>
             <pre>vstcollaboration.vst3/
 ├── Contents/
@@ -40,7 +46,7 @@
             <ol>
                 <li>Extract the downloaded zip file</li>
                 <li>Copy the entire <code>vstcollaboration.vst3</code> folder to <code>~/Library/Audio/Plug-Ins/VST3/</code></li>
-                <li>Remove the quarantine flag:<br>
+                <li>Remove the quarantine flag (required — the plugin will not load without this):<br>
                     <code>xattr -cr ~/Library/Audio/Plug-Ins/VST3/vstcollaboration.vst3</code></li>
                 <li>Restart your DAW</li>
             </ol>
