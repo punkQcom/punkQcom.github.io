@@ -84,7 +84,8 @@ h1 {
 
 .video-embed {
     margin: 32px auto 0;
-    max-width: 560px;
+    max-width: 960px;
+    width: 100%;
     aspect-ratio: 16 / 9;
 }
 .video-embed iframe {
