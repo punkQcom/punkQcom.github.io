@@ -357,6 +357,17 @@ h1 {
     color: var(--muted);
 }
 
+.coming-soon-badge {
+    display: inline-block;
+    padding: 8px 20px;
+    border: 1px solid var(--glow);
+    border-radius: 20px;
+    color: var(--glow);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
 @media (max-width: 600px) {
     .download-cards,
     .pricing-grid {
