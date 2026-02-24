@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../../style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap">
+    <link rel="icon" href="../../../favicon.ico" type="image/x-icon">
+    <meta name="description" content="Frequently asked questions about VST Collaboration — storage, security, collaboration, QuickShare, pricing, and more.">
+    <meta property="og:title" content="FAQ — VST Collaboration by punkQ">
+    <meta property="og:description" content="Frequently asked questions about VST Collaboration — storage, security, collaboration, QuickShare, pricing, and more.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://punkq.com/products/vstcollaboration/faq/">
+    <link rel="canonical" href="https://punkq.com/products/vstcollaboration/faq/">
+    <title>FAQ — VST Collaboration | punkQ</title>
+    <style>
+        .faq-item { border-bottom: 1px solid var(--border); }
+        .faq-item:first-of-type { border-top: 1px solid var(--border); }
+        .faq-q { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; cursor: pointer; font-weight: 600; color: var(--text); font-size: 15px; }
+        .faq-q:hover { color: var(--glow); }
+        .faq-q::after { content: "+"; font-size: 20px; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; margin-left: 12px; }
+        .faq-item.open .faq-q::after { content: "\2212"; }
+        .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+        .faq-item.open .faq-a { max-height: 500px; }
+        .faq-a p { font-size: 14px; padding-bottom: 16px; }
+    </style>
+</head>
+<body>
+    <main class="legal-page">
+        <div class="legal-header">
+            <a class="back-link" href="/products/vstcollaboration/">&#8592; VST Collaboration</a>
+            <h1>Frequently Asked Questions</h1>
+            <p>Everything you need to know about VST Collaboration</p>
+        </div>
+
+        <section class="legal-section">
+
+            <h2>General</h2>
+            <br>
+
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">What is VST Collaboration?</div>
+                <div class="faq-a"><p>VST Collaboration is a VST3 plugin that runs inside your DAW (Ableton Live, FL Studio, Reaper, etc.). It lets you upload, download, and manage project files directly from within your session — no need to switch to a browser or file manager. Sign in with Google, GitHub, Microsoft, or Discord to get started.</p></div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">What platforms and DAWs are supported?</div>
+                <div class="faq-a"><p>The plugin is available for macOS (Apple Silicon) and Windows (x86_64) as a VST3 plugin. It works in any DAW that supports VST3 — confirmed working in Ableton Live on both platforms. Other DAWs (FL Studio, Logic Pro, Reaper, Studio One, Cubase) are planned for testing.</p></div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">What file types can I upload?</div>
+                <div class="faq-a"><p>Audio, video, music project files, samples, presets, documents — virtually anything music production related. Executables, disk images, and system files are blocked for security. There is no file size limit beyond your storage quota.</p></div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Can I drag and drop files?</div>
+                <div class="faq-a"><p>Yes. Drag files from Finder or Explorer into the plugin to upload. Drag files from the plugin into your DAW to download and import. You can also drag files between folders, and between Personal storage and Project folders.</p></div>
+            </div>
+
+            <br>
+            <h2>Storage &amp; Security</h2>
+            <br>
+
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Where are my files stored?</div>
+                <div class="faq-a"><p>Files are stored in Microsoft Azure Blob Storage across three regions: Europe (Ireland), United States (Virginia), and Asia (Singapore). Your storage region is automatically assigned based on your location at first login, so your files are always stored close to you for the fastest uploads and downloads.</p></div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Is my data secure?</div>
+                <div class="faq-a"><p>Yes. All files are encrypted at rest by Azure Storage. Access is controlled via time-limited, blob-level security tokens issued by the backend only after OAuth authentication. The plugin never stores storage account keys. All communication uses HTTPS/TLS. OAuth sign-in uses PKCE for maximum security. End-to-end (zero-knowledge) encryption is on the roadmap.</p></div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Can the service operator see my files?</div>
+                <div class="faq-a"><p>Currently, files are encrypted at rest but the service has access to storage keys for generating access tokens. We are planning zero-knowledge encryption as a future feature — once available, even the service operator will not be able to see filenames or file content.</p></div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Can I use multiple sign-in providers?</div>
+                <div class="faq-a"><p>Yes. If you sign in with different providers (e.g. Google and GitHub) that share the same verified email address, your accounts are automatically linked. You'll see the same files regardless of which provider you use to sign in.</p></div>
+            </div>
+
+            <br>
+            <h2>Collaboration</h2>
+            <br>
+
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How does collaboration work?</div>
+                <div class="faq-a"><p>Create a Project, then invite collaborators by email. Each member gets a role: Owner (full control), Editor (upload, rename, delete), or Viewer (download only). Project storage counts toward the owner's quota, not the collaborators'. Drag and drop files between your Personal storage and any Project folder.</p></div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">What is QuickShare?</div>
+                <div class="faq-a"><p>QuickShare lets you create a temporary web link to share a folder with anyone — no account needed. Recipients can browse and download files in their browser. You can choose Read Only or Read &amp; Write access. Links expire automatically (15 minutes on Free, 60 minutes on Starter, 2 hours on Pro). You can also send the link directly via email from within the plugin.</p></div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Who pays for project storage?</div>
+                <div class="faq-a"><p>The project owner. All files uploaded to a project count toward the owner's storage quota. Collaborators (Editors and Viewers) do not need storage of their own to participate in a project.</p></div>
+            </div>
+
+            <br>
+            <h2>Plans &amp; Account</h2>
+            <br>
+
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">What do I get on the Free plan?</div>
+                <div class="faq-a"><p>200 MB of storage, 1 project with 1 collaborator, and 1 active QuickShare link (15-minute expiry). No credit card required — just sign in with any OAuth provider and verify your email to activate your storage.</p></div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I upgrade to a paid plan?</div>
+                <div class="faq-a"><p>Open the Account tab in the plugin and click "Upgrade". Payments are handled by LemonSqueezy, which serves as the merchant of record — they handle VAT, sales tax, and invoicing automatically. You can manage your subscription, update payment details, or cancel at any time through the customer portal.</p></div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I delete my account?</div>
+                <div class="faq-a"><p>Go to the Account tab in the plugin and click "Delete Account". This permanently removes all your files from cloud storage, all project data, and all database records. The action cannot be undone.</p></div>
+            </div>
+
+        </section>
+
+        <div class="meta" style="margin-top:40px;">
+            <a href="/products/vstcollaboration/">VST Collaboration</a>
+            <span>&bull;</span>
+            <a href="/products/">Products</a>
+            <span>&bull;</span>
+            <a href="/privacy/">Privacy</a>
+            <span>&bull;</span>
+            <a href="/terms/">Terms</a>
+            <span>&bull;</span>
+            <a href="mailto:support@punkq.com">Contact</a>
+        </div>
+    </main>
+</body>
+</html>
