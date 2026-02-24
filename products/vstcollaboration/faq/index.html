@@ -69,12 +69,7 @@
 
             <div class="faq-item">
                 <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Is my data secure?</div>
-                <div class="faq-a"><p>Yes. All files are encrypted at rest by Azure Storage. Access is controlled via time-limited, blob-level security tokens issued by the backend only after OAuth authentication. The plugin never stores storage account keys. All communication uses HTTPS/TLS. OAuth sign-in uses PKCE for maximum security. End-to-end (zero-knowledge) encryption is on the roadmap.</p></div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Can the service operator see my files?</div>
-                <div class="faq-a"><p>Currently, files are encrypted at rest but the service has access to storage keys for generating access tokens. We are planning zero-knowledge encryption as a future feature — once available, even the service operator will not be able to see filenames or file content.</p></div>
+                <div class="faq-a"><p>Yes. All files are encrypted at rest by Azure Storage. Access is controlled via time-limited, blob-level security tokens issued by the backend only after OAuth authentication. The plugin never stores storage account keys. All communication uses HTTPS/TLS. OAuth sign-in uses PKCE for maximum security.</p></div>
             </div>
 
             <div class="faq-item">
