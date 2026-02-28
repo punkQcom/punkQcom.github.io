@@ -180,6 +180,12 @@ h1 {
     margin-top: 24px;
 }
 
+.legal-section a {
+    color: var(--glow);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
 .legal-section p {
     color: var(--muted);
     margin-bottom: 12px;
