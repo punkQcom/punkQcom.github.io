@@ -186,6 +186,11 @@ h1 {
     text-underline-offset: 2px;
 }
 
+.legal-section a.download-btn {
+    color: var(--bg);
+    text-decoration: none;
+}
+
 .legal-section p {
     color: var(--muted);
     margin-bottom: 12px;
