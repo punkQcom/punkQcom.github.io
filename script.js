@@ -1,145 +1,17 @@
-// Update Gist API URL with raw content
-const GIST_ID = 'c1a20b4538ecb4eff6ed744c8c98e94a';
-const GIST_RAW_API = `https://gist.githubusercontent.com/punkQcom/${GIST_ID}/raw/clickcounter.json`;
+document.documentElement.classList.add('js-ready');
 
-// GitHub Personal Access Token (use environment variable, do not hardcode)
-
-require('dotenv').config();
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-
-
-// Variable to store click count
-var clickCounter = 0;
-// Variables to Guess the Number Game
-var secretNumber;
-var attempts = 0;
-
-
-// Function to change text and count
-function changeTextAndCount() {
-    clickCounter++;
-
-    if (clickCounter % 2 === 1) {
-        document.getElementById('helloText').innerText = 'Hello, Marko!';
-    } else {
-        document.getElementById('helloText').innerText = 'Hello, World!';
-    }
-
-    document.getElementById('clickButton').innerText = 'Click me (' + clickCounter + ')';
-
-
-// Function to save click count to Gist
-function saveToGist() {
-  // Prepare data to be saved
-  const data = {
-      files: {
-          "clickcounter.json": {
-              content: JSON.stringify({ clickCounter: clickCounter })
-          }
-      }
-  };
-
-  // Update Gist using GitHub REST API
-  fetch(`https://api.github.com/gists/${GIST_ID}`, {
-      method: 'PATCH',
-      headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `token ${GITHUB_TOKEN}`
-      },
-      body: JSON.stringify(data)
-  })
-  .then(response => {
-      if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return response.json();
-  })
-  .then(data => console.log('Counter saved to Gist:', data))
-  .catch(error => console.error('Error saving counter to Gist:', error));
-}
-
-
-
-// Function to roll the dice
-function rollDice() {
-  // Get the dice element
-  var diceElement = document.getElementById('dice');
-
-  // Generate a random number between 1 and 6
-  // var randomNumber = Math.floor(Math.random() * 6) + 1;
-
-  // Set the dice element's inner HTML to display the rolled number
-  // diceElement.innerHTML = 'Rolled: ' + randomNumber;
-
-  // Use FontAwesome classes for dice faces (e.g., fa-dice-one, fa-dice-two, etc.)
-  var randomNumber = Math.floor(Math.random() * 6) + 1;
-  var diceFaceClass = `fa-dice-${randomNumber}`;
-
-  // Update the class attribute of the dice icon based on the rolled number
-  diceElement.className = `fas ${diceFaceClass} rolling`;
-
-  // After a short delay, remove the rolling class to stop the animation
-  setTimeout(() => {
-    diceElement.classList.remove('rolling');
-  }, 500);
-
-}
-
-
-// Function to save click count to Gist
-function saveToGist() {
-    // Prepare data to be saved
-    const data = {
-        clickCounter: clickCounter
-    };
-
-    // Update Gist using GitHub REST API
-    fetch(`https://api.github.com/gists/${GIST_ID}`, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `token ${GITHUB_TOKEN}`
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => console.log('Counter saved to Gist:', data))
-    .catch(error => console.error('Error saving counter to Gist:', error));
-}
-
-// Initialize text and count on page load
 document.addEventListener('DOMContentLoaded', function () {
-  // Load the click count from GitHub Gist
-fetch(GIST_RAW_API)
-.then(response => {
-  if (!response.ok) {
-    console.error('Error loading counter from Gist:', response.status, response.statusText);
-    return response.text(); // Log the response content
-  }
-  return response.json();
-})
-.then(data => {
-  if (data && data.message) {
-    console.error('GitHub API error:', data.message);
-    throw new Error(`GitHub API error: ${data.message}`);
-  }
+    var reveals = document.querySelectorAll('.reveal');
+    if (!reveals.length) return;
 
-  // Extract clickCounter from the Gist data
-  clickCounter = data.clickCounter || 0;
+    var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.15 });
 
-  // Set initial text and count
-  if (clickCounter % 2 === 1) {
-    document.getElementById('helloText').innerText = 'Hello, Marko!';
-  } else {
-    document.getElementById('helloText').innerText = 'Hello, World!';
-  }
-  document.getElementById('clickButton').innerText = 'Click me (' + clickCounter + ')';
-})
-.catch(error => console.error('Error loading counter from Gist:', error));
-
+    reveals.forEach(function (el) { observer.observe(el); });
 });
