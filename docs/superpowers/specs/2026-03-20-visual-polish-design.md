@@ -44,7 +44,9 @@ On the homepage, all content is above the fold. The Intersection Observer fires 
 
 ### Accessibility
 
-`@media (prefers-reduced-motion: reduce)` sets `.reveal` elements to full opacity with no transition, so content appears instantly.
+`@media (prefers-reduced-motion: reduce)`:
+- Sets `.reveal` elements to full opacity with no transition, so content appears instantly
+- Disables card hover lift transitions and transform — cards still change border/shadow on hover but without motion (`transition: none`, no `translateY`)
 
 ## Card Hover Lift
 
@@ -57,7 +59,7 @@ On the homepage, all content is above the fold. The Intersection Observer fires 
 ### Where it applies
 
 - `.download-card` — product navigation cards, download platform cards, products hub card
-- `.pricing-card` — all 3 pricing tier cards (highlighted card hover intensifies existing glow)
+- `.pricing-card` — all 3 pricing tier cards. For `.pricing-highlight`, the border stays at full opacity (`var(--glow)`) on hover — only the shadow and lift apply. The generic `border-color` override does not apply to highlighted cards.
 
 ### Where it does NOT apply
 
