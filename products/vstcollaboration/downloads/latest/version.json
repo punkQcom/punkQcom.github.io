@@ -1,6 +1,6 @@
 {
-  "version": "0.8.0.5",
-  "date": "2026-03-21",
+  "version": "0.8.2",
+  "date": "2026-03-24",
   "macOS_arm64": "https://punkq.com/products/vstcollaboration/downloads/latest/vstcollaboration-macOS-arm64.zip",
   "windows_x86_64": "https://punkq.com/products/vstcollaboration/downloads/latest/vstcollaboration-Windows-x86_64.zip"
 }
