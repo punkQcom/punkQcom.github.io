@@ -70,7 +70,7 @@
 
             <div class="faq-item reveal">
                 <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Is my data secure?</div>
-                <div class="faq-a"><p>Yes. All files are encrypted at rest by Azure Storage. Access is controlled via time-limited, blob-level security tokens issued by the backend only after OAuth authentication. The plugin never stores storage account keys. All communication uses HTTPS/TLS. OAuth sign-in uses PKCE for maximum security.</p></div>
+                <div class="faq-a"><p>Yes. Files in your Personal storage are encrypted on your device before they ever leave the plugin. They are stored encrypted in the cloud and decrypted only when you download them. On top of that, all files are encrypted at rest by Azure Storage, access is controlled via time-limited security tokens, and all communication uses HTTPS/TLS. OAuth sign-in uses PKCE for maximum security. Encryption for Project files is coming in a future update.</p></div>
             </div>
 
             <div class="faq-item reveal">
