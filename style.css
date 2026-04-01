@@ -352,8 +352,7 @@ h1 {
 }
 
 .pricing-highlight {
-    border-color: var(--glow);
-    box-shadow: 0 0 20px rgba(94, 228, 255, 0.1);
+    border-color: var(--border);
 }
 
 .pricing-price {
