@@ -6,16 +6,16 @@
     <link rel="stylesheet" href="../../../style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap">
     <link rel="icon" href="../../../favicon.ico" type="image/x-icon">
-    <meta name="description" content="Frequently asked questions about VST Collaboration — storage, security, collaboration, QuickShare, pricing, and more.">
+    <meta name="description" content="Usage guide and FAQ for VST Collaboration — how to upload, download, organize, share, and collaborate on files, plus answers to common questions.">
     <meta property="og:title" content="FAQ — VST Collaboration by punkQ">
-    <meta property="og:description" content="Frequently asked questions about VST Collaboration — storage, security, collaboration, QuickShare, pricing, and more.">
+    <meta property="og:description" content="Usage guide and FAQ for VST Collaboration — how to upload, download, organize, share, and collaborate on files, plus answers to common questions.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://punkq.com/products/vstcollaboration/faq/">
     <link rel="canonical" href="https://punkq.com/products/vstcollaboration/faq/">
     <title>FAQ — VST Collaboration | punkQ</title>
     <style>
         .faq-item { border-bottom: 1px solid var(--border); }
-        .faq-item:first-of-type { border-top: 1px solid var(--border); }
+        br + .faq-item { border-top: 1px solid var(--border); }
         .faq-q { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; cursor: pointer; font-weight: 600; color: var(--text); font-size: 15px; }
         .faq-q:hover { color: var(--glow); }
         .faq-q::after { content: "+"; font-size: 20px; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; margin-left: 12px; }
@@ -31,11 +31,65 @@
         <div class="legal-header">
             <a class="back-link" href="/products/vstcollaboration/">&#8592; VST Collaboration</a>
             <h1>Frequently Asked Questions</h1>
-            <p>Everything you need to know about VST Collaboration</p>
+            <p>How to use the plugin, plus answers to common questions</p>
         </div>
 
         <section class="legal-section">
 
+            <h2 class="reveal">Usage Guide</h2>
+            <br>
+
+            <div class="faq-item reveal">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I upload files?</div>
+                <div class="faq-a"><p>Drag files from Finder (macOS) or Explorer (Windows) directly into the plugin window. You can also right-click any folder and choose Upload to browse for files. Uploads go to whichever folder you drop them on or have selected.</p></div>
+            </div>
+
+            <div class="faq-item reveal">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I download files to my DAW?</div>
+                <div class="faq-a"><p>Drag any file from the plugin into your DAW's timeline or arrangement view. The file is downloaded and imported in one step. Downloaded files are cached locally, so dragging the same file again is instant.</p></div>
+            </div>
+
+            <div class="faq-item reveal">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I organize my files?</div>
+                <div class="faq-a"><p>Right-click any file or folder for options: rename, move, copy, delete, or create a new folder. You can also drag files between folders, and between your Personal storage and Project folders.</p></div>
+            </div>
+
+            <div class="faq-item reveal">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I share files with collaborators?</div>
+                <div class="faq-a"><p>Create a Project from the Projects tab, then invite collaborators by email. Each member gets a role: Owner (full control), Editor (upload, rename, delete), or Viewer (download only). All project members see the same files in real time.</p></div>
+            </div>
+
+            <div class="faq-item reveal">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I share files with anyone (no account needed)?</div>
+                <div class="faq-a"><p>Right-click any folder and choose QuickShare to create a temporary web link. Anyone with the link can browse and download files in their browser. You can copy the link or send it via email directly from the plugin. Links expire automatically. Note: QuickShare files are not encrypted, since recipients access them via web browser without an account.</p></div>
+            </div>
+
+            <div class="faq-item reveal">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I preview audio?</div>
+                <div class="faq-a"><p>Click the play icon on any audio file in the file tree. Use this to quickly audition files and compare different versions without importing them into your DAW.</p></div>
+            </div>
+
+            <div class="faq-item reveal">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I use version history and comments?</div>
+                <div class="faq-a"><p>Click the file icon or right-click a file and choose History &amp; Details. You can see all previous versions of a file, restore an older version, and leave comments for collaborators.</p></div>
+            </div>
+
+            <div class="faq-item reveal">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">What about encryption?</div>
+                <div class="faq-a"><p>Files in your Personal storage and Project folders are encrypted automatically on your device before upload -- no action needed from you. QuickShare files are not encrypted, since recipients access them via a web link without an account.</p></div>
+            </div>
+
+            <div class="faq-item reveal">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Where are cached files stored?</div>
+                <div class="faq-a"><p>The plugin caches downloaded files locally so you can re-use them without downloading again. You can manage cache size and automatic cleanup in the Options tab, or clear the cache at any time.</p></div>
+            </div>
+
+            <div class="faq-item reveal">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I change language or theme?</div>
+                <div class="faq-a"><p>Open the Options tab to choose from 9 available languages. Use the theme toggle in the title bar to switch between light and dark mode.</p></div>
+            </div>
+
+            <br>
             <h2 class="reveal">General</h2>
             <br>
 
@@ -65,12 +119,12 @@
 
             <div class="faq-item reveal">
                 <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Where are my files stored?</div>
-                <div class="faq-a"><p>Files are stored in Microsoft Azure Blob Storage across three regions: Europe (Ireland), United States (Virginia), and Asia (Singapore). Your storage region is automatically assigned based on your location at first login, so your files are always stored close to you for the fastest uploads and downloads.</p></div>
+                <div class="faq-a"><p>Files are stored in secure cloud storage across three global regions (Europe, United States, and Asia). Your region is automatically assigned based on your location at first login, so your files are always close to you for the fastest uploads and downloads.</p></div>
             </div>
 
             <div class="faq-item reveal">
                 <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Is my data secure?</div>
-                <div class="faq-a"><p>Yes. Files in your Personal storage are encrypted on your device before they ever leave the plugin. They are stored encrypted in the cloud and decrypted only when you download them. On top of that, all files are encrypted at rest by Azure Storage, access is controlled via time-limited security tokens, and all communication uses HTTPS/TLS. OAuth sign-in uses PKCE for maximum security. Encryption for Project files is coming in a future update.</p></div>
+                <div class="faq-a"><p>Yes. Files in your Personal storage and Project folders are encrypted on your device before upload and decrypted only when you download them. All communication is encrypted in transit, and access is controlled via short-lived security tokens. QuickShare files are not encrypted, since recipients access them via a web link without an account.</p></div>
             </div>
 
             <div class="faq-item reveal">
@@ -89,7 +143,7 @@
 
             <div class="faq-item reveal">
                 <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">What is QuickShare?</div>
-                <div class="faq-a"><p>QuickShare lets you create a temporary web link to share a folder with anyone — no account needed. Recipients can browse and download files in their browser. You can choose Read Only or Read &amp; Write access. Links expire automatically (15 minutes on Free, 60 minutes on Starter, 2 hours on Pro). You can also send the link directly via email from within the plugin.</p></div>
+                <div class="faq-a"><p>QuickShare lets you create a temporary web link to share a folder with anyone — no account needed. Recipients can browse and download files in their browser. You can choose Read Only or Read &amp; Write access. Links expire automatically (15 minutes on Free, 60 minutes on Starter, 2 hours on Pro). You can also send the link directly via email from within the plugin. Note: QuickShare files are not encrypted, since recipients access them in a browser without logging in.</p></div>
             </div>
 
             <div class="faq-item reveal">
