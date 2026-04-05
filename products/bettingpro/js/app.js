@@ -377,12 +377,18 @@ async function handleUpdateData() {
   messageEl.textContent = 'Updating...';
   messageEl.style.color = '';
 
+  // Safety: always hide spinner after 35s no matter what
+  const safetyTimer = setTimeout(() => {
+    statusDiv.classList.add('hidden');
+    messageEl.style.color = '';
+    btn.disabled = false;
+  }, 35000);
+
   try {
     const leagueId = currentLeagueId || document.getElementById('league-select').value;
     messageEl.textContent = `Fetching data for ${leagueId}...`;
 
-    const data = triggerUpdate(leagueId);
-    const result = await data;
+    const result = await triggerUpdate(leagueId);
 
     // Use the returned data directly
     currentLeagueData = {
@@ -398,10 +404,12 @@ async function handleUpdateData() {
     messageEl.textContent = 'Done! Data updated.';
     btn.disabled = true; // Keep disabled — data is now fresh
   } catch (err) {
+    console.error('Update failed:', err);
     messageEl.textContent = `Error: ${err.message}`;
     messageEl.style.color = '#f87171';
     btn.disabled = false;
   } finally {
+    clearTimeout(safetyTimer);
     setTimeout(() => {
       statusDiv.classList.add('hidden');
       messageEl.style.color = '';
