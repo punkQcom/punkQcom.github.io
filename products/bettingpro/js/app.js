@@ -291,56 +291,49 @@ function renderDateView() {
     html += `<div class="match-date-group" data-date-group="${date}">`;
 
     for (const m of matches) {
-      if (m.status === 'finished') {
-        let oddsRow = '';
-        const selOdds = getSelectedOdds(m.odds);
-        if (selOdds && selOdds.home && selOdds.draw && selOdds.away) {
-          const result = m.homeGoals > m.awayGoals ? '1' : m.homeGoals === m.awayGoals ? 'X' : '2';
-          oddsRow = `<div class="match-odds-table">
-            <span class="odds-cell${result === '1' ? ' correct' : ''}"><span class="odds-label">1</span>${selOdds.home.toFixed(2)}</span>
-            <span class="odds-cell${result === 'X' ? ' correct' : ''}"><span class="odds-label">X</span>${selOdds.draw.toFixed(2)}</span>
-            <span class="odds-cell${result === '2' ? ' correct' : ''}"><span class="odds-label">2</span>${selOdds.away.toFixed(2)}</span>
-          </div>`;
-        }
-        html += `<div class="match-row finished" data-home="${m.homeTeam}" data-away="${m.awayTeam}">
-          <span class="match-teams">${m.homeTeam} vs ${m.awayTeam}</span>
-          <span class="match-result-group">
-            ${oddsRow}
-            <span class="match-score">${m.homeGoals} - ${m.awayGoals}</span>
-          </span>
-        </div>`;
-      } else {
-        const pred = predictMatch(m.homeTeam, m.awayTeam);
-        let predHtml = '';
-        if (pred) {
-          const best = pred.home >= pred.draw && pred.home >= pred.away ? '1'
-            : pred.away >= pred.home && pred.away >= pred.draw ? '2' : 'X';
-          predHtml = `<span class="match-prediction">
-            <span class="pred-score">${pred.score}</span>
-            <span class="pred-probs">
-              <span class="pred-p${best === '1' ? ' pred-best' : ''}">${(pred.home * 100).toFixed(0)}%</span>
-              <span class="pred-p${best === 'X' ? ' pred-best' : ''}">${(pred.draw * 100).toFixed(0)}%</span>
-              <span class="pred-p${best === '2' ? ' pred-best' : ''}">${(pred.away * 100).toFixed(0)}%</span>
-            </span>
-          </span>`;
-        }
+      const isFinished = m.status === 'finished';
+      const pred = predictMatch(m.homeTeam, m.awayTeam);
+      const selOdds = getSelectedOdds(m.odds);
 
-        const selOddsUp = getSelectedOdds(m.odds);
-        const oddsStr = selOddsUp && selOddsUp.home && selOddsUp.draw && selOddsUp.away
-          ? `<div class="match-odds-table">
-              <span class="odds-cell"><span class="odds-label">1</span>${selOddsUp.home.toFixed(2)}</span>
-              <span class="odds-cell"><span class="odds-label">X</span>${selOddsUp.draw.toFixed(2)}</span>
-              <span class="odds-cell"><span class="odds-label">2</span>${selOddsUp.away.toFixed(2)}</span>
-            </div>`
-          : '';
-
-        html += `<div class="match-row upcoming" data-home="${m.homeTeam}" data-away="${m.awayTeam}">
-          <span class="match-teams">${m.homeTeam} vs ${m.awayTeam}</span>
-          <span class="match-result-group">
-            ${predHtml}
-            ${oddsStr}
+      // Prediction
+      let predHtml = '';
+      if (pred) {
+        const best = pred.home >= pred.draw && pred.home >= pred.away ? '1'
+          : pred.away >= pred.home && pred.away >= pred.draw ? '2' : 'X';
+        predHtml = `<span class="match-prediction">
+          <span class="pred-score">${pred.score}</span>
+          <span class="pred-probs">
+            <span class="pred-p${best === '1' ? ' pred-best' : ''}">${(pred.home * 100).toFixed(0)}%</span>
+            <span class="pred-p${best === 'X' ? ' pred-best' : ''}">${(pred.draw * 100).toFixed(0)}%</span>
+            <span class="pred-p${best === '2' ? ' pred-best' : ''}">${(pred.away * 100).toFixed(0)}%</span>
           </span>
+        </span>`;
+      }
+
+      // Odds
+      let oddsHtml = '';
+      if (selOdds && selOdds.home && selOdds.draw && selOdds.away) {
+        const result = isFinished ? (m.homeGoals > m.awayGoals ? '1' : m.homeGoals === m.awayGoals ? 'X' : '2') : '';
+        oddsHtml = `<div class="match-odds-table">
+          <span class="odds-cell${result === '1' ? ' correct' : ''}"><span class="odds-label">1</span>${selOdds.home.toFixed(2)}</span>
+          <span class="odds-cell${result === 'X' ? ' correct' : ''}"><span class="odds-label">X</span>${selOdds.draw.toFixed(2)}</span>
+          <span class="odds-cell${result === '2' ? ' correct' : ''}"><span class="odds-label">2</span>${selOdds.away.toFixed(2)}</span>
         </div>`;
+      }
+
+      // Result
+      const scoreText = isFinished ? `${m.homeGoals} - ${m.awayGoals}` : '? - ?';
+      const scoreTitle = isFinished ? '' : 'title="Not yet played"';
+      const scoreCls = isFinished ? 'match-score' : 'match-score not-played';
+
+      html += `<div class="match-row${isFinished ? ' finished' : ' upcoming'}" data-home="${m.homeTeam}" data-away="${m.awayTeam}">
+        <span class="match-teams">${m.homeTeam} vs ${m.awayTeam}</span>
+        <span class="match-result-group">
+          ${predHtml}
+          ${oddsHtml}
+          <span class="${scoreCls}" ${scoreTitle}>${scoreText}</span>
+        </span>
+      </div>`;
       }
     }
     html += '</div>'; // close match-date-group
