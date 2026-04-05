@@ -334,7 +334,6 @@ function renderDateView() {
           <span class="${scoreCls}" ${scoreTitle}>${scoreText}</span>
         </span>
       </div>`;
-      }
     }
     html += '</div>'; // close match-date-group
   }
