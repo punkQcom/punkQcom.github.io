@@ -96,7 +96,7 @@ export async function loadLeagueData(leagueId, season) {
  */
 export async function triggerUpdate(leagueId) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
+  const timeout = setTimeout(() => controller.abort(), 120000); // 2min timeout
 
   let res;
   try {
