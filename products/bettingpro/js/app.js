@@ -2,19 +2,18 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { expectedGoals, scoreMatrix } from './poisson.js?v=1775424728';
-import { applyDixonColes } from './dixon-coles.js?v=1775424728';
-import { removeMargin } from './odds.js?v=1775424728';
-import { shinProbabilities } from './shin.js?v=1775424728';
-import { calculateEloRatings, eloToPoisson } from './elo.js?v=1775424728';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775424728';
-import { calculateTeamAverages, calculateLeagueAvg } from './sources/league-data.js?v=1775424728';
+import { expectedGoals, scoreMatrix } from './poisson.js?v=1775425636';
+import { applyDixonColes } from './dixon-coles.js?v=1775425636';
+import { shinProbabilities } from './shin.js?v=1775425636';
+import { calculateEloRatings, eloToPoisson } from './elo.js?v=1775425636';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775425636';
+import { calculateTeamAverages, calculateLeagueAvg } from './sources/league-data.js?v=1775425636';
 
-import { loadMeta, loadLeagueData, triggerUpdate } from './data-loader.js?v=1775424728';
+import { loadMeta, loadLeagueData, triggerUpdate } from './data-loader.js?v=1775425636';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, setupSliders, setupHelpModal
-} from './ui.js?v=1775424728';
+} from './ui.js?v=1775425636';
 
 // Loaded data state
 let currentMeta = null;
@@ -66,15 +65,23 @@ function getSelectedOdds(oddsObj) {
   return migrated[selectedBookmaker] || null;
 }
 
-/** Average odds across all available bookmakers */
+/** Average implied probabilities across bookmakers, convert back to odds */
 function getConsensusOdds(oddsObj) {
   const entries = Object.values(oddsObj);
   if (entries.length === 0) return null;
-  const n = entries.length;
+
+  // Average implied probabilities (1/odds), then convert back to decimal odds
+  function avgOdds(values) {
+    const valid = values.filter(o => o > 0);
+    if (valid.length === 0) return 0;
+    const avgProb = valid.reduce((s, o) => s + 1 / o, 0) / valid.length;
+    return avgProb > 0 ? 1 / avgProb : 0;
+  }
+
   const result = {
-    home: entries.reduce((s, b) => s + (b.home || 0), 0) / n,
-    draw: entries.reduce((s, b) => s + (b.draw || 0), 0) / n,
-    away: entries.reduce((s, b) => s + (b.away || 0), 0) / n,
+    home: avgOdds(entries.map(b => b.home || 0)),
+    draw: avgOdds(entries.map(b => b.draw || 0)),
+    away: avgOdds(entries.map(b => b.away || 0)),
     overUnder: {},
   };
   // Average over/under lines
@@ -84,8 +91,8 @@ function getConsensusOdds(oddsObj) {
     const withLine = entries.filter(e => e.overUnder?.[line]);
     if (withLine.length === 0) continue;
     result.overUnder[line] = {
-      over: withLine.reduce((s, e) => s + e.overUnder[line].over, 0) / withLine.length,
-      under: withLine.reduce((s, e) => s + e.overUnder[line].under, 0) / withLine.length,
+      over: avgOdds(withLine.map(e => e.overUnder[line].over)),
+      under: avgOdds(withLine.map(e => e.overUnder[line].under)),
     };
   }
   return result;
@@ -294,11 +301,14 @@ function blendWithOdds(modelOutcomes, oddsObj, matchCount) {
   // Weight: more matches → trust model more
   const modelWeight = matchCount / (matchCount + getModelTrustThreshold());
 
-  return {
+  const raw = {
     home: modelWeight * modelOutcomes.home + (1 - modelWeight) * oddsProbs[0],
     draw: modelWeight * modelOutcomes.draw + (1 - modelWeight) * oddsProbs[1],
     away: modelWeight * modelOutcomes.away + (1 - modelWeight) * oddsProbs[2],
   };
+  // Normalize to ensure probabilities sum to 1.0 (Dixon-Coles can shift the total)
+  const sum = raw.home + raw.draw + raw.away;
+  return { home: raw.home / sum, draw: raw.draw / sum, away: raw.away / sum };
 }
 
 /**
@@ -636,14 +646,14 @@ function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds,
     { line: 2.5, key: '2.5' },
     { line: 3.5, key: '3.5' },
   ];
-  const ouCalc = calculateOverUnder(matrix, ouLines.map(l => l.line));
+  const ouCalc = calculateOverUnder(displayMatrix, ouLines.map(l => l.line));
   const ouResults = [];
 
   for (const { line, key } of ouLines) {
     const calc = ouCalc.find(c => c.line === line);
     const ouOdds = odds.overUnder[key];
     const hasOuOdds = ouOdds && ouOdds.over > 0 && ouOdds.under > 0;
-    const bookProbs = hasOuOdds ? removeMargin([ouOdds.over, ouOdds.under]) : [0, 0];
+    const bookProbs = hasOuOdds ? shinProbabilities([ouOdds.over, ouOdds.under]) : [0, 0];
 
     ouResults.push({
       label: `Over ${key}`, yourProb: calc.probOver,
@@ -678,7 +688,7 @@ function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds,
     const ouOdds = odds.overUnder[key];
     const hasOuOdds = ouOdds && ouOdds.over > 0 && ouOdds.under > 0;
     if (hasOuOdds) {
-      const bookProbs = removeMargin([ouOdds.over, ouOdds.under]);
+      const bookProbs = shinProbabilities([ouOdds.over, ouOdds.under]);
       const edgeOver = calculateEdge(calc.probOver, bookProbs[0]);
       const kfOver = kellyFraction(calc.probOver, ouOdds.over);
       const stakeOver = kellyStake(calc.probOver, ouOdds.over, bankroll, kellyFrac);

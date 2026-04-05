@@ -87,7 +87,7 @@ export function calculateTeamAverages(matches) {
 export function calculateLeagueAvg(matches) {
   if (matches.length === 0) return 2.5;
   const totalGoals = matches.reduce((sum, m) => sum + m.homeGoals + m.awayGoals, 0);
-  return totalGoals / matches.length;
+  return Math.max(0.1, totalGoals / matches.length);
 }
 
 /**
@@ -120,8 +120,9 @@ export function getTeamStats() {
   const averages = calculateTeamAverages(matches);
   const leagueAvg = calculateLeagueAvg(matches);
 
-  const homeStats = averages[homeName] || { homeScored: 0, homeConceded: 0 };
-  const awayStats = averages[awayName] || { awayScored: 0, awayConceded: 0 };
+  const fallback = leagueAvg / 2;
+  const homeStats = averages[homeName] || { homeScored: fallback, homeConceded: fallback };
+  const awayStats = averages[awayName] || { awayScored: fallback, awayConceded: fallback };
 
   return {
     homeName,
