@@ -639,6 +639,14 @@ details.card[open] summary h2::before {
   border-color: #60a5fa;
 }
 
+.hide-nav-btn {
+  color: #6b7280;
+  border-color: #2a2a4a;
+  font-size: 0.8rem;
+  padding: 6px;
+  margin: 4px 0;
+}
+
 /* Prediction indicators on upcoming matches */
 .match-prediction {
   display: flex;

@@ -268,6 +268,14 @@ function renderDateView() {
     html += '<button class="round-nav-btn" id="show-earlier">Show earlier dates</button>';
   }
 
+  const defaultRange = findDefaultDateRange(dateGroups, allDates);
+  const canHideEarlier = visibleRange.start < defaultRange.start;
+  const canHideLater = visibleRange.end > defaultRange.end;
+
+  if (canHideEarlier) {
+    html += '<button class="round-nav-btn hide-nav-btn" id="hide-earlier">Hide earlier dates</button>';
+  }
+
   for (let i = visibleRange.start; i <= visibleRange.end && i < allDates.length; i++) {
     const date = allDates[i];
     const matches = dateGroups[date] || [];
@@ -338,6 +346,10 @@ function renderDateView() {
     html += '</div>'; // close match-date-group
   }
 
+  if (canHideLater) {
+    html += '<button class="round-nav-btn hide-nav-btn" id="hide-later">Hide later dates</button>';
+  }
+
   if (visibleRange.end < allDates.length - 1) {
     html += '<button class="round-nav-btn" id="show-later">Show later dates</button>';
   }
@@ -367,13 +379,21 @@ function renderDateView() {
   document.getElementById('show-earlier')?.addEventListener('click', () => {
     visibleRange.start = Math.max(0, visibleRange.start - 1);
     document.getElementById('results').classList.add('hidden');
-    document.querySelectorAll('.match-row').forEach(r => r.classList.remove('selected'));
     renderDateView();
   });
   document.getElementById('show-later')?.addEventListener('click', () => {
     visibleRange.end = Math.min(allDates.length - 1, visibleRange.end + 1);
     document.getElementById('results').classList.add('hidden');
-    document.querySelectorAll('.match-row').forEach(r => r.classList.remove('selected'));
+    renderDateView();
+  });
+  document.getElementById('hide-earlier')?.addEventListener('click', () => {
+    visibleRange.start = defaultRange.start;
+    document.getElementById('results').classList.add('hidden');
+    renderDateView();
+  });
+  document.getElementById('hide-later')?.addEventListener('click', () => {
+    visibleRange.end = defaultRange.end;
+    document.getElementById('results').classList.add('hidden');
     renderDateView();
   });
 }
