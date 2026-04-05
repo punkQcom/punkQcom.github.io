@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
   <title>BettingPro — Sports Betting Calculator</title>
-  <link rel="stylesheet" href="css/style.css?v=1775415172">
+  <link rel="stylesheet" href="css/style.css?v=1775416136">
 </head>
 <body>
   <div class="container">
@@ -18,7 +18,7 @@
     <section class="card update-data-bar">
       <div class="update-controls">
         <span id="last-update" class="last-update"></span>
-        <button id="update-data-btn" class="update-btn" disabled title="Data is fresh (less than 6 hours old)">Update Data</button>
+        <span id="update-btn-wrapper" class="update-btn-wrapper" title="Data is fresh (less than 6 hours old)"><button id="update-data-btn" class="update-btn" disabled>Update Data</button></span>
       </div>
       <div id="update-status" class="update-status hidden">
         <span class="spinner"></span>
@@ -56,7 +56,10 @@
 
       <!-- Selected Match Info -->
       <section class="card">
-        <h2 id="selected-match-title">Match Analysis</h2>
+        <div class="results-header">
+          <h2 id="selected-match-title">Match Analysis</h2>
+          <button id="close-results" class="close-btn" title="Close">&times;</button>
+        </div>
       </section>
 
       <!-- Score Matrix -->
@@ -167,6 +170,6 @@
     </details>
   </div>
 
-  <script type="module" src="js/app.js?v=1775415172"></script>
+  <script type="module" src="js/app.js?v=1775416136"></script>
 </body>
 </html>

@@ -175,6 +175,33 @@ input[type="range"] {
 }
 
 /* === Results === */
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.results-header h2 {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.close-btn:hover {
+  color: #e0e0e0;
+}
+
 .hidden {
   display: none !important;
 }
@@ -320,6 +347,12 @@ input[type="range"] {
 .update-btn:disabled {
   background: #4a4a6a;
   cursor: not-allowed;
+  pointer-events: none;
+}
+
+.update-btn-wrapper {
+  display: inline-block;
+  cursor: help;
 }
 
 .update-status {
