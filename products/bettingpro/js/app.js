@@ -287,7 +287,7 @@ function renderDateView() {
     html += `<div class="match-round-header" data-date="${date}">
       <span class="round-title">${formatDate(date)}</span>
       <span class="col-headers">
-        <span class="col-h" title="Prediction">Pre</span>
+        <span class="col-h">Prediction</span>
         <span class="col-h">1 X 2</span>
         <span class="col-h">${statusLabel} <span class="toggle-icon">&#x25BE;</span></span>
       </span>
