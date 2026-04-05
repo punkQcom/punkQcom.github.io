@@ -38,12 +38,21 @@ export function renderScoreMatrix(matrix, homeName, awayName) {
   document.getElementById('most-likely-score').textContent =
     `Most likely: ${homeName} ${maxI} - ${maxJ} ${awayName} (${(maxProb * 100).toFixed(1)}%)`;
 
-  let html = '<table class="score-matrix"><tr><th>' + homeName + ' \\ ' + awayName + '</th>';
+  // Away team name spanning the top
+  let html = '<table class="score-matrix">';
+  html += `<tr><th></th><th class="team-header" colspan="${maxGoals}">${awayName}</th></tr>`;
+  // Away goal numbers
+  html += '<tr><th></th>';
   for (let j = 0; j < maxGoals; j++) html += `<th>${j}</th>`;
   html += '</tr>';
 
   for (let i = 0; i < maxGoals; i++) {
-    html += `<tr><th>${i}</th>`;
+    html += '<tr>';
+    // Home team name spanning rows (only on first data row)
+    if (i === 0) {
+      html += `<th class="team-header team-header-vertical" rowspan="${maxGoals}">${homeName}</th>`;
+    }
+    html += `<th>${i}</th>`;
     for (let j = 0; j < maxGoals; j++) {
       const pct = (matrix[i][j] * 100).toFixed(1);
       const intensity = Math.min(matrix[i][j] / maxProb, 1);

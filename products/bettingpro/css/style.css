@@ -357,6 +357,21 @@ input[type="range"] {
   font-weight: normal;
 }
 
+.score-matrix .team-header {
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+}
+
+.score-matrix .team-header-vertical {
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  padding: 8px 4px;
+  white-space: nowrap;
+}
+
 .score-matrix td {
   padding: 6px;
   border: 1px solid #2a2a4a;
