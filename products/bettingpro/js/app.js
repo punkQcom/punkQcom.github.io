@@ -29,8 +29,19 @@ let visibleRange = { start: 0, end: 0 };
 // Bookmaker selection
 let selectedBookmaker = 'veikkaus';
 
-// Blending: how many matches before we fully trust our model over bookmaker odds
-const MODEL_TRUST_THRESHOLD = 30;
+/**
+ * Get the model trust threshold from the Market Trust slider.
+ * Higher market trust = higher threshold = more matches needed before model dominates.
+ * Slider 0% → threshold 5 (trust model almost immediately)
+ * Slider 50% → threshold 30 (balanced)
+ * Slider 100% → threshold 200 (almost always trust market)
+ */
+function getModelTrustThreshold() {
+  const slider = document.getElementById('market-trust-slider');
+  const pct = slider ? parseInt(slider.value) : 50;
+  // Map 0-100% → threshold 5-200 (exponential scale)
+  return Math.round(5 * Math.pow(40, pct / 100));
+}
 
 // Currently analyzed match (for recalculate)
 let currentAnalyzedMatch = null;
@@ -239,7 +250,7 @@ function buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho) {
   const eloEg = eloToPoisson(homeElo, awayElo, leagueAvg);
 
   // Blend: early season → more Elo weight, late season → more Poisson weight
-  const eloWeight = Math.max(0.2, 1 - matches.length / (matches.length + MODEL_TRUST_THRESHOLD));
+  const eloWeight = Math.max(0.2, 1 - matches.length / (matches.length + getModelTrustThreshold()));
   const lambdaHome = eloWeight * eloEg.lambdaHome + (1 - eloWeight) * poissonEg.lambdaHome;
   const lambdaAway = eloWeight * eloEg.lambdaAway + (1 - eloWeight) * poissonEg.lambdaAway;
 
@@ -263,7 +274,7 @@ function blendWithOdds(modelOutcomes, oddsObj, matchCount) {
   if (!oddsProbs || oddsProbs.length !== 3) return modelOutcomes;
 
   // Weight: more matches → trust model more
-  const modelWeight = matchCount / (matchCount + MODEL_TRUST_THRESHOLD);
+  const modelWeight = matchCount / (matchCount + getModelTrustThreshold());
 
   return {
     home: modelWeight * modelOutcomes.home + (1 - modelWeight) * oddsProbs[0],
@@ -715,13 +726,15 @@ function updateLastUpdateDisplay(isoString) {
 document.addEventListener('DOMContentLoaded', async () => {
   setupSliders();
 
-  // Re-render predictions when rho slider changes + enable recalculate
-  document.getElementById('rho-slider').addEventListener('input', () => {
-    if (allDates.length > 0) renderDateView();
-    enableRecalculate();
-  });
+  // Re-render predictions when model sliders change + enable recalculate
+  for (const id of ['rho-slider', 'market-trust-slider']) {
+    document.getElementById(id).addEventListener('input', () => {
+      if (allDates.length > 0) renderDateView();
+      enableRecalculate();
+    });
+  }
 
-  // Enable recalculate when Kelly/bankroll settings change
+  // Enable recalculate when betting settings change
   document.getElementById('kelly-fraction-slider').addEventListener('input', enableRecalculate);
   document.getElementById('bankroll').addEventListener('input', enableRecalculate);
 
