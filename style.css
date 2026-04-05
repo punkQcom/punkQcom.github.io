@@ -416,7 +416,7 @@ h1 {
 }
 
 .pricing-highlight:hover {
-    border-color: var(--glow);
+    border-color: rgba(94, 228, 255, 0.3);
 }
 
 /* --- Reduced motion --- */
