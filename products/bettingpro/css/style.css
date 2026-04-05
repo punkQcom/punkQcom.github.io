@@ -511,11 +511,10 @@ details.card[open] summary h2::before {
 /* Finished match rows */
 .match-row.finished {
   opacity: 0.85;
-  cursor: default;
 }
 
 .match-row.finished:hover {
-  background: rgba(96, 165, 250, 0.05);
+  background: rgba(96, 165, 250, 0.1);
 }
 
 .match-score {
