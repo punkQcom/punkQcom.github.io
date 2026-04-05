@@ -19,6 +19,11 @@ let currentMeta = null;
 let currentLeagueData = null; // { matches, upcoming, odds }
 let currentLeagueId = null;
 
+// Round navigation state
+let roundData = {};         // { [roundNumber]: matches[] }
+let allRoundNumbers = [];   // sorted array of round numbers
+let visibleRange = { start: 0, end: 0 };
+
 // ── Selector logic ──────────────────────────────────────────────────
 
 function populateSportDropdown() {
@@ -52,55 +57,132 @@ async function loadAndShowLeague(leagueId, season) {
   listEl.innerHTML = '<p class="muted">Loading matches...</p>';
 
   currentLeagueData = await loadLeagueData(leagueId, season);
-  renderMatchList(currentLeagueData.upcoming, currentLeagueData.odds);
+  initRoundView(currentLeagueData);
 }
 
-// ── Match list ──────────────────────────────────────────────────────
+// ── Round-based match list ──────────────────────────────────────────
 
-function renderMatchList(upcoming, odds) {
-  const listEl = document.getElementById('match-list');
+function buildRoundData(matches, upcoming, odds) {
+  const rounds = {};
 
-  if (!upcoming || upcoming.length === 0) {
-    listEl.innerHTML = '<p class="muted">No upcoming matches</p>';
+  for (const m of matches) {
+    const r = m.round || 'unknown';
+    if (!rounds[r]) rounds[r] = [];
+    rounds[r].push({ ...m, status: 'finished' });
+  }
+
+  for (const m of upcoming) {
+    const r = m.round || 'unknown';
+    if (!rounds[r]) rounds[r] = [];
+    const matchOdds = findOdds(m, odds);
+    rounds[r].push({ ...m, status: 'upcoming', odds: matchOdds });
+  }
+
+  return rounds;
+}
+
+function findDefaultRange(rounds, roundNumbers) {
+  let lastFinishedIdx = -1;
+  let firstUpcomingIdx = roundNumbers.length;
+
+  for (let i = 0; i < roundNumbers.length; i++) {
+    const matches = rounds[roundNumbers[i]];
+    if (matches.some(m => m.status === 'finished')) lastFinishedIdx = i;
+    if (matches.some(m => m.status === 'upcoming') && i < firstUpcomingIdx) firstUpcomingIdx = i;
+  }
+
+  const start = lastFinishedIdx >= 0 ? lastFinishedIdx : 0;
+  const end = firstUpcomingIdx < roundNumbers.length ? firstUpcomingIdx : roundNumbers.length - 1;
+  return { start, end };
+}
+
+function formatDateRange(startDate, endDate) {
+  const opts = { day: 'numeric', month: 'short' };
+  const start = new Date(startDate + 'T12:00:00').toLocaleDateString('en-GB', opts);
+  if (startDate === endDate) return start;
+  const end = new Date(endDate + 'T12:00:00').toLocaleDateString('en-GB', opts);
+  return `${start} – ${end}`;
+}
+
+function initRoundView(data) {
+  roundData = buildRoundData(data.matches, data.upcoming, data.odds);
+
+  allRoundNumbers = Object.keys(roundData)
+    .filter(r => r !== 'unknown')
+    .map(Number)
+    .sort((a, b) => a - b);
+
+  if (allRoundNumbers.length === 0) {
+    document.getElementById('match-list').innerHTML = '<p class="muted">No match data available</p>';
     return;
   }
 
-  // Group by date
-  const byDate = {};
-  for (const m of upcoming) {
-    if (!byDate[m.date]) byDate[m.date] = [];
-    byDate[m.date].push(m);
+  visibleRange = findDefaultRange(roundData, allRoundNumbers);
+  renderRoundView();
+}
+
+function renderRoundView() {
+  const listEl = document.getElementById('match-list');
+  let html = '';
+
+  if (visibleRange.start > 0) {
+    html += '<button class="round-nav-btn" id="show-earlier">Show earlier rounds</button>';
   }
 
-  let html = '';
-  for (const [date, matches] of Object.entries(byDate)) {
-    const dateStr = new Date(date + 'T12:00:00').toLocaleDateString('en-GB', {
-      weekday: 'short', day: 'numeric', month: 'short'
-    });
-    html += `<div class="match-date-header">${dateStr}</div>`;
+  for (let i = visibleRange.start; i <= visibleRange.end && i < allRoundNumbers.length; i++) {
+    const roundNum = allRoundNumbers[i];
+    const matches = roundData[roundNum] || [];
+
+    const allFinished = matches.every(m => m.status === 'finished');
+    const allUpcoming = matches.every(m => m.status === 'upcoming');
+    const statusLabel = allFinished ? 'Results' : allUpcoming ? 'Upcoming' : 'In Progress';
+
+    const dates = matches.map(m => m.date).filter(Boolean).sort();
+    const dateRange = dates.length > 0 ? formatDateRange(dates[0], dates[dates.length - 1]) : '';
+
+    html += `<div class="match-round-header">
+      <span class="round-title">Round ${roundNum}</span>
+      <span class="round-meta">${dateRange} — ${statusLabel}</span>
+    </div>`;
 
     for (const m of matches) {
-      const matchOdds = findOdds(m, odds);
-      const oddsStr = matchOdds
-        ? `<span class="match-odds">${matchOdds.home.toFixed(2)} / ${matchOdds.draw.toFixed(2)} / ${matchOdds.away.toFixed(2)}</span>`
-        : '<span class="match-odds muted">No odds</span>';
+      if (m.status === 'finished') {
+        html += `<div class="match-row finished" data-home="${m.homeTeam}" data-away="${m.awayTeam}">
+          <span class="match-teams">${m.homeTeam} vs ${m.awayTeam}</span>
+          <span class="match-score">${m.homeGoals} - ${m.awayGoals}</span>
+        </div>`;
+      } else {
+        const oddsStr = m.odds
+          ? `<span class="match-odds">${m.odds.home.toFixed(2)} / ${m.odds.draw.toFixed(2)} / ${m.odds.away.toFixed(2)}</span>`
+          : '<span class="match-odds muted">No odds</span>';
 
-      html += `<div class="match-row" data-home="${m.homeTeam}" data-away="${m.awayTeam}">
-        <span class="match-teams">${m.homeTeam} vs ${m.awayTeam}</span>
-        ${oddsStr}
-      </div>`;
+        html += `<div class="match-row upcoming" data-home="${m.homeTeam}" data-away="${m.awayTeam}">
+          <span class="match-teams">${m.homeTeam} vs ${m.awayTeam}</span>
+          ${oddsStr}
+        </div>`;
+      }
     }
+  }
+
+  if (visibleRange.end < allRoundNumbers.length - 1) {
+    html += '<button class="round-nav-btn" id="show-later">Show later rounds</button>';
   }
 
   listEl.innerHTML = html;
 
-  // Attach click handlers
-  listEl.querySelectorAll('.match-row').forEach(row => {
-    row.addEventListener('click', () => {
-      const home = row.dataset.home;
-      const away = row.dataset.away;
-      analyzeMatch(home, away);
-    });
+  // Click handlers for upcoming matches (analysis)
+  listEl.querySelectorAll('.match-row.upcoming').forEach(row => {
+    row.addEventListener('click', () => analyzeMatch(row.dataset.home, row.dataset.away));
+  });
+
+  // Navigation handlers
+  document.getElementById('show-earlier')?.addEventListener('click', () => {
+    visibleRange.start = Math.max(0, visibleRange.start - 1);
+    renderRoundView();
+  });
+  document.getElementById('show-later')?.addEventListener('click', () => {
+    visibleRange.end = Math.min(allRoundNumbers.length - 1, visibleRange.end + 1);
+    renderRoundView();
   });
 }
 
@@ -310,7 +392,7 @@ async function handleUpdateData() {
     };
     currentMeta = result.meta;
 
-    renderMatchList(result.upcoming, result.odds);
+    initRoundView(currentLeagueData);
     updateLastUpdateDisplay(result.meta.lastUpdate);
 
     messageEl.textContent = 'Done! Data updated.';
