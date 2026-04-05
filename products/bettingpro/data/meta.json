@@ -1,1 +1,17 @@
-null
+{
+  "lastUpdate": "2026-04-05T23:07:08.908Z",
+  "leagues": [
+    {
+      "id": "veikkausliiga",
+      "name": "Veikkausliiga",
+      "sport": "football",
+      "country": "Finland",
+      "season": 2026
+    }
+  ],
+  "previousSeasons": {
+    "veikkausliiga": [
+      2025
+    ]
+  }
+}
