@@ -9,11 +9,11 @@ import { shinProbabilities } from './shin.js';
 import { calculateEloRatings, eloToPoisson } from './elo.js';
 import { calculateEdge, kellyFraction, kellyStake } from './kelly.js';
 import { calculateTeamAverages, calculateLeagueAvg } from './sources/league-data.js';
-import * as manualSource from './sources/manual.js';
+
 import { loadMeta, loadLeagueData, triggerUpdate } from './data-loader.js';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
-  renderOverUnder, renderValueBets, renderAllBets, renderMargin, setupSliders
+  renderOverUnder, renderValueBets, renderAllBets, setupSliders
 } from './ui.js';
 
 // Loaded data state
@@ -645,21 +645,6 @@ function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds,
   showResults();
 }
 
-// ── Manual calculate (fallback) ─────────────────────────────────────
-
-function manualCalculate() {
-  const stats = manualSource.getTeamStats();
-  const odds = manualSource.getOdds();
-  const settings = manualSource.getSettings();
-
-  // Manual mode: use entered stats directly, no blending
-  const matches = currentLeagueData?.matches || [];
-  calculate(
-    stats.homeName, stats.awayName,
-    matches, stats.leagueAvg, null, odds,
-    settings.rho, settings.kellyFraction, settings.bankroll
-  );
-}
 
 // ── Update Data ─────────────────────────────────────────────────────
 
@@ -730,9 +715,6 @@ function updateLastUpdateDisplay(isoString) {
 document.addEventListener('DOMContentLoaded', async () => {
   setupSliders();
 
-  // Manual calculate button
-  document.getElementById('calculate-btn').addEventListener('click', manualCalculate);
-
   // Re-render predictions when rho slider changes + enable recalculate
   document.getElementById('rho-slider').addEventListener('input', () => {
     if (allDates.length > 0) renderDateView();
@@ -749,15 +731,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       analyzeMatch(currentAnalyzedMatch.home, currentAnalyzedMatch.away);
     }
   });
-
-  // Manual odds margin display
-  const oddsInputs = ['odds-home', 'odds-draw', 'odds-away'];
-  for (const id of oddsInputs) {
-    document.getElementById(id).addEventListener('input', () => {
-      const vals = oddsInputs.map(oid => parseFloat(document.getElementById(oid).value) || 0);
-      renderMargin(vals);
-    });
-  }
 
   // Update button
   document.getElementById('update-data-btn').addEventListener('click', handleUpdateData);
