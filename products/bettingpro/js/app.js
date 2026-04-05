@@ -2,22 +2,22 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { shinProbabilities } from './shin.js?v=1775432197';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775432197';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775432197';
+import { shinProbabilities } from './shin.js?v=1775432405';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775432405';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775432405';
 import {
   buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-} from './prediction.js?v=1775432197';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775432197';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775432197';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775432197';
+} from './prediction.js?v=1775432405';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775432405';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775432405';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775432405';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775432197';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775432197';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775432405';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775432405';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, setupSliders, setupHelpModal
-} from './ui.js?v=1775432197';
+} from './ui.js?v=1775432405';
 
 // Loaded data state
 let currentMeta = null;
@@ -271,6 +271,11 @@ async function loadAndShowLeague(leagueId, season) {
       });
       renderPLSimulation(plData, 'pl-container');
     }, 100);
+  } else {
+    document.getElementById('tracker-container').innerHTML =
+      `<p class="muted">Needs at least 10 finished matches (currently ${matches.length})</p>`;
+    document.getElementById('pl-container').innerHTML =
+      `<p class="muted">Needs at least 10 finished matches (currently ${matches.length})</p>`;
   }
 }
 
@@ -685,18 +690,16 @@ function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds,
   // All bets + value bets
   const allBets = [];
 
-  if (has1x2Odds) {
-    const betTypes = [
-      { label: `Home Win (${homeName})`, prob: outcomes.home, bookProb: bookProbs1x2[0], odds: odds.home },
-      { label: 'Draw', prob: outcomes.draw, bookProb: bookProbs1x2[1], odds: odds.draw },
-      { label: `Away Win (${awayName})`, prob: outcomes.away, bookProb: bookProbs1x2[2], odds: odds.away },
-    ];
-    for (const bt of betTypes) {
-      const edge = calculateEdge(bt.prob, bt.bookProb);
-      const kf = kellyFraction(bt.prob, bt.odds);
-      const stake = kellyStake(bt.prob, bt.odds, bankroll, kellyFrac);
-      allBets.push({ label: bt.label, yourProb: bt.prob, bookProb: bt.bookProb, edge, kellyPct: kf * kellyFrac, stake });
-    }
+  const betTypes = [
+    { label: `Home Win (${homeName})`, prob: outcomes.home, bookProb: has1x2Odds ? bookProbs1x2[0] : 0, odds: odds.home },
+    { label: 'Draw', prob: outcomes.draw, bookProb: has1x2Odds ? bookProbs1x2[1] : 0, odds: odds.draw },
+    { label: `Away Win (${awayName})`, prob: outcomes.away, bookProb: has1x2Odds ? bookProbs1x2[2] : 0, odds: odds.away },
+  ];
+  for (const bt of betTypes) {
+    const edge = bt.bookProb > 0 ? calculateEdge(bt.prob, bt.bookProb) : 0;
+    const kf = bt.odds > 0 ? kellyFraction(bt.prob, bt.odds) : 0;
+    const stake = bt.odds > 0 ? kellyStake(bt.prob, bt.odds, bankroll, kellyFrac) : 0;
+    allBets.push({ label: bt.label, yourProb: bt.prob, bookProb: bt.bookProb, edge, kellyPct: kf * kellyFrac, stake });
   }
 
   for (const { line, key } of ouLines) {

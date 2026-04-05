@@ -140,15 +140,16 @@ export function renderAllBets(bets) {
 
   const sorted = [...bets].sort((a, b) => b.edge - a.edge);
   for (const bet of sorted) {
+    const hasBook = bet.bookProb > 0;
     const edgeClass = bet.edge > 0 ? 'value-positive' : 'value-negative';
     const edgeSign = bet.edge > 0 ? '+' : '';
     html += `<tr>
       <td>${bet.label}</td>
       <td>${(bet.yourProb * 100).toFixed(1)}%</td>
-      <td>${(bet.bookProb * 100).toFixed(1)}%</td>
-      <td class="${edgeClass}">${edgeSign}${(bet.edge * 100).toFixed(1)}%</td>
-      <td>${(bet.kellyPct * 100).toFixed(1)}%</td>
-      <td>${bet.stake.toFixed(2)}</td>
+      <td>${hasBook ? (bet.bookProb * 100).toFixed(1) + '%' : '—'}</td>
+      <td class="${hasBook ? edgeClass : ''}">${hasBook ? edgeSign + (bet.edge * 100).toFixed(1) + '%' : '—'}</td>
+      <td>${hasBook ? (bet.kellyPct * 100).toFixed(1) + '%' : '—'}</td>
+      <td>${hasBook ? bet.stake.toFixed(2) : '—'}</td>
     </tr>`;
   }
 
