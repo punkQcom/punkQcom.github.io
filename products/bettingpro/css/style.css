@@ -414,12 +414,7 @@ input[type="range"] {
 
   .match-result-group,
   .col-headers {
-    grid-template-columns: 140px 0px 45px;
-  }
-
-  .match-col-odds,
-  .col-h:nth-child(2) {
-    display: none;
+    grid-template-columns: 45px 120px 45px;
   }
 }
 
@@ -578,7 +573,7 @@ details.card[open] summary h2::before {
 .match-result-group,
 .col-headers {
   display: grid;
-  grid-template-columns: 168px 130px 55px;
+  grid-template-columns: 55px 150px 55px;
   gap: 10px;
   align-items: center;
 }
@@ -596,14 +591,19 @@ details.card[open] summary h2::before {
 .match-col-pred {
   display: flex;
   align-items: center;
-  gap: 6px;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
-.match-col-odds {
+.match-col-1x2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.match-odds-row {
   display: flex;
   gap: 2px;
-  justify-content: center;
 }
 
 .match-col-result {
