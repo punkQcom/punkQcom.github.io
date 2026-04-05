@@ -319,9 +319,9 @@ function renderDateView() {
       if (selOdds && selOdds.home && selOdds.draw && selOdds.away) {
         const result = isFinished ? (m.homeGoals > m.awayGoals ? '1' : m.homeGoals === m.awayGoals ? 'X' : '2') : '';
         onextwContent += `<span class="match-odds-row">
-          <span class="odds-cell${result === '1' ? ' correct' : ''}"><span class="odds-label">1</span>${selOdds.home.toFixed(2)}</span>
-          <span class="odds-cell${result === 'X' ? ' correct' : ''}"><span class="odds-label">X</span>${selOdds.draw.toFixed(2)}</span>
-          <span class="odds-cell${result === '2' ? ' correct' : ''}"><span class="odds-label">2</span>${selOdds.away.toFixed(2)}</span>
+          <span class="odds-cell${result === '1' ? ' correct' : ''}">${selOdds.home.toFixed(2)}</span>
+          <span class="odds-cell${result === 'X' ? ' correct' : ''}">${selOdds.draw.toFixed(2)}</span>
+          <span class="odds-cell${result === '2' ? ' correct' : ''}">${selOdds.away.toFixed(2)}</span>
         </span>`;
       }
 
