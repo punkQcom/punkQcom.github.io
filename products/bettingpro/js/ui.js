@@ -40,9 +40,9 @@ export function renderScoreMatrix(matrix, homeName, awayName) {
 
   // Away team name spanning the top
   let html = '<table class="score-matrix">';
-  html += `<tr><th></th><th class="team-header" colspan="${maxGoals}">${awayName}</th></tr>`;
+  html += `<tr><th></th><th></th><th class="team-header" colspan="${maxGoals}">${awayName}</th></tr>`;
   // Away goal numbers
-  html += '<tr><th></th>';
+  html += '<tr><th></th><th></th>';
   for (let j = 0; j < maxGoals; j++) html += `<th>${j}</th>`;
   html += '</tr>';
 
