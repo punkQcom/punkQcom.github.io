@@ -95,11 +95,23 @@ export async function loadLeagueData(leagueId, season) {
  * Returns the fresh data directly from the response.
  */
 export async function triggerUpdate(leagueId) {
-  const res = await fetch(`${API_BASE}/update-data`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ league: leagueId }),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120000); // 2 min timeout
+
+  let res;
+  try {
+    res = await fetch(`${API_BASE}/update-data`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ league: leagueId }),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') throw new Error('Update timed out — try again later');
+    throw err;
+  }
+  clearTimeout(timeout);
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
