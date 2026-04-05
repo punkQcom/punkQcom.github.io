@@ -200,8 +200,8 @@ function renderDateView() {
 
   listEl.innerHTML = html;
 
-  // Click handlers for upcoming matches (analysis)
-  listEl.querySelectorAll('.match-row.upcoming').forEach(row => {
+  // Click handlers for all matches (analysis)
+  listEl.querySelectorAll('.match-row').forEach(row => {
     row.addEventListener('click', () => analyzeMatch(row.dataset.home, row.dataset.away));
   });
 
@@ -244,9 +244,14 @@ function analyzeMatch(homeName, awayName) {
   const homeStats = averages[homeName] || { homeScored: leagueAvg / 2, homeConceded: leagueAvg / 2 };
   const awayStats = averages[awayName] || { awayScored: leagueAvg / 2, awayConceded: leagueAvg / 2 };
 
-  // Odds
+  // Odds — check separate odds array, then embedded odds on match/upcoming objects
   const odds = currentLeagueData?.odds || [];
-  const matchOdds = findOdds({ homeTeam: homeName, awayTeam: awayName }, odds);
+  let matchOdds = findOdds({ homeTeam: homeName, awayTeam: awayName }, odds);
+  if (!matchOdds) {
+    const allObjects = [...(currentLeagueData?.matches || []), ...(currentLeagueData?.upcoming || [])];
+    const obj = allObjects.find(m => m.homeTeam === homeName && m.awayTeam === awayName);
+    if (obj?.odds) matchOdds = obj.odds;
+  }
 
   const oddsData = matchOdds
     ? { home: matchOdds.home, draw: matchOdds.draw, away: matchOdds.away, overUnder: matchOdds.overUnder || {} }
