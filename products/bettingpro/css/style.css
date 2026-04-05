@@ -522,6 +522,21 @@ details.card[open] summary h2::before {
   padding: 14px 0 6px;
   border-bottom: 1px solid #2a2a4a;
   margin-bottom: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.match-round-header:hover .round-title {
+  color: #93c5fd;
+}
+
+.toggle-icon {
+  font-size: 0.75rem;
+  margin-left: 4px;
+}
+
+.match-date-group.collapsed {
+  display: none;
 }
 
 .match-round-header:first-child {
