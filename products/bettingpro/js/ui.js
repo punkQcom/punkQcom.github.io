@@ -3,7 +3,9 @@
  */
 
 export function showResults() {
-  document.getElementById('results').classList.remove('hidden');
+  const el = document.getElementById('results');
+  el.classList.remove('hidden');
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 export function renderMargin(odds1x2) {
