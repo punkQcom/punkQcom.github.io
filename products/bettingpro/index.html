@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>BettingPro — Sports Betting Calculator</title>
-  <link rel="stylesheet" href="css/style.css?v=1775423503">
+  <link rel="stylesheet" href="css/style.css?v=1775424099">
 </head>
 <body>
   <div class="container">
@@ -67,7 +67,6 @@
         <div class="results-header">
           <h2 id="selected-match-title">Match Analysis</h2>
           <div class="results-header-actions">
-            <button id="recalculate-btn" class="recalc-btn" disabled title="Adjust settings above, then recalculate">Recalculate</button>
             <button id="close-results" class="close-btn" title="Close">&times;</button>
           </div>
         </div>
@@ -132,6 +131,11 @@
         </label>
         <input type="number" id="bankroll" min="0" step="1" value="1000" placeholder="1000">
       </div>
+      <div class="setting recalculate-row">
+        <button id="recalculate-btn" class="recalc-btn" disabled>Recalculate</button>
+        <button type="button" class="help-tip" data-help="recalculate">?</button>
+        <span id="recalc-status" class="recalc-status">Select a match to analyze</span>
+      </div>
     </details>
 
     <!-- Help Modal -->
@@ -148,6 +152,6 @@
 
   </div>
 
-  <script type="module" src="js/app.js?v=1775423503"></script>
+  <script type="module" src="js/app.js?v=1775424099"></script>
 </body>
 </html>

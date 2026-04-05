@@ -518,7 +518,8 @@ function enableRecalculate() {
   const btn = document.getElementById('recalculate-btn');
   if (btn && currentAnalyzedMatch) {
     btn.disabled = false;
-    btn.title = 'Recalculate with new settings';
+    const status = document.getElementById('recalc-status');
+    if (status) status.textContent = 'Settings changed — click to update analysis';
   }
 }
 
@@ -566,7 +567,8 @@ function analyzeMatch(homeName, awayName) {
   const recalcBtn = document.getElementById('recalculate-btn');
   if (recalcBtn) {
     recalcBtn.disabled = true;
-    recalcBtn.title = 'Adjust settings above, then recalculate';
+    const status = document.getElementById('recalc-status');
+    if (status) status.textContent = `Showing: ${homeName} vs ${awayName}`;
   }
 }
 

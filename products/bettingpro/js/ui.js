@@ -267,6 +267,37 @@ const helpContent = {
       </div>
     `,
   },
+  'recalculate': {
+    title: 'Recalculate',
+    body: `
+      <p><strong>What it does:</strong> Re-runs the full analysis for the currently selected match using your updated settings. Click this after changing any slider or the bankroll to see how the changes affect the results.</p>
+      <div class="help-section">
+        <p><strong>What gets recalculated:</strong></p>
+        <ul>
+          <li><strong>Score Matrix</strong> — the 7&times;7 grid of scoreline probabilities. Affected by Market Trust (blending with odds) and Low-Score Correction (Dixon-Coles rho)</li>
+          <li><strong>Match Outcome</strong> — Home / Draw / Away probabilities. Affected by Market Trust (higher trust = probabilities closer to bookmaker odds)</li>
+          <li><strong>Over/Under</strong> — goal total probabilities and edge vs bookmaker. Affected by Market Trust and Low-Score Correction</li>
+          <li><strong>Value Bets</strong> — which bets have a positive edge. Affected by all settings — Market Trust and rho change your probabilities, Kelly Fraction and Bankroll change the suggested stakes</li>
+          <li><strong>All Bets Overview</strong> — full breakdown of every bet type with edges and stakes</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Which settings affect what:</strong></p>
+        <ul>
+          <li><strong>Market Trust</strong> &rarr; changes probabilities (score matrix, outcomes, O/U, edges)</li>
+          <li><strong>Low-Score Correction</strong> &rarr; changes probabilities (especially 0-0, 1-0, 0-1, 1-1)</li>
+          <li><strong>Kelly Fraction</strong> &rarr; changes stake sizes only (not probabilities or edges)</li>
+          <li><strong>Bankroll</strong> &rarr; changes stake amounts only (not probabilities or edges)</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>When is it enabled?</strong> The button activates after you select a match and then change any setting. It stays disabled when the analysis is already up to date.</p>
+      </div>
+      <div class="help-section">
+        <p><strong>Note:</strong> The match list predictions (small scores and percentages) update automatically when you change Market Trust or Low-Score Correction. The Recalculate button only affects the detailed analysis panel below.</p>
+      </div>
+    `,
+  },
 };
 
 export function setupHelpModal() {

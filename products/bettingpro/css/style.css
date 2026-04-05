@@ -291,18 +291,28 @@ input[type="range"] {
   gap: 12px;
 }
 
+.recalculate-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #3a3a5a40;
+}
+
 .recalc-btn {
-  padding: 6px 14px;
+  padding: 8px 20px;
   background: #2563eb;
   color: #fff;
   border: none;
   border-radius: 6px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
   transition: background 0.2s;
 }
 
-.recalc-btn:hover {
+.recalc-btn:hover:not(:disabled) {
   background: #1d4ed8;
 }
 
@@ -310,6 +320,12 @@ input[type="range"] {
   background: #3a3a5a;
   color: #6b7280;
   cursor: default;
+}
+
+.recalc-status {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-style: italic;
 }
 
 .hidden {
