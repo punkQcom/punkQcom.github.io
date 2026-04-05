@@ -148,6 +148,12 @@ export function renderAllBets(bets) {
 }
 
 export function setupSliders() {
+  const marketSlider = document.getElementById('market-trust-slider');
+  const marketValue = document.getElementById('market-trust-value');
+  marketSlider.addEventListener('input', () => {
+    marketValue.textContent = marketSlider.value + '%';
+  });
+
   const rhoSlider = document.getElementById('rho-slider');
   const rhoValue = document.getElementById('rho-value');
   rhoSlider.addEventListener('input', () => {
