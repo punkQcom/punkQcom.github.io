@@ -69,7 +69,8 @@ function solveZ(impliedProbs, n) {
  * Simple normalization fallback.
  */
 function simpleFallback(oddsArray) {
-  const impliedProbs = oddsArray.map(o => 1 / o);
+  const impliedProbs = oddsArray.map(o => o > 0 ? 1 / o : 0);
   const total = impliedProbs.reduce((a, b) => a + b, 0);
+  if (total === 0) return oddsArray.map(() => 1 / oddsArray.length);
   return impliedProbs.map(p => p / total);
 }

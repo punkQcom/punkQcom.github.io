@@ -190,8 +190,8 @@ const helpContent = {
         <ul>
           <li>The slider maps to a "trust threshold" — at 50%, the model needs ~30 played matches to reach equal weight with the market</li>
           <li>Formula: <code>model weight = matches / (matches + threshold)</code></li>
-          <li>At 100% (threshold=5), even a few matches make the model dominant</li>
-          <li>At 0% (threshold=200), the model needs 200 matches to reach 50% weight</li>
+          <li>At 0% market trust (threshold=5), even a few matches make the model dominant</li>
+          <li>At 100% market trust (threshold=200), the model needs 200 matches to reach 50% weight</li>
         </ul>
       </div>
       <div class="help-section">

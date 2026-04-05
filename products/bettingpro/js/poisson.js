@@ -22,14 +22,15 @@ export function defenseStrength(goalsConceded, leagueAvg) {
 }
 
 export function expectedGoals(homeScoredAvg, homeConcededAvg, awayScoredAvg, awayConcededAvg, leagueAvg) {
-  const homeAttack = attackStrength(homeScoredAvg, leagueAvg);
-  const awayDefense = defenseStrength(awayConcededAvg, leagueAvg);
-  const awayAttack = attackStrength(awayScoredAvg, leagueAvg);
-  const homeDefense = defenseStrength(homeConcededAvg, leagueAvg);
+  const avgPerTeam = leagueAvg / 2;
+  const homeAttack = attackStrength(homeScoredAvg, avgPerTeam);
+  const awayDefense = defenseStrength(awayConcededAvg, avgPerTeam);
+  const awayAttack = attackStrength(awayScoredAvg, avgPerTeam);
+  const homeDefense = defenseStrength(homeConcededAvg, avgPerTeam);
 
   return {
-    lambdaHome: homeAttack * awayDefense * leagueAvg,
-    lambdaAway: awayAttack * homeDefense * leagueAvg
+    lambdaHome: homeAttack * awayDefense * avgPerTeam,
+    lambdaAway: awayAttack * homeDefense * avgPerTeam
   };
 }
 
