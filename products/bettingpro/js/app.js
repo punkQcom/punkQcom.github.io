@@ -2,22 +2,22 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { shinProbabilities } from './shin.js?v=1775431759';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775431759';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775431759';
+import { shinProbabilities } from './shin.js?v=1775432197';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775432197';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775432197';
 import {
   buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-} from './prediction.js?v=1775431759';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775431759';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775431759';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775431759';
+} from './prediction.js?v=1775432197';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775432197';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775432197';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775432197';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775431759';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775431759';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775432197';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775432197';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, setupSliders, setupHelpModal
-} from './ui.js?v=1775431759';
+} from './ui.js?v=1775432197';
 
 // Loaded data state
 let currentMeta = null;
@@ -581,7 +581,11 @@ function analyzeMatch(homeName, awayName) {
     if (obj?.odds) matchOddsMulti = migrateOdds(obj.odds);
   }
 
-  const selOdds = matchOddsMulti ? getSelectedOdds(matchOddsMulti) : null;
+  let selOdds = matchOddsMulti ? getSelectedOdds(matchOddsMulti) : null;
+  // Fall back to consensus when selected bookmaker has no odds for this match
+  if (!selOdds && matchOddsMulti) {
+    selOdds = getConsensusOdds(migrateOdds(matchOddsMulti));
+  }
   const oddsData = selOdds
     ? { home: selOdds.home, draw: selOdds.draw, away: selOdds.away, overUnder: selOdds.overUnder || {} }
     : { home: 0, draw: 0, away: 0, overUnder: {} };
