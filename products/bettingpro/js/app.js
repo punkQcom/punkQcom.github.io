@@ -24,6 +24,95 @@ let dateGroups = {};        // { [date]: matches[] }
 let allDates = [];          // sorted array of date strings
 let visibleRange = { start: 0, end: 0 };
 
+// Bookmaker selection
+let selectedBookmaker = 'veikkaus';
+
+// ── Multi-bookmaker utilities ────────────────────────────────────────
+
+/** Migrate old flat odds { home, draw, away } to multi-bookmaker { veikkaus: {...} } */
+function migrateOdds(odds) {
+  if (!odds) return null;
+  if (odds.home !== undefined && typeof odds.home === 'number') {
+    return { veikkaus: { home: odds.home, draw: odds.draw, away: odds.away, overUnder: odds.overUnder || {} } };
+  }
+  return odds;
+}
+
+/** Get odds for the currently selected bookmaker */
+function getSelectedOdds(oddsObj) {
+  if (!oddsObj) return null;
+  const migrated = migrateOdds(oddsObj);
+  if (!migrated) return null;
+  if (selectedBookmaker === 'consensus') return getConsensusOdds(migrated);
+  return migrated[selectedBookmaker] || null;
+}
+
+/** Average odds across all available bookmakers */
+function getConsensusOdds(oddsObj) {
+  const entries = Object.values(oddsObj);
+  if (entries.length === 0) return null;
+  const n = entries.length;
+  const result = {
+    home: entries.reduce((s, b) => s + (b.home || 0), 0) / n,
+    draw: entries.reduce((s, b) => s + (b.draw || 0), 0) / n,
+    away: entries.reduce((s, b) => s + (b.away || 0), 0) / n,
+    overUnder: {},
+  };
+  // Average over/under lines
+  const allLines = new Set();
+  for (const e of entries) for (const line of Object.keys(e.overUnder || {})) allLines.add(line);
+  for (const line of allLines) {
+    const withLine = entries.filter(e => e.overUnder?.[line]);
+    if (withLine.length === 0) continue;
+    result.overUnder[line] = {
+      over: withLine.reduce((s, e) => s + e.overUnder[line].over, 0) / withLine.length,
+      under: withLine.reduce((s, e) => s + e.overUnder[line].under, 0) / withLine.length,
+    };
+  }
+  return result;
+}
+
+/** Extract all unique bookmaker keys from loaded data */
+function getAvailableBookmakers(data) {
+  const keys = new Set();
+  for (const m of [...(data.matches || []), ...(data.upcoming || [])]) {
+    const odds = migrateOdds(m.odds);
+    if (odds) for (const key of Object.keys(odds)) keys.add(key);
+  }
+  for (const o of (data.odds || [])) {
+    if (o.bookmakers) for (const key of Object.keys(o.bookmakers)) keys.add(key);
+  }
+  return keys;
+}
+
+const BOOKMAKER_NAMES = {
+  veikkaus: 'Veikkaus', pinnacle: 'Pinnacle', bet365: 'Bet365',
+  unibet: 'Unibet', betsson: 'Betsson', williamhill: 'William Hill',
+  '1xbet': '1xBet', betfair: 'Betfair', marathonbet: 'Marathon Bet',
+  matchbook: 'Matchbook', betclic: 'Betclic', betonlineag: 'BetOnline',
+  bovada: 'Bovada', coolbet: 'Coolbet', nordicbet: 'NordicBet',
+  unibet_eu: 'Unibet EU', betvictor: 'Bet Victor', winamax: 'Winamax',
+  sport888: '888sport',
+};
+
+function populateBookmakerDropdown(data) {
+  const select = document.getElementById('bookmaker-select');
+  const bookmakers = getAvailableBookmakers(data);
+  const sorted = [...bookmakers].filter(k => k !== 'veikkaus').sort();
+
+  let html = '<option value="veikkaus">Veikkaus</option>';
+  for (const key of sorted) {
+    const name = BOOKMAKER_NAMES[key] || key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+    html += `<option value="${key}">${name}</option>`;
+  }
+  if (bookmakers.size > 1) {
+    html += '<option value="consensus">Consensus (avg)</option>';
+  }
+
+  select.innerHTML = html;
+  select.value = selectedBookmaker;
+}
+
 // ── Selector logic ──────────────────────────────────────────────────
 
 function populateSportDropdown() {
@@ -57,6 +146,7 @@ async function loadAndShowLeague(leagueId, season) {
   listEl.innerHTML = '<p class="muted">Loading matches...</p>';
 
   currentLeagueData = await loadLeagueData(leagueId, season);
+  populateBookmakerDropdown(currentLeagueData);
   initDateView(currentLeagueData);
 }
 
@@ -64,12 +154,12 @@ async function loadAndShowLeague(leagueId, season) {
 
 // TODO: Remove after real odds are flowing from backend
 const DEV_ODDS = {
-  'Inter Turku vs VPS':       { home: 1.72, draw: 3.80, away: 4.50 },
-  'HJK Helsinki vs SJK Seinajoki': { home: 1.35, draw: 5.00, away: 7.50 },
-  'Ilves vs KuPS':            { home: 3.10, draw: 3.40, away: 2.20 },
-  'Jaro vs Lahti':            { home: 4.20, draw: 3.60, away: 1.80 },
-  'IFK Mariehamn vs TPS':     { home: 2.90, draw: 3.30, away: 2.40 },
-  'Gnistan vs AC Oulu':       { home: 5.50, draw: 4.00, away: 1.55 },
+  'Inter Turku vs VPS':       { veikkaus: { home: 1.72, draw: 3.80, away: 4.50, overUnder: {} } },
+  'HJK Helsinki vs SJK Seinajoki': { veikkaus: { home: 1.35, draw: 5.00, away: 7.50, overUnder: {} } },
+  'Ilves vs KuPS':            { veikkaus: { home: 3.10, draw: 3.40, away: 2.20, overUnder: {} } },
+  'Jaro vs Lahti':            { veikkaus: { home: 4.20, draw: 3.60, away: 1.80, overUnder: {} } },
+  'IFK Mariehamn vs TPS':     { veikkaus: { home: 2.90, draw: 3.30, away: 2.40, overUnder: {} } },
+  'Gnistan vs AC Oulu':       { veikkaus: { home: 5.50, draw: 4.00, away: 1.55, overUnder: {} } },
 };
 
 function buildDateGroups(matches, upcoming, odds) {
@@ -78,15 +168,15 @@ function buildDateGroups(matches, upcoming, odds) {
   for (const m of matches) {
     const d = m.date || 'unknown';
     if (!groups[d]) groups[d] = [];
-    // Use embedded odds, or fall back to dev odds for testing
     const devOdds = DEV_ODDS[`${m.homeTeam} vs ${m.awayTeam}`] || null;
-    groups[d].push({ ...m, odds: m.odds || devOdds, status: 'finished' });
+    const migrated = migrateOdds(m.odds) || devOdds || null;
+    groups[d].push({ ...m, odds: migrated, status: 'finished' });
   }
 
   for (const m of upcoming) {
     const d = m.date || 'unknown';
     if (!groups[d]) groups[d] = [];
-    const matchOdds = findOdds(m, odds) || m.odds || null;
+    const matchOdds = findOdds(m, odds) || migrateOdds(m.odds) || null;
     groups[d].push({ ...m, status: 'upcoming', odds: matchOdds });
   }
 
@@ -202,12 +292,13 @@ function renderDateView() {
     for (const m of matches) {
       if (m.status === 'finished') {
         let oddsRow = '';
-        if (m.odds && m.odds.home && m.odds.draw && m.odds.away) {
+        const selOdds = getSelectedOdds(m.odds);
+        if (selOdds && selOdds.home && selOdds.draw && selOdds.away) {
           const result = m.homeGoals > m.awayGoals ? '1' : m.homeGoals === m.awayGoals ? 'X' : '2';
           oddsRow = `<div class="match-odds-table">
-            <span class="odds-cell${result === '1' ? ' correct' : ''}"><span class="odds-label">1</span>${m.odds.home.toFixed(2)}</span>
-            <span class="odds-cell${result === 'X' ? ' correct' : ''}"><span class="odds-label">X</span>${m.odds.draw.toFixed(2)}</span>
-            <span class="odds-cell${result === '2' ? ' correct' : ''}"><span class="odds-label">2</span>${m.odds.away.toFixed(2)}</span>
+            <span class="odds-cell${result === '1' ? ' correct' : ''}"><span class="odds-label">1</span>${selOdds.home.toFixed(2)}</span>
+            <span class="odds-cell${result === 'X' ? ' correct' : ''}"><span class="odds-label">X</span>${selOdds.draw.toFixed(2)}</span>
+            <span class="odds-cell${result === '2' ? ' correct' : ''}"><span class="odds-label">2</span>${selOdds.away.toFixed(2)}</span>
           </div>`;
         }
         html += `<div class="match-row finished" data-home="${m.homeTeam}" data-away="${m.awayTeam}">
@@ -233,8 +324,9 @@ function renderDateView() {
           </span>`;
         }
 
-        const oddsStr = m.odds
-          ? `<span class="match-odds">${m.odds.home.toFixed(2)} / ${m.odds.draw.toFixed(2)} / ${m.odds.away.toFixed(2)}</span>`
+        const selOddsUp = getSelectedOdds(m.odds);
+        const oddsStr = selOddsUp
+          ? `<span class="match-odds">${selOddsUp.home.toFixed(2)} / ${selOddsUp.draw.toFixed(2)} / ${selOddsUp.away.toFixed(2)}</span>`
           : '';
 
         html += `<div class="match-row upcoming" data-home="${m.homeTeam}" data-away="${m.awayTeam}">
@@ -259,23 +351,32 @@ function renderDateView() {
     row.addEventListener('click', () => analyzeMatch(row.dataset.home, row.dataset.away));
   });
 
-  // Navigation handlers
+  // Navigation handlers — also close results panel
   document.getElementById('show-earlier')?.addEventListener('click', () => {
     visibleRange.start = Math.max(0, visibleRange.start - 1);
+    document.getElementById('results').classList.add('hidden');
+    document.querySelectorAll('.match-row').forEach(r => r.classList.remove('selected'));
     renderDateView();
   });
   document.getElementById('show-later')?.addEventListener('click', () => {
     visibleRange.end = Math.min(allDates.length - 1, visibleRange.end + 1);
+    document.getElementById('results').classList.add('hidden');
+    document.querySelectorAll('.match-row').forEach(r => r.classList.remove('selected'));
     renderDateView();
   });
 }
 
 function findOdds(match, odds) {
   if (!odds || odds.length === 0) return null;
-  return odds.find(o =>
+  const found = odds.find(o =>
     (o.homeTeam.includes(match.homeTeam) || match.homeTeam.includes(o.homeTeam)) &&
     (o.awayTeam.includes(match.awayTeam) || match.awayTeam.includes(o.awayTeam))
   );
+  if (!found) return null;
+  // New format: odds array entries have .bookmakers
+  if (found.bookmakers) return found.bookmakers;
+  // Old format fallback
+  return migrateOdds({ home: found.home, draw: found.draw, away: found.away, overUnder: found.overUnder });
 }
 
 // ── Auto-calculate on match click ───────────────────────────────────
@@ -298,17 +399,18 @@ function analyzeMatch(homeName, awayName) {
   const homeStats = averages[homeName] || { homeScored: leagueAvg / 2, homeConceded: leagueAvg / 2 };
   const awayStats = averages[awayName] || { awayScored: leagueAvg / 2, awayConceded: leagueAvg / 2 };
 
-  // Odds — check separate odds array, then embedded odds on match/upcoming objects
+  // Odds — resolve for selected bookmaker
   const odds = currentLeagueData?.odds || [];
-  let matchOdds = findOdds({ homeTeam: homeName, awayTeam: awayName }, odds);
-  if (!matchOdds) {
+  let matchOddsMulti = findOdds({ homeTeam: homeName, awayTeam: awayName }, odds);
+  if (!matchOddsMulti) {
     const allObjects = [...(currentLeagueData?.matches || []), ...(currentLeagueData?.upcoming || [])];
     const obj = allObjects.find(m => m.homeTeam === homeName && m.awayTeam === awayName);
-    if (obj?.odds) matchOdds = obj.odds;
+    if (obj?.odds) matchOddsMulti = migrateOdds(obj.odds);
   }
 
-  const oddsData = matchOdds
-    ? { home: matchOdds.home, draw: matchOdds.draw, away: matchOdds.away, overUnder: matchOdds.overUnder || {} }
+  const selOdds = matchOddsMulti ? getSelectedOdds(matchOddsMulti) : null;
+  const oddsData = selOdds
+    ? { home: selOdds.home, draw: selOdds.draw, away: selOdds.away, overUnder: selOdds.overUnder || {} }
     : { home: 0, draw: 0, away: 0, overUnder: {} };
 
   // Settings
@@ -487,6 +589,7 @@ async function handleUpdateData() {
     };
     currentMeta = result.meta;
 
+    populateBookmakerDropdown(currentLeagueData);
     initDateView(currentLeagueData);
     updateLastUpdateDisplay(result.meta.lastUpdate);
 
@@ -546,6 +649,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('close-results').addEventListener('click', () => {
     document.getElementById('results').classList.add('hidden');
     document.querySelectorAll('.match-row').forEach(r => r.classList.remove('selected'));
+  });
+
+  // Bookmaker dropdown
+  document.getElementById('bookmaker-select').addEventListener('change', (e) => {
+    selectedBookmaker = e.target.value;
+    if (allDates.length > 0) renderDateView();
   });
 
   // Sport dropdown
