@@ -1,107 +1,155 @@
 /**
- * Main controller — wires inputs to math modules to UI rendering.
+ * Main controller — selector bar, match list, auto-calculate on click.
  */
 
 import { expectedGoals, scoreMatrix } from './poisson.js';
 import { applyDixonColes } from './dixon-coles.js';
-import { removeMargin, impliedProbability } from './odds.js';
+import { removeMargin } from './odds.js';
 import { calculateEdge, kellyFraction, kellyStake } from './kelly.js';
+import { calculateTeamAverages, calculateLeagueAvg } from './sources/league-data.js';
 import * as manualSource from './sources/manual.js';
-import * as leagueDataSource from './sources/league-data.js';
-import {
-  fetchLeagues, fetchResults, fetchOdds,
-  getCachedLeagues, getLastUpdate, getCachedOdds, getCachedUpcoming,
-} from './api-client.js';
-import { getTeamNames } from './sources/league-data.js';
+import { loadMeta, loadLeagueData, triggerUpdate } from './data-loader.js';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderMargin, setupSliders
 } from './ui.js';
 
-// Active data source — switches between manual and league-data
-let activeSource = manualSource;
+// Loaded data state
+let currentMeta = null;
+let currentLeagueData = null; // { matches, upcoming, odds }
+let currentLeagueId = null;
 
-function setActiveSource(sourceId) {
-  const manualSection = document.getElementById('manual-stats-section');
-  const leagueSection = document.getElementById('league-team-section');
+// ── Selector logic ──────────────────────────────────────────────────
 
-  if (sourceId === 'league-data') {
-    activeSource = leagueDataSource;
-    manualSection.classList.add('hidden');
-    leagueSection.classList.remove('hidden');
-    populateLeagueDropdown();
-  } else {
-    activeSource = manualSource;
-    manualSection.classList.remove('hidden');
-    leagueSection.classList.add('hidden');
-  }
+function populateSportDropdown() {
+  // Currently only football — more sports added later
+  const select = document.getElementById('sport-select');
+  select.innerHTML = '<option value="football">Football</option>';
 }
 
-function populateLeagueDropdown() {
+function populateLeagueDropdown(sport) {
   const select = document.getElementById('league-select');
-  const leagues = getCachedLeagues();
+  const leagues = (currentMeta?.leagues || []).filter(l => l.sport === sport);
+
   select.innerHTML = leagues.map(l =>
     `<option value="${l.id}">${l.name} (${l.country})</option>`
   ).join('');
+
   if (leagues.length > 0) {
-    populateTeamDropdowns(leagues[0].id, leagues[0].season);
+    populateSeasonSelect(leagues[0]);
+    loadAndShowLeague(leagues[0].id, leagues[0].season);
   }
 }
 
-function populateTeamDropdowns(leagueId, season) {
-  const teams = getTeamNames(leagueId, season);
-  const upcoming = getCachedUpcoming(leagueId);
-  const homeSelect = document.getElementById('home-team-select');
-  const awaySelect = document.getElementById('away-team-select');
+function populateSeasonSelect(league) {
+  const select = document.getElementById('season-select');
+  select.innerHTML = `<option value="${league.season}">${league.season}</option>`;
+}
 
-  // Merge upcoming team names into the team set (in case no historical data yet)
-  const allTeams = new Set(teams);
+async function loadAndShowLeague(leagueId, season) {
+  currentLeagueId = leagueId;
+  const listEl = document.getElementById('match-list');
+  listEl.innerHTML = '<p class="muted">Loading matches...</p>';
+
+  currentLeagueData = await loadLeagueData(leagueId, season);
+  renderMatchList(currentLeagueData.upcoming, currentLeagueData.odds);
+}
+
+// ── Match list ──────────────────────────────────────────────────────
+
+function renderMatchList(upcoming, odds) {
+  const listEl = document.getElementById('match-list');
+
+  if (!upcoming || upcoming.length === 0) {
+    listEl.innerHTML = '<p class="muted">No upcoming matches</p>';
+    return;
+  }
+
+  // Group by date
+  const byDate = {};
   for (const m of upcoming) {
-    allTeams.add(m.homeTeam);
-    allTeams.add(m.awayTeam);
-  }
-  const sortedTeams = [...allTeams].sort();
-
-  const options = sortedTeams.map(t => `<option value="${t}">${t}</option>`).join('');
-  homeSelect.innerHTML = options;
-  awaySelect.innerHTML = options;
-
-  // If there's an upcoming match, pre-select its teams
-  if (upcoming.length > 0) {
-    const next = upcoming[0];
-    homeSelect.value = next.homeTeam;
-    awaySelect.value = next.awayTeam;
-  } else if (sortedTeams.length > 1) {
-    awaySelect.selectedIndex = 1;
+    if (!byDate[m.date]) byDate[m.date] = [];
+    byDate[m.date].push(m);
   }
 
-  autoFillOdds(leagueId);
+  let html = '';
+  for (const [date, matches] of Object.entries(byDate)) {
+    const dateStr = new Date(date + 'T12:00:00').toLocaleDateString('en-GB', {
+      weekday: 'short', day: 'numeric', month: 'short'
+    });
+    html += `<div class="match-date-header">${dateStr}</div>`;
+
+    for (const m of matches) {
+      const matchOdds = findOdds(m, odds);
+      const oddsStr = matchOdds
+        ? `<span class="match-odds">${matchOdds.home.toFixed(2)} / ${matchOdds.draw.toFixed(2)} / ${matchOdds.away.toFixed(2)}</span>`
+        : '<span class="match-odds muted">No odds</span>';
+
+      html += `<div class="match-row" data-home="${m.homeTeam}" data-away="${m.awayTeam}">
+        <span class="match-teams">${m.homeTeam} vs ${m.awayTeam}</span>
+        ${oddsStr}
+      </div>`;
+    }
+  }
+
+  listEl.innerHTML = html;
+
+  // Attach click handlers
+  listEl.querySelectorAll('.match-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const home = row.dataset.home;
+      const away = row.dataset.away;
+      analyzeMatch(home, away);
+    });
+  });
 }
 
-function autoFillOdds(leagueId) {
-  const homeName = document.getElementById('home-team-select').value;
-  const awayName = document.getElementById('away-team-select').value;
-  const status = document.getElementById('auto-fill-status');
-  const odds = getCachedOdds(leagueId);
-
-  const match = odds.find(o =>
-    (o.homeTeam.includes(homeName) || homeName.includes(o.homeTeam)) &&
-    (o.awayTeam.includes(awayName) || awayName.includes(o.awayTeam))
+function findOdds(match, odds) {
+  if (!odds || odds.length === 0) return null;
+  return odds.find(o =>
+    (o.homeTeam.includes(match.homeTeam) || match.homeTeam.includes(o.homeTeam)) &&
+    (o.awayTeam.includes(match.awayTeam) || match.awayTeam.includes(o.awayTeam))
   );
-
-  if (match) {
-    document.getElementById('odds-home').value = match.home.toFixed(2);
-    document.getElementById('odds-draw').value = match.draw.toFixed(2);
-    document.getElementById('odds-away').value = match.away.toFixed(2);
-    status.textContent = `Odds auto-filled from Veikkaus: ${match.home.toFixed(2)} / ${match.draw.toFixed(2)} / ${match.away.toFixed(2)}`;
-    status.className = 'auto-fill-status';
-    // Trigger margin display update
-    renderMargin([match.home, match.draw, match.away]);
-  } else {
-    status.textContent = 'No cached odds for this matchup — enter manually';
-    status.className = 'auto-fill-status warning';
-  }
 }
+
+// ── Auto-calculate on match click ───────────────────────────────────
+
+function analyzeMatch(homeName, awayName) {
+  // Highlight selected match
+  document.querySelectorAll('.match-row').forEach(r => r.classList.remove('selected'));
+  const rows = document.querySelectorAll('.match-row');
+  for (const r of rows) {
+    if (r.dataset.home === homeName && r.dataset.away === awayName) {
+      r.classList.add('selected');
+    }
+  }
+
+  // Team stats from historical data
+  const matches = currentLeagueData?.matches || [];
+  const averages = calculateTeamAverages(matches);
+  const leagueAvg = calculateLeagueAvg(matches);
+
+  const homeStats = averages[homeName] || { homeScored: leagueAvg / 2, homeConceded: leagueAvg / 2 };
+  const awayStats = averages[awayName] || { awayScored: leagueAvg / 2, awayConceded: leagueAvg / 2 };
+
+  // Odds
+  const odds = currentLeagueData?.odds || [];
+  const matchOdds = findOdds({ homeTeam: homeName, awayTeam: awayName }, odds);
+
+  const oddsData = matchOdds
+    ? { home: matchOdds.home, draw: matchOdds.draw, away: matchOdds.away, overUnder: matchOdds.overUnder || {} }
+    : { home: 0, draw: 0, away: 0, overUnder: {} };
+
+  // Settings
+  const rho = parseFloat(document.getElementById('rho-slider').value);
+  const kellyFrac = parseFloat(document.getElementById('kelly-fraction-slider').value);
+  const bankroll = parseFloat(document.getElementById('bankroll').value) || 0;
+
+  // Run calculation
+  calculate(homeName, awayName, homeStats, awayStats, leagueAvg, oddsData, rho, kellyFrac, bankroll);
+}
+
+// ── Calculation (same math, parameterized) ──────────────────────────
 
 function calculateOutcomes(matrix) {
   let home = 0, draw = 0, away = 0;
@@ -118,130 +166,100 @@ function calculateOutcomes(matrix) {
 function calculateOverUnder(matrix, lines) {
   const maxGoals = matrix.length;
   const totalGoalsProbs = [];
-
   for (let n = 0; n < maxGoals * 2; n++) {
     let prob = 0;
     for (let i = 0; i < maxGoals; i++) {
       const j = n - i;
-      if (j >= 0 && j < maxGoals) {
-        prob += matrix[i][j];
-      }
+      if (j >= 0 && j < maxGoals) prob += matrix[i][j];
     }
     totalGoalsProbs.push(prob);
   }
 
-  const results = [];
-  for (const line of lines) {
+  return lines.map(line => {
     const threshold = Math.ceil(line);
     let probUnder = 0;
-    for (let n = 0; n < threshold; n++) {
-      probUnder += totalGoalsProbs[n] || 0;
-    }
-    const probOver = 1 - probUnder;
-    results.push({ line, probOver, probUnder });
-  }
-  return results;
+    for (let n = 0; n < threshold; n++) probUnder += totalGoalsProbs[n] || 0;
+    return { line, probOver: 1 - probUnder, probUnder };
+  });
 }
 
-function calculate() {
-  const stats = activeSource.getTeamStats();
-  const odds = activeSource.getOdds();
-  const settings = activeSource.getSettings();
+function calculate(homeName, awayName, homeStats, awayStats, leagueAvg, odds, rho, kellyFrac, bankroll) {
+  document.getElementById('selected-match-title').textContent = `${homeName} vs ${awayName}`;
 
-  // Expected goals
   const eg = expectedGoals(
-    stats.homeScored, stats.homeConceded,
-    stats.awayScored, stats.awayConceded,
-    stats.leagueAvg
+    homeStats.homeScored, homeStats.homeConceded,
+    awayStats.awayScored, awayStats.awayConceded,
+    leagueAvg
   );
 
-  // Score matrix with Dixon-Coles correction
   const rawMatrix = scoreMatrix(eg.lambdaHome, eg.lambdaAway, 7);
-  const matrix = applyDixonColes(rawMatrix, eg.lambdaHome, eg.lambdaAway, settings.rho);
-
-  // Match outcomes from matrix
+  const matrix = applyDixonColes(rawMatrix, eg.lambdaHome, eg.lambdaAway, rho);
   const outcomes = calculateOutcomes(matrix);
 
-  // Bookmaker 1X2 probabilities (margin removed)
   const has1x2Odds = odds.home > 0 && odds.draw > 0 && odds.away > 0;
-  const bookProbs1x2 = has1x2Odds
-    ? removeMargin([odds.home, odds.draw, odds.away])
-    : [0, 0, 0];
+  const bookProbs1x2 = has1x2Odds ? removeMargin([odds.home, odds.draw, odds.away]) : [0, 0, 0];
 
-  // Render score matrix
-  renderScoreMatrix(matrix, stats.homeName, stats.awayName);
+  renderScoreMatrix(matrix, homeName, awayName);
+  renderMatchOutcome(outcomes, bookProbs1x2, homeName, awayName);
 
-  // Render match outcome bars
-  renderMatchOutcome(outcomes, bookProbs1x2, stats.homeName, stats.awayName);
-
-  // Over/Under calculations
-  const ouCalc = calculateOverUnder(matrix, [1.5, 2.5, 3.5]);
-  const ouResults = [];
+  // Over/Under
   const ouLines = [
     { line: 1.5, key: '1.5' },
     { line: 2.5, key: '2.5' },
     { line: 3.5, key: '3.5' },
   ];
+  const ouCalc = calculateOverUnder(matrix, ouLines.map(l => l.line));
+  const ouResults = [];
 
   for (const { line, key } of ouLines) {
     const calc = ouCalc.find(c => c.line === line);
     const ouOdds = odds.overUnder[key];
     const hasOuOdds = ouOdds && ouOdds.over > 0 && ouOdds.under > 0;
-    const bookProbs = hasOuOdds
-      ? removeMargin([ouOdds.over, ouOdds.under])
-      : [0, 0];
+    const bookProbs = hasOuOdds ? removeMargin([ouOdds.over, ouOdds.under]) : [0, 0];
 
     ouResults.push({
-      label: `Over ${key}`,
-      yourProb: calc.probOver,
-      bookProb: bookProbs[0],
-      edge: bookProbs[0] > 0 ? calc.probOver - bookProbs[0] : 0,
+      label: `Over ${key}`, yourProb: calc.probOver,
+      bookProb: bookProbs[0], edge: bookProbs[0] > 0 ? calc.probOver - bookProbs[0] : 0,
     });
     ouResults.push({
-      label: `Under ${key}`,
-      yourProb: calc.probUnder,
-      bookProb: bookProbs[1],
-      edge: bookProbs[1] > 0 ? calc.probUnder - bookProbs[1] : 0,
+      label: `Under ${key}`, yourProb: calc.probUnder,
+      bookProb: bookProbs[1], edge: bookProbs[1] > 0 ? calc.probUnder - bookProbs[1] : 0,
     });
   }
-
   renderOverUnder(ouResults);
 
-  // Build all bets list for value detection + Kelly
+  // All bets + value bets
   const allBets = [];
 
-  // 1X2 bets
   if (has1x2Odds) {
     const betTypes = [
-      { label: `Home Win (${stats.homeName})`, prob: outcomes.home, bookProb: bookProbs1x2[0], odds: odds.home },
+      { label: `Home Win (${homeName})`, prob: outcomes.home, bookProb: bookProbs1x2[0], odds: odds.home },
       { label: 'Draw', prob: outcomes.draw, bookProb: bookProbs1x2[1], odds: odds.draw },
-      { label: `Away Win (${stats.awayName})`, prob: outcomes.away, bookProb: bookProbs1x2[2], odds: odds.away },
+      { label: `Away Win (${awayName})`, prob: outcomes.away, bookProb: bookProbs1x2[2], odds: odds.away },
     ];
     for (const bt of betTypes) {
       const edge = calculateEdge(bt.prob, bt.bookProb);
       const kf = kellyFraction(bt.prob, bt.odds);
-      const stake = kellyStake(bt.prob, bt.odds, settings.bankroll, settings.kellyFraction);
-      allBets.push({ label: bt.label, yourProb: bt.prob, bookProb: bt.bookProb, edge, kellyPct: kf * settings.kellyFraction, stake });
+      const stake = kellyStake(bt.prob, bt.odds, bankroll, kellyFrac);
+      allBets.push({ label: bt.label, yourProb: bt.prob, bookProb: bt.bookProb, edge, kellyPct: kf * kellyFrac, stake });
     }
   }
 
-  // O/U bets
   for (const { line, key } of ouLines) {
     const calc = ouCalc.find(c => c.line === line);
     const ouOdds = odds.overUnder[key];
     const hasOuOdds = ouOdds && ouOdds.over > 0 && ouOdds.under > 0;
     if (hasOuOdds) {
       const bookProbs = removeMargin([ouOdds.over, ouOdds.under]);
-
       const edgeOver = calculateEdge(calc.probOver, bookProbs[0]);
       const kfOver = kellyFraction(calc.probOver, ouOdds.over);
-      const stakeOver = kellyStake(calc.probOver, ouOdds.over, settings.bankroll, settings.kellyFraction);
-      allBets.push({ label: `Over ${key}`, yourProb: calc.probOver, bookProb: bookProbs[0], edge: edgeOver, kellyPct: kfOver * settings.kellyFraction, stake: stakeOver });
+      const stakeOver = kellyStake(calc.probOver, ouOdds.over, bankroll, kellyFrac);
+      allBets.push({ label: `Over ${key}`, yourProb: calc.probOver, bookProb: bookProbs[0], edge: edgeOver, kellyPct: kfOver * kellyFrac, stake: stakeOver });
 
       const edgeUnder = calculateEdge(calc.probUnder, bookProbs[1]);
       const kfUnder = kellyFraction(calc.probUnder, ouOdds.under);
-      const stakeUnder = kellyStake(calc.probUnder, ouOdds.under, settings.bankroll, settings.kellyFraction);
-      allBets.push({ label: `Under ${key}`, yourProb: calc.probUnder, bookProb: bookProbs[1], edge: edgeUnder, kellyPct: kfUnder * settings.kellyFraction, stake: stakeUnder });
+      const stakeUnder = kellyStake(calc.probUnder, ouOdds.under, bankroll, kellyFrac);
+      allBets.push({ label: `Under ${key}`, yourProb: calc.probUnder, bookProb: bookProbs[1], edge: edgeUnder, kellyPct: kfUnder * kellyFrac, stake: stakeUnder });
     }
   }
 
@@ -250,76 +268,22 @@ function calculate() {
   showResults();
 }
 
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-  setupSliders();
+// ── Manual calculate (fallback) ─────────────────────────────────────
 
-  // Live margin display
-  const oddsInputs = ['odds-home', 'odds-draw', 'odds-away'];
-  for (const id of oddsInputs) {
-    document.getElementById(id).addEventListener('input', () => {
-      const vals = oddsInputs.map(oid => parseFloat(document.getElementById(oid).value) || 0);
-      renderMargin(vals);
-    });
-  }
+function manualCalculate() {
+  const stats = manualSource.getTeamStats();
+  const odds = manualSource.getOdds();
+  const settings = manualSource.getSettings();
 
-  // Calculate button
-  document.getElementById('calculate-btn').addEventListener('click', calculate);
-
-  // Data source switching
-  document.getElementById('data-source').addEventListener('change', (e) => {
-    setActiveSource(e.target.value);
-  });
-
-  // League dropdown change → repopulate teams
-  document.getElementById('league-select').addEventListener('change', (e) => {
-    const leagues = getCachedLeagues();
-    const league = leagues.find(l => l.id === e.target.value);
-    if (league) {
-      populateTeamDropdowns(league.id, league.season);
-    }
-  });
-
-  // Team dropdown change → try auto-fill odds
-  document.getElementById('home-team-select').addEventListener('change', () => {
-    const leagueId = document.getElementById('league-select').value;
-    autoFillOdds(leagueId);
-  });
-  document.getElementById('away-team-select').addEventListener('change', () => {
-    const leagueId = document.getElementById('league-select').value;
-    autoFillOdds(leagueId);
-  });
-
-  // Update Data button
-  document.getElementById('update-data-btn').addEventListener('click', handleUpdateData);
-
-  // Initialize: show last update time, populate league checkboxes
-  initializeUpdateBar();
-});
-
-async function initializeUpdateBar() {
-  // Show last update time
-  const lastUpdate = getLastUpdate();
-  const lastUpdateEl = document.getElementById('last-update');
-  if (lastUpdate) {
-    lastUpdateEl.textContent = `Last updated: ${new Date(lastUpdate).toLocaleString()}`;
-  }
-
-  // Populate league checkboxes from cache (or fetch if none cached)
-  let leagues = getCachedLeagues();
-  if (leagues.length === 0) {
-    try {
-      leagues = await fetchLeagues();
-    } catch {
-      // Silently fail — checkboxes stay empty until first update
-    }
-  }
-
-  const container = document.getElementById('league-checkboxes');
-  container.innerHTML = leagues.map(l =>
-    `<label><input type="checkbox" value="${l.id}" checked> ${l.name}</label>`
-  ).join('');
+  calculate(
+    stats.homeName, stats.awayName,
+    { homeScored: stats.homeScored, homeConceded: stats.homeConceded },
+    { awayScored: stats.awayScored, awayConceded: stats.awayConceded },
+    stats.leagueAvg, odds, settings.rho, settings.kellyFraction, settings.bankroll
+  );
 }
+
+// ── Update Data ─────────────────────────────────────────────────────
 
 async function handleUpdateData() {
   const btn = document.getElementById('update-data-btn');
@@ -328,54 +292,92 @@ async function handleUpdateData() {
 
   btn.disabled = true;
   statusDiv.classList.remove('hidden');
-
-  // Get selected leagues from checkboxes
-  const checkboxes = document.querySelectorAll('#league-checkboxes input[type="checkbox"]:checked');
-  const selectedLeagues = [...checkboxes].map(cb => cb.value);
-
-  if (selectedLeagues.length === 0) {
-    messageEl.textContent = 'No leagues selected';
-    btn.disabled = false;
-    return;
-  }
-
-  let totalRequests = 0;
+  messageEl.textContent = 'Updating...';
+  messageEl.style.color = '';
 
   try {
-    // Fetch leagues config first
-    await fetchLeagues();
+    const leagueId = currentLeagueId || document.getElementById('league-select').value;
+    messageEl.textContent = `Fetching data for ${leagueId}...`;
 
-    for (const leagueId of selectedLeagues) {
-      const leagues = getCachedLeagues();
-      const league = leagues.find(l => l.id === leagueId);
-      if (!league) continue;
+    const data = triggerUpdate(leagueId);
+    const result = await data;
 
-      // Fetch results
-      messageEl.textContent = `Fetching ${league.name} results...`;
-      const result = await fetchResults(leagueId, league.season);
-      totalRequests += result.requestsUsed;
+    // Use the returned data directly
+    currentLeagueData = {
+      matches: result.matches,
+      upcoming: result.upcoming,
+      odds: result.odds,
+    };
+    currentMeta = result.meta;
 
-      // Fetch odds
-      messageEl.textContent = `Fetching ${league.name} odds...`;
-      await fetchOdds(leagueId);
-    }
+    renderMatchList(result.upcoming, result.odds);
+    updateLastUpdateDisplay(result.meta.lastUpdate);
 
-    messageEl.textContent = `Done! ${selectedLeagues.length} league(s) updated. API requests used: ${totalRequests}`;
-    document.getElementById('last-update').textContent =
-      `Last updated: ${new Date().toLocaleString()}`;
-
-    // Re-populate dropdowns if league-data source is active
-    if (activeSource === leagueDataSource) {
-      populateLeagueDropdown();
-    }
+    messageEl.textContent = 'Done! Data updated.';
+    btn.disabled = true; // Keep disabled — data is now fresh
   } catch (err) {
     messageEl.textContent = `Error: ${err.message}`;
     messageEl.style.color = '#f87171';
-  } finally {
     btn.disabled = false;
+  } finally {
     setTimeout(() => {
       statusDiv.classList.add('hidden');
       messageEl.style.color = '';
     }, 5000);
   }
 }
+
+function updateLastUpdateDisplay(isoString) {
+  const el = document.getElementById('last-update');
+  if (isoString) {
+    el.textContent = `Last updated: ${new Date(isoString).toLocaleString()}`;
+  } else {
+    el.textContent = 'No data yet';
+  }
+}
+
+// ── Initialize ──────────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', async () => {
+  setupSliders();
+
+  // Manual calculate button
+  document.getElementById('calculate-btn').addEventListener('click', manualCalculate);
+
+  // Manual odds margin display
+  const oddsInputs = ['odds-home', 'odds-draw', 'odds-away'];
+  for (const id of oddsInputs) {
+    document.getElementById(id).addEventListener('input', () => {
+      const vals = oddsInputs.map(oid => parseFloat(document.getElementById(oid).value) || 0);
+      renderMargin(vals);
+    });
+  }
+
+  // Update button
+  document.getElementById('update-data-btn').addEventListener('click', handleUpdateData);
+
+  // Sport dropdown
+  populateSportDropdown();
+  document.getElementById('sport-select').addEventListener('change', (e) => {
+    populateLeagueDropdown(e.target.value);
+  });
+
+  // League dropdown
+  document.getElementById('league-select').addEventListener('change', (e) => {
+    const league = (currentMeta?.leagues || []).find(l => l.id === e.target.value);
+    if (league) {
+      populateSeasonSelect(league);
+      loadAndShowLeague(league.id, league.season);
+    }
+  });
+
+  // Load initial data
+  currentMeta = await loadMeta();
+  updateLastUpdateDisplay(currentMeta.lastUpdate);
+
+  // Enable/disable update button based on freshness
+  document.getElementById('update-data-btn').disabled = currentMeta.isFresh;
+
+  // Populate selectors and load first league
+  populateLeagueDropdown('football');
+});

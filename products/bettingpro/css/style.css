@@ -301,27 +301,6 @@ input[type="range"] {
   flex-wrap: wrap;
 }
 
-.league-checkboxes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  flex: 1;
-}
-
-.league-checkboxes label {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.85rem;
-  color: #e0e0e0;
-  cursor: pointer;
-  margin-bottom: 0;
-}
-
-.league-checkboxes input[type="checkbox"] {
-  accent-color: #60a5fa;
-}
-
 .update-btn {
   padding: 8px 20px;
   background: #2563eb;
@@ -399,4 +378,105 @@ input[type="range"] {
   header h1 {
     font-size: 1.5rem;
   }
+}
+
+/* Selector bar */
+.selector-bar .selector-row {
+  display: flex;
+  gap: 16px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.selector-bar .selector-row label {
+  flex: 1;
+  min-width: 140px;
+}
+
+.season-label {
+  flex: 0.5 !important;
+  min-width: 80px !important;
+}
+
+/* Match list */
+.match-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.match-date-header {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  padding: 12px 0 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.match-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.match-row:hover {
+  background: rgba(96, 165, 250, 0.1);
+}
+
+.match-row.selected {
+  background: rgba(96, 165, 250, 0.2);
+  border-left: 3px solid #60a5fa;
+}
+
+.match-teams {
+  font-weight: 500;
+}
+
+.match-odds {
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.muted {
+  color: #64748b;
+  font-style: italic;
+}
+
+/* Collapsible sections */
+details.card summary {
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+
+details.card summary::-webkit-details-marker {
+  display: none;
+}
+
+details.card summary h2::before {
+  content: '\25B8 ';
+  font-size: 0.8em;
+}
+
+details.card[open] summary h2::before {
+  content: '\25BE ';
+}
+
+/* Update bar compact layout */
+.update-data-bar .update-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.update-data-bar .last-update {
+  font-size: 0.85rem;
+  color: #94a3b8;
 }
