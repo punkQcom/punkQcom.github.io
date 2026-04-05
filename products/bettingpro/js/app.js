@@ -68,13 +68,14 @@ function buildDateGroups(matches, upcoming, odds) {
   for (const m of matches) {
     const d = m.date || 'unknown';
     if (!groups[d]) groups[d] = [];
+    // Odds may already be embedded on the match object from backend
     groups[d].push({ ...m, status: 'finished' });
   }
 
   for (const m of upcoming) {
     const d = m.date || 'unknown';
     if (!groups[d]) groups[d] = [];
-    const matchOdds = findOdds(m, odds);
+    const matchOdds = findOdds(m, odds) || m.odds || null;
     groups[d].push({ ...m, status: 'upcoming', odds: matchOdds });
   }
 
@@ -153,9 +154,21 @@ function renderDateView() {
 
     for (const m of matches) {
       if (m.status === 'finished') {
+        let oddsHtml = '';
+        if (m.odds && m.odds.home && m.odds.draw && m.odds.away) {
+          const result = m.homeGoals > m.awayGoals ? '1' : m.homeGoals === m.awayGoals ? 'X' : '2';
+          oddsHtml = `<span class="match-odds finished-odds">` +
+            `<span class="odd${result === '1' ? ' correct' : ''}">${m.odds.home.toFixed(2)}</span>` +
+            ` / <span class="odd${result === 'X' ? ' correct' : ''}">${m.odds.draw.toFixed(2)}</span>` +
+            ` / <span class="odd${result === '2' ? ' correct' : ''}">${m.odds.away.toFixed(2)}</span>` +
+            `</span>`;
+        }
         html += `<div class="match-row finished" data-home="${m.homeTeam}" data-away="${m.awayTeam}">
           <span class="match-teams">${m.homeTeam} vs ${m.awayTeam}</span>
-          <span class="match-score">${m.homeGoals} - ${m.awayGoals}</span>
+          <span class="match-result-group">
+            ${oddsHtml}
+            <span class="match-score">${m.homeGoals} - ${m.awayGoals}</span>
+          </span>
         </div>`;
       } else {
         const oddsStr = m.odds
@@ -383,12 +396,12 @@ async function handleUpdateData() {
   messageEl.textContent = 'Updating...';
   messageEl.style.color = '';
 
-  // Safety: always hide spinner after 35s no matter what
+  // Safety: always hide spinner after 130s no matter what
   const safetyTimer = setTimeout(() => {
     statusDiv.classList.add('hidden');
     messageEl.style.color = '';
     btn.disabled = false;
-  }, 35000);
+  }, 130000);
 
   try {
     const leagueId = currentLeagueId || document.getElementById('league-select').value;

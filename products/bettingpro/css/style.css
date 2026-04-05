@@ -176,7 +176,7 @@ input[type="range"] {
 
 /* === Results === */
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .most-likely {
@@ -525,6 +525,29 @@ details.card[open] summary h2::before {
   color: #e0e0e0;
   min-width: 40px;
   text-align: center;
+}
+
+/* Finished match result group (odds + score) */
+.match-result-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.finished-odds {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.finished-odds .odd {
+  padding: 1px 3px;
+  border-radius: 3px;
+}
+
+.finished-odds .odd.correct {
+  color: #4ade80;
+  font-weight: 700;
+  opacity: 1;
 }
 
 /* Round navigation buttons */
