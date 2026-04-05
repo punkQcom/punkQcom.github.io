@@ -5,6 +5,8 @@
 import { expectedGoals, scoreMatrix } from './poisson.js';
 import { applyDixonColes } from './dixon-coles.js';
 import { removeMargin } from './odds.js';
+import { shinProbabilities } from './shin.js';
+import { calculateEloRatings, eloToPoisson } from './elo.js';
 import { calculateEdge, kellyFraction, kellyStake } from './kelly.js';
 import { calculateTeamAverages, calculateLeagueAvg } from './sources/league-data.js';
 import * as manualSource from './sources/manual.js';
@@ -26,6 +28,12 @@ let visibleRange = { start: 0, end: 0 };
 
 // Bookmaker selection
 let selectedBookmaker = 'veikkaus';
+
+// Blending: how many matches before we fully trust our model over bookmaker odds
+const MODEL_TRUST_THRESHOLD = 30;
+
+// Currently analyzed match (for recalculate)
+let currentAnalyzedMatch = null;
 
 // ── Multi-bookmaker utilities ────────────────────────────────────────
 
@@ -209,27 +217,75 @@ function formatDate(dateStr) {
 }
 
 /**
+ * Build a blended score matrix from Poisson model + Elo ratings.
+ * Returns the Dixon-Coles-corrected matrix with Elo-adjusted lambdas.
+ */
+function buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho) {
+  const averages = calculateTeamAverages(matches);
+  const homeStats = averages[homeName] || { homeScored: leagueAvg / 2, homeConceded: leagueAvg / 2 };
+  const awayStats = averages[awayName] || { awayScored: leagueAvg / 2, awayConceded: leagueAvg / 2 };
+
+  // Poisson lambdas from team stats
+  const poissonEg = expectedGoals(
+    homeStats.homeScored, homeStats.homeConceded,
+    awayStats.awayScored, awayStats.awayConceded,
+    leagueAvg
+  );
+
+  // Elo lambdas from power ratings
+  const eloRatings = calculateEloRatings(matches);
+  const homeElo = eloRatings[homeName] || 1500;
+  const awayElo = eloRatings[awayName] || 1500;
+  const eloEg = eloToPoisson(homeElo, awayElo, leagueAvg);
+
+  // Blend: early season → more Elo weight, late season → more Poisson weight
+  const eloWeight = Math.max(0.2, 1 - matches.length / (matches.length + MODEL_TRUST_THRESHOLD));
+  const lambdaHome = eloWeight * eloEg.lambdaHome + (1 - eloWeight) * poissonEg.lambdaHome;
+  const lambdaAway = eloWeight * eloEg.lambdaAway + (1 - eloWeight) * poissonEg.lambdaAway;
+
+  const rawMatrix = scoreMatrix(lambdaHome, lambdaAway, 7);
+  return applyDixonColes(rawMatrix, lambdaHome, lambdaAway, rho);
+}
+
+/**
+ * Blend model outcomes with odds-derived probabilities.
+ * Early season: trust odds more. Late season: trust model more.
+ */
+function blendWithOdds(modelOutcomes, oddsObj, matchCount) {
+  if (!oddsObj) return modelOutcomes;
+
+  // Get consensus odds for blending (average across all bookmakers)
+  const consensus = getConsensusOdds(oddsObj);
+  if (!consensus || !consensus.home || !consensus.draw || !consensus.away) return modelOutcomes;
+
+  // Convert odds to true probabilities via Shin's method
+  const oddsProbs = shinProbabilities([consensus.home, consensus.draw, consensus.away]);
+  if (!oddsProbs || oddsProbs.length !== 3) return modelOutcomes;
+
+  // Weight: more matches → trust model more
+  const modelWeight = matchCount / (matchCount + MODEL_TRUST_THRESHOLD);
+
+  return {
+    home: modelWeight * modelOutcomes.home + (1 - modelWeight) * oddsProbs[0],
+    draw: modelWeight * modelOutcomes.draw + (1 - modelWeight) * oddsProbs[1],
+    away: modelWeight * modelOutcomes.away + (1 - modelWeight) * oddsProbs[2],
+  };
+}
+
+/**
  * Quick prediction for a match — returns predicted score and outcome probabilities.
+ * Blends Poisson+Elo model with odds-derived baseline.
  */
 function predictMatch(homeName, awayName) {
   const matches = currentLeagueData?.matches || [];
   if (matches.length === 0) return null;
 
-  const averages = calculateTeamAverages(matches);
   const leagueAvg = calculateLeagueAvg(matches);
-  const homeStats = averages[homeName] || { homeScored: leagueAvg / 2, homeConceded: leagueAvg / 2 };
-  const awayStats = averages[awayName] || { awayScored: leagueAvg / 2, awayConceded: leagueAvg / 2 };
-
   const rho = parseFloat(document.getElementById('rho-slider')?.value || -0.13);
-  const eg = expectedGoals(
-    homeStats.homeScored, homeStats.homeConceded,
-    awayStats.awayScored, awayStats.awayConceded,
-    leagueAvg
-  );
-  const rawMatrix = scoreMatrix(eg.lambdaHome, eg.lambdaAway, 7);
-  const matrix = applyDixonColes(rawMatrix, eg.lambdaHome, eg.lambdaAway, rho);
 
-  // Find most likely score
+  const matrix = buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho);
+
+  // Model outcomes from matrix
   let bestScore = { home: 0, away: 0, prob: 0 };
   let home = 0, draw = 0, away = 0;
   for (let i = 0; i < matrix.length; i++) {
@@ -241,7 +297,17 @@ function predictMatch(homeName, awayName) {
     }
   }
 
-  return { score: `${bestScore.home}-${bestScore.away}`, home, draw, away };
+  // Get match odds for blending
+  const odds = currentLeagueData?.odds || [];
+  const allObjects = [...matches, ...(currentLeagueData?.upcoming || [])];
+  const matchObj = allObjects.find(m => m.homeTeam === homeName && m.awayTeam === awayName);
+  let matchOddsMulti = findOdds({ homeTeam: homeName, awayTeam: awayName }, odds);
+  if (!matchOddsMulti && matchObj?.odds) matchOddsMulti = migrateOdds(matchObj.odds);
+
+  // Blend model with odds
+  const blended = blendWithOdds({ home, draw, away }, matchOddsMulti, matches.length);
+
+  return { score: `${bestScore.home}-${bestScore.away}`, ...blended };
 }
 
 function initDateView(data) {
@@ -407,9 +473,19 @@ function findOdds(match, odds) {
   return migrateOdds({ home: found.home, draw: found.draw, away: found.away, overUnder: found.overUnder });
 }
 
+function enableRecalculate() {
+  const btn = document.getElementById('recalculate-btn');
+  if (btn && currentAnalyzedMatch) {
+    btn.disabled = false;
+    btn.title = 'Recalculate with new settings';
+  }
+}
+
 // ── Auto-calculate on match click ───────────────────────────────────
 
 function analyzeMatch(homeName, awayName) {
+  currentAnalyzedMatch = { home: homeName, away: awayName };
+
   // Highlight selected match
   document.querySelectorAll('.match-row').forEach(r => r.classList.remove('selected'));
   const rows = document.querySelectorAll('.match-row');
@@ -421,11 +497,7 @@ function analyzeMatch(homeName, awayName) {
 
   // Team stats from historical data
   const matches = currentLeagueData?.matches || [];
-  const averages = calculateTeamAverages(matches);
   const leagueAvg = calculateLeagueAvg(matches);
-
-  const homeStats = averages[homeName] || { homeScored: leagueAvg / 2, homeConceded: leagueAvg / 2 };
-  const awayStats = averages[awayName] || { awayScored: leagueAvg / 2, awayConceded: leagueAvg / 2 };
 
   // Odds — resolve for selected bookmaker
   const odds = currentLeagueData?.odds || [];
@@ -446,8 +518,15 @@ function analyzeMatch(homeName, awayName) {
   const kellyFrac = parseFloat(document.getElementById('kelly-fraction-slider').value);
   const bankroll = parseFloat(document.getElementById('bankroll').value) || 0;
 
-  // Run calculation
-  calculate(homeName, awayName, homeStats, awayStats, leagueAvg, oddsData, rho, kellyFrac, bankroll);
+  // Run calculation with blended model
+  calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, oddsData, rho, kellyFrac, bankroll);
+
+  // Disable recalculate button after auto-calc
+  const recalcBtn = document.getElementById('recalculate-btn');
+  if (recalcBtn) {
+    recalcBtn.disabled = true;
+    recalcBtn.title = 'Adjust settings above, then recalculate';
+  }
 }
 
 // ── Calculation (same math, parameterized) ──────────────────────────
@@ -484,21 +563,18 @@ function calculateOverUnder(matrix, lines) {
   });
 }
 
-function calculate(homeName, awayName, homeStats, awayStats, leagueAvg, odds, rho, kellyFrac, bankroll) {
+function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds, rho, kellyFrac, bankroll) {
   document.getElementById('selected-match-title').textContent = `${homeName} vs ${awayName}`;
 
-  const eg = expectedGoals(
-    homeStats.homeScored, homeStats.homeConceded,
-    awayStats.awayScored, awayStats.awayConceded,
-    leagueAvg
-  );
+  // Blended score matrix (Poisson + Elo)
+  const matrix = buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho);
+  const modelOutcomes = calculateOutcomes(matrix);
 
-  const rawMatrix = scoreMatrix(eg.lambdaHome, eg.lambdaAway, 7);
-  const matrix = applyDixonColes(rawMatrix, eg.lambdaHome, eg.lambdaAway, rho);
-  const outcomes = calculateOutcomes(matrix);
+  // Blend model outcomes with odds-derived probabilities
+  const outcomes = blendWithOdds(modelOutcomes, matchOddsMulti, matches.length);
 
   const has1x2Odds = odds.home > 0 && odds.draw > 0 && odds.away > 0;
-  const bookProbs1x2 = has1x2Odds ? removeMargin([odds.home, odds.draw, odds.away]) : [0, 0, 0];
+  const bookProbs1x2 = has1x2Odds ? shinProbabilities([odds.home, odds.draw, odds.away]) : [0, 0, 0];
 
   renderScoreMatrix(matrix, homeName, awayName);
   renderMatchOutcome(outcomes, bookProbs1x2, homeName, awayName);
@@ -576,11 +652,12 @@ function manualCalculate() {
   const odds = manualSource.getOdds();
   const settings = manualSource.getSettings();
 
+  // Manual mode: use entered stats directly, no blending
+  const matches = currentLeagueData?.matches || [];
   calculate(
     stats.homeName, stats.awayName,
-    { homeScored: stats.homeScored, homeConceded: stats.homeConceded },
-    { awayScored: stats.awayScored, awayConceded: stats.awayConceded },
-    stats.leagueAvg, odds, settings.rho, settings.kellyFraction, settings.bankroll
+    matches, stats.leagueAvg, null, odds,
+    settings.rho, settings.kellyFraction, settings.bankroll
   );
 }
 
@@ -656,9 +733,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Manual calculate button
   document.getElementById('calculate-btn').addEventListener('click', manualCalculate);
 
-  // Re-render predictions when rho slider changes
+  // Re-render predictions when rho slider changes + enable recalculate
   document.getElementById('rho-slider').addEventListener('input', () => {
     if (allDates.length > 0) renderDateView();
+    enableRecalculate();
+  });
+
+  // Enable recalculate when Kelly/bankroll settings change
+  document.getElementById('kelly-fraction-slider').addEventListener('input', enableRecalculate);
+  document.getElementById('bankroll').addEventListener('input', enableRecalculate);
+
+  // Recalculate button
+  document.getElementById('recalculate-btn').addEventListener('click', () => {
+    if (currentAnalyzedMatch) {
+      analyzeMatch(currentAnalyzedMatch.home, currentAnalyzedMatch.away);
+    }
   });
 
   // Manual odds margin display
@@ -677,6 +766,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('close-results').addEventListener('click', () => {
     document.getElementById('results').classList.add('hidden');
     document.querySelectorAll('.match-row').forEach(r => r.classList.remove('selected'));
+    currentAnalyzedMatch = null;
   });
 
   // Bookmaker dropdown
