@@ -276,10 +276,11 @@ function renderDateView() {
     const allUpcoming = matches.every(m => m.status === 'upcoming');
     const statusLabel = allFinished ? 'Results' : allUpcoming ? 'Upcoming' : 'In Progress';
 
-    html += `<div class="match-round-header">
+    html += `<div class="match-round-header" data-date="${date}">
       <span class="round-title">${formatDate(date)}</span>
-      <span class="round-meta">${statusLabel}</span>
+      <span class="round-meta">${statusLabel} <span class="toggle-icon">&#x25BE;</span></span>
     </div>`;
+    html += `<div class="match-date-group" data-date-group="${date}">`;
 
     for (const m of matches) {
       if (m.status === 'finished') {
@@ -334,6 +335,7 @@ function renderDateView() {
         </div>`;
       }
     }
+    html += '</div>'; // close match-date-group
   }
 
   if (visibleRange.end < allDates.length - 1) {
@@ -341,6 +343,20 @@ function renderDateView() {
   }
 
   listEl.innerHTML = html;
+
+  // Click handlers for date headers (collapse/expand)
+  listEl.querySelectorAll('.match-round-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const date = header.dataset.date;
+      const group = listEl.querySelector(`[data-date-group="${date}"]`);
+      const icon = header.querySelector('.toggle-icon');
+      if (group.classList.toggle('collapsed')) {
+        icon.textContent = '\u25B8'; // right arrow
+      } else {
+        icon.textContent = '\u25BE'; // down arrow
+      }
+    });
+  });
 
   // Click handlers for all matches (analysis)
   listEl.querySelectorAll('.match-row').forEach(row => {
