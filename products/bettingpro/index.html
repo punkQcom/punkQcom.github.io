@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>BettingPro — Sports Betting Calculator</title>
-  <link rel="stylesheet" href="css/style.css?v=1775421463">
+  <link rel="stylesheet" href="css/style.css?v=1775421661">
 </head>
 <body>
   <div class="container">
@@ -128,59 +128,8 @@
       </div>
     </details>
 
-    <!-- Manual Input (collapsible, hidden by default) -->
-    <details class="card">
-      <summary><h2 style="display:inline">Manual Input</h2></summary>
-
-      <div class="teams-grid">
-        <div class="team-column">
-          <h3>Home Team</h3>
-          <label>Name <input type="text" id="home-name" placeholder="Team A"></label>
-          <label>Avg Goals Scored (Home) <input type="number" id="home-scored" step="0.01" min="0" value="1.5"></label>
-          <label>Avg Goals Conceded (Home) <input type="number" id="home-conceded" step="0.01" min="0" value="1.1"></label>
-        </div>
-        <div class="team-column">
-          <h3>Away Team</h3>
-          <label>Name <input type="text" id="away-name" placeholder="Team B"></label>
-          <label>Avg Goals Scored (Away) <input type="number" id="away-scored" step="0.01" min="0" value="1.2"></label>
-          <label>Avg Goals Conceded (Away) <input type="number" id="away-conceded" step="0.01" min="0" value="1.3"></label>
-        </div>
-      </div>
-      <label>League Average Goals/Game
-        <input type="number" id="league-avg" step="0.01" min="0" value="2.5">
-      </label>
-
-      <h3>Bookmaker Odds</h3>
-      <div class="odds-row">
-        <label>Home (1) <input type="number" id="odds-home" step="0.01" min="1.01" placeholder="2.10"></label>
-        <label>Draw (X) <input type="number" id="odds-draw" step="0.01" min="1.01" placeholder="3.40"></label>
-        <label>Away (2) <input type="number" id="odds-away" step="0.01" min="1.01" placeholder="3.60"></label>
-      </div>
-      <div id="margin-display" class="margin-info"></div>
-
-      <h3>Over/Under Lines</h3>
-      <div class="ou-grid">
-        <div class="ou-row">
-          <span class="ou-label">O/U 1.5</span>
-          <label>Over <input type="number" id="ou-15-over" step="0.01" min="1.01" placeholder="1.30"></label>
-          <label>Under <input type="number" id="ou-15-under" step="0.01" min="1.01" placeholder="3.50"></label>
-        </div>
-        <div class="ou-row">
-          <span class="ou-label">O/U 2.5</span>
-          <label>Over <input type="number" id="ou-25-over" step="0.01" min="1.01" placeholder="1.85"></label>
-          <label>Under <input type="number" id="ou-25-under" step="0.01" min="1.01" placeholder="2.00"></label>
-        </div>
-        <div class="ou-row">
-          <span class="ou-label">O/U 3.5</span>
-          <label>Over <input type="number" id="ou-35-over" step="0.01" min="1.01" placeholder="2.50"></label>
-          <label>Under <input type="number" id="ou-35-under" step="0.01" min="1.01" placeholder="1.55"></label>
-        </div>
-      </div>
-
-      <button id="calculate-btn" class="calculate-btn">Calculate</button>
-    </details>
   </div>
 
-  <script type="module" src="js/app.js?v=1775421463"></script>
+  <script type="module" src="js/app.js?v=1775421661"></script>
 </body>
 </html>
