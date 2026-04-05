@@ -174,6 +174,14 @@ export function setupSliders() {
   kellySlider.addEventListener('input', () => {
     kellyValue.textContent = Math.round(parseFloat(kellySlider.value) * 100) + '%';
   });
+
+  const prevSeasonSlider = document.getElementById('prev-season-slider');
+  const prevSeasonValue = document.getElementById('prev-season-value');
+  if (prevSeasonSlider) {
+    prevSeasonSlider.addEventListener('input', () => {
+      prevSeasonValue.textContent = prevSeasonSlider.value + '%';
+    });
+  }
 }
 
 /* === Help Modal System === */
@@ -199,6 +207,30 @@ const helpContent = {
       </div>
       <div class="help-section">
         <p><strong>Recommendation:</strong> Leave it on auto (default) unless you have a specific reason to override. If you believe bookmaker odds are particularly sharp for a league, increase it. If you think your model has an edge, decrease it.</p>
+      </div>
+    `,
+  },
+  'prev-season': {
+    title: 'Previous Season Weight',
+    body: `
+      <p><strong>What it does:</strong> Controls how much last season's Elo ratings carry over to the current season. Teams that performed well last year start with higher ratings, giving them a head start in predictions.</p>
+      <p><strong>Higher values (70-100%):</strong> Strong carryover — last season's top teams are clearly favored in early-season predictions. Useful at the start of the season when current data is scarce.</p>
+      <p><strong>Lower values (0-20%):</strong> Minimal carryover — all teams start near equal (Elo 1500). Useful later in the season when current results tell the full story.</p>
+      <div class="help-section">
+        <p><strong>How it works:</strong></p>
+        <ul>
+          <li>End-of-season Elo ratings from last year are loaded</li>
+          <li>The slider controls how much those ratings are "regressed toward the mean" (pulled back toward 1500)</li>
+          <li>At 100%: full carryover, no regression — a team rated 1600 stays at 1600</li>
+          <li>At 50%: half regression — a team rated 1600 becomes 1550</li>
+          <li>At 0%: full regression — all teams start at 1500 regardless of last season</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Auto-adjustment:</strong> The default value decreases rapidly as the season progresses. With ~48 matches played (about round 8), the slider reaches 0% because the current season model has enough data to stand on its own.</p>
+      </div>
+      <div class="help-section">
+        <p><strong>Recommendation:</strong> Leave on auto. Increase manually if you believe last season's results are strongly predictive (stable rosters). Decrease if many teams had major squad changes.</p>
       </div>
     `,
   },
