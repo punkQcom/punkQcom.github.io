@@ -412,7 +412,7 @@ async function handleUpdateData() {
 function updateLastUpdateDisplay(isoString) {
   const el = document.getElementById('last-update');
   if (isoString) {
-    el.textContent = `Last updated: ${new Date(isoString).toLocaleString()}`;
+    el.textContent = `Last updated: ${new Date(isoString).toLocaleString('en-GB', { hour12: false })}`;
   } else {
     el.textContent = 'No data yet';
   }
