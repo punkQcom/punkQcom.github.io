@@ -202,6 +202,33 @@ input[type="range"] {
   color: #e0e0e0;
 }
 
+.results-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.recalc-btn {
+  padding: 6px 14px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.recalc-btn:hover {
+  background: #1d4ed8;
+}
+
+.recalc-btn:disabled {
+  background: #3a3a5a;
+  color: #6b7280;
+  cursor: default;
+}
+
 .hidden {
   display: none !important;
 }
