@@ -62,14 +62,25 @@ async function loadAndShowLeague(leagueId, season) {
 
 // ── Date-based match list ────────────────────────────────────────────
 
+// TODO: Remove after real odds are flowing from backend
+const DEV_ODDS = {
+  'Inter Turku vs VPS':       { home: 1.72, draw: 3.80, away: 4.50 },
+  'HJK Helsinki vs SJK Seinajoki': { home: 1.35, draw: 5.00, away: 7.50 },
+  'Ilves vs KuPS':            { home: 3.10, draw: 3.40, away: 2.20 },
+  'Jaro vs Lahti':            { home: 4.20, draw: 3.60, away: 1.80 },
+  'IFK Mariehamn vs TPS':     { home: 2.90, draw: 3.30, away: 2.40 },
+  'Gnistan vs AC Oulu':       { home: 5.50, draw: 4.00, away: 1.55 },
+};
+
 function buildDateGroups(matches, upcoming, odds) {
   const groups = {};
 
   for (const m of matches) {
     const d = m.date || 'unknown';
     if (!groups[d]) groups[d] = [];
-    // Odds may already be embedded on the match object from backend
-    groups[d].push({ ...m, status: 'finished' });
+    // Use embedded odds, or fall back to dev odds for testing
+    const devOdds = DEV_ODDS[`${m.homeTeam} vs ${m.awayTeam}`] || null;
+    groups[d].push({ ...m, odds: m.odds || devOdds, status: 'finished' });
   }
 
   for (const m of upcoming) {
@@ -154,19 +165,19 @@ function renderDateView() {
 
     for (const m of matches) {
       if (m.status === 'finished') {
-        let oddsHtml = '';
+        let oddsRow = '';
         if (m.odds && m.odds.home && m.odds.draw && m.odds.away) {
           const result = m.homeGoals > m.awayGoals ? '1' : m.homeGoals === m.awayGoals ? 'X' : '2';
-          oddsHtml = `<span class="match-odds finished-odds">` +
-            `<span class="odd${result === '1' ? ' correct' : ''}">${m.odds.home.toFixed(2)}</span>` +
-            ` / <span class="odd${result === 'X' ? ' correct' : ''}">${m.odds.draw.toFixed(2)}</span>` +
-            ` / <span class="odd${result === '2' ? ' correct' : ''}">${m.odds.away.toFixed(2)}</span>` +
-            `</span>`;
+          oddsRow = `<div class="match-odds-table">
+            <span class="odds-cell${result === '1' ? ' correct' : ''}"><span class="odds-label">1</span>${m.odds.home.toFixed(2)}</span>
+            <span class="odds-cell${result === 'X' ? ' correct' : ''}"><span class="odds-label">X</span>${m.odds.draw.toFixed(2)}</span>
+            <span class="odds-cell${result === '2' ? ' correct' : ''}"><span class="odds-label">2</span>${m.odds.away.toFixed(2)}</span>
+          </div>`;
         }
         html += `<div class="match-row finished" data-home="${m.homeTeam}" data-away="${m.awayTeam}">
           <span class="match-teams">${m.homeTeam} vs ${m.awayTeam}</span>
           <span class="match-result-group">
-            ${oddsHtml}
+            ${oddsRow}
             <span class="match-score">${m.homeGoals} - ${m.awayGoals}</span>
           </span>
         </div>`;
