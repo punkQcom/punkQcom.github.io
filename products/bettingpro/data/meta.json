@@ -1,0 +1,12 @@
+{
+  "lastUpdate": "2000-01-01T00:00:00Z",
+  "leagues": [
+    {
+      "id": "veikkausliiga",
+      "name": "Veikkausliiga",
+      "sport": "football",
+      "country": "Finland",
+      "season": 2026
+    }
+  ]
+}
