@@ -411,6 +411,16 @@ input[type="range"] {
   header h1 {
     font-size: 1.5rem;
   }
+
+  .match-result-group,
+  .col-headers {
+    grid-template-columns: 140px 0px 45px;
+  }
+
+  .match-col-odds,
+  .col-h:nth-child(2) {
+    display: none;
+  }
 }
 
 /* Selector bar */
@@ -551,10 +561,7 @@ details.card[open] summary h2::before {
   letter-spacing: 0.05em;
 }
 
-.round-meta {
-  font-size: 0.8rem;
-  color: #6b7280;
-}
+/* .round-meta replaced by .col-headers */
 
 /* Finished match rows */
 .match-row.finished {
@@ -565,31 +572,51 @@ details.card[open] summary h2::before {
   background: rgba(96, 165, 250, 0.1);
 }
 
-.match-score {
+/* (match-score replaced by match-col-result in grid layout) */
+
+/* Column-aligned result group (grid) */
+.match-result-group,
+.col-headers {
+  display: grid;
+  grid-template-columns: 168px 130px 55px;
+  gap: 10px;
+  align-items: center;
+}
+
+.col-headers {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.col-h {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.match-col-pred {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.match-col-odds {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+}
+
+.match-col-result {
   font-family: monospace;
   font-size: 0.95rem;
   font-weight: 700;
   color: #e0e0e0;
-  min-width: 40px;
   text-align: center;
 }
 
-.match-score.not-played {
+.match-col-result.not-played {
   color: #4b5563;
   cursor: help;
-}
-
-/* Finished match result group (odds + score) */
-.match-result-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* Odds table for finished matches */
-.match-odds-table {
-  display: flex;
-  gap: 2px;
 }
 
 .odds-cell {
@@ -652,12 +679,7 @@ details.card[open] summary h2::before {
   margin: 4px 0;
 }
 
-/* Prediction indicators on upcoming matches */
-.match-prediction {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+/* Prediction indicators */
 
 .pred-score {
   font-family: monospace;
