@@ -574,6 +574,11 @@ details.card[open] summary h2::before {
   text-align: center;
 }
 
+.match-score.not-played {
+  color: #4b5563;
+  cursor: help;
+}
+
 /* Finished match result group (odds + score) */
 .match-result-group {
   display: flex;
