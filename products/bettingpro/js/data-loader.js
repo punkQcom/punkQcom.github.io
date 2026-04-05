@@ -91,6 +91,30 @@ export async function loadLeagueData(leagueId, season) {
 }
 
 /**
+ * Load previous season matches for Elo carryover.
+ * @param {string} leagueId
+ * @param {number[]} seasons - Array of previous season years
+ * @returns {Array} Combined array of all previous season matches
+ */
+export async function loadPreviousSeasons(leagueId, seasons) {
+  const allMatches = [];
+
+  for (const season of seasons) {
+    const lsKey = `${leagueId}_${season}`;
+    try {
+      const matches = await fetchJSON(`${DATA_BASE}/${leagueId}-${season}-matches.json`);
+      lsSet(`${lsKey}_matches`, matches);
+      allMatches.push(...matches);
+    } catch {
+      const cached = lsGet(`${lsKey}_matches`);
+      if (cached) allMatches.push(...cached);
+    }
+  }
+
+  return allMatches;
+}
+
+/**
  * Trigger a full data update via the Azure backend.
  * Returns the fresh data directly from the response.
  */

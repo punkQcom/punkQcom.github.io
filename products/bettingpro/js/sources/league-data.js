@@ -10,67 +10,101 @@ import { getCachedMatches, getCachedOdds, getCachedLeagues } from '../api-client
 export const name = 'League Data';
 
 /**
- * Calculate team averages from match data.
- * Returns { homeScored, homeConceded, awayScored, awayConceded } per team.
+ * Calculate time-decay weight for a match.
+ * More recent matches get higher weight. Weight = exp(-ln2 * daysSince / halfLife).
+ * @param {string} matchDate - ISO date string
+ * @param {string} referenceDate - ISO date string (defaults to today)
+ * @param {number} halfLife - Half-life in days (default 60)
+ * @returns {number} Weight between 0 and 1
  */
-export function calculateTeamAverages(matches) {
+function decayWeight(matchDate, referenceDate, halfLife) {
+  const ref = new Date(referenceDate + 'T12:00:00');
+  const match = new Date(matchDate + 'T12:00:00');
+  const daysSince = Math.max(0, (ref - match) / (1000 * 60 * 60 * 24));
+  return Math.exp(-Math.LN2 * daysSince / halfLife);
+}
+
+/**
+ * Calculate team averages from match data with optional time-decay weighting.
+ * Returns { homeScored, homeConceded, awayScored, awayConceded } per team.
+ * @param {Array} matches - Finished matches
+ * @param {Object} options - Optional: { halfLife: number, referenceDate: string }
+ */
+export function calculateTeamAverages(matches, options = {}) {
   if (matches.length === 0) return {};
 
-  // Bayesian shrinkage: regress toward league average with early-season data.
-  // PRIOR_WEIGHT = number of "virtual games" at league average.
-  // With 1 real game: 17% actual + 83% league avg.
-  // With 5 games: 50/50. With 15 games: 75% actual.
+  const { halfLife = 0, referenceDate } = options;
+  const useDecay = halfLife > 0 && referenceDate;
+
+  // Bayesian shrinkage: PRIOR_WEIGHT = number of "virtual games" at league average.
   const PRIOR_WEIGHT = 5;
 
-  const totalGoals = matches.reduce((s, m) => s + m.homeGoals + m.awayGoals, 0);
-  const leagueAvg = totalGoals / matches.length;
+  // Calculate weighted league average
+  let totalWeightedGoals = 0;
+  let totalWeight = 0;
+  for (const m of matches) {
+    const w = useDecay ? decayWeight(m.date, referenceDate, halfLife) : 1;
+    totalWeightedGoals += (m.homeGoals + m.awayGoals) * w;
+    totalWeight += w;
+  }
+  const leagueAvg = totalWeight > 0 ? totalWeightedGoals / totalWeight : 2.5;
   const avgPerTeam = leagueAvg / 2;
 
   const teams = {};
   for (const match of matches) {
+    const w = useDecay ? decayWeight(match.date, referenceDate, halfLife) : 1;
+
     if (!teams[match.homeTeam]) {
-      teams[match.homeTeam] = { hFor: [], hAgainst: [], aFor: [], aAgainst: [] };
+      teams[match.homeTeam] = { hFor: [], hAgainst: [], aFor: [], aAgainst: [], hWeights: [], aWeights: [] };
     }
     teams[match.homeTeam].hFor.push(match.homeGoals);
     teams[match.homeTeam].hAgainst.push(match.awayGoals);
+    teams[match.homeTeam].hWeights.push(w);
 
     if (!teams[match.awayTeam]) {
-      teams[match.awayTeam] = { hFor: [], hAgainst: [], aFor: [], aAgainst: [] };
+      teams[match.awayTeam] = { hFor: [], hAgainst: [], aFor: [], aAgainst: [], hWeights: [], aWeights: [] };
     }
     teams[match.awayTeam].aFor.push(match.awayGoals);
     teams[match.awayTeam].aAgainst.push(match.homeGoals);
+    teams[match.awayTeam].aWeights.push(w);
   }
 
-  const sum = arr => arr.reduce((a, b) => a + b, 0);
-  const avg = arr => arr.length > 0 ? sum(arr) / arr.length : null;
+  const wSum = (arr, weights) => arr.reduce((s, v, i) => s + v * weights[i], 0);
+  const wTotal = (weights) => weights.reduce((a, b) => a + b, 0);
+  const wAvg = (arr, weights) => {
+    const tw = wTotal(weights);
+    return tw > 0 ? wSum(arr, weights) / tw : null;
+  };
 
   const averages = {};
   for (const [team, data] of Object.entries(teams)) {
-    const homeGames = data.hFor.length;
-    const awayGames = data.aFor.length;
-    const totalGames = homeGames + awayGames;
+    const homeEffective = wTotal(data.hWeights);
+    const awayEffective = wTotal(data.aWeights);
+    const totalEffective = homeEffective + awayEffective;
 
-    // Raw venue-specific averages (null if no games at that venue)
-    const rawHS = avg(data.hFor);
-    const rawHC = avg(data.hAgainst);
-    const rawAS = avg(data.aFor);
-    const rawAC = avg(data.aAgainst);
+    const rawHS = wAvg(data.hFor, data.hWeights);
+    const rawHC = wAvg(data.hAgainst, data.hWeights);
+    const rawAS = wAvg(data.aFor, data.aWeights);
+    const rawAC = wAvg(data.aAgainst, data.aWeights);
 
     // Overall averages as fallback when team hasn't played at a venue
-    const overallScored = (sum(data.hFor) + sum(data.aFor)) / totalGames;
-    const overallConceded = (sum(data.hAgainst) + sum(data.aAgainst)) / totalGames;
+    const allWeights = [...data.hWeights, ...data.aWeights];
+    const allScored = [...data.hFor, ...data.aFor];
+    const allConceded = [...data.hAgainst, ...data.aAgainst];
+    const overallScored = wAvg(allScored, allWeights) || avgPerTeam;
+    const overallConceded = wAvg(allConceded, allWeights) || avgPerTeam;
 
     const hs = rawHS !== null ? rawHS : overallScored;
     const hc = rawHC !== null ? rawHC : overallConceded;
     const as = rawAS !== null ? rawAS : overallScored;
     const ac = rawAC !== null ? rawAC : overallConceded;
 
-    // Shrink toward league average — less data = more regression to mean
-    const w = totalGames / (totalGames + PRIOR_WEIGHT);
+    // Shrink toward league average — effective sample size replaces raw count
+    const w = totalEffective / (totalEffective + PRIOR_WEIGHT);
 
     averages[team] = {
       team,
-      played: totalGames,
+      played: data.hFor.length + data.aFor.length,
       homeScored: w * hs + (1 - w) * avgPerTeam,
       homeConceded: w * hc + (1 - w) * avgPerTeam,
       awayScored: w * as + (1 - w) * avgPerTeam,
@@ -84,10 +118,22 @@ export function calculateTeamAverages(matches) {
 /**
  * Calculate league average goals per game.
  */
-export function calculateLeagueAvg(matches) {
+export function calculateLeagueAvg(matches, options = {}) {
   if (matches.length === 0) return 2.5;
-  const totalGoals = matches.reduce((sum, m) => sum + m.homeGoals + m.awayGoals, 0);
-  return Math.max(0.1, totalGoals / matches.length);
+  const { halfLife = 0, referenceDate } = options;
+  const useDecay = halfLife > 0 && referenceDate;
+  if (!useDecay) {
+    const totalGoals = matches.reduce((sum, m) => sum + m.homeGoals + m.awayGoals, 0);
+    return Math.max(0.1, totalGoals / matches.length);
+  }
+  let totalWeightedGoals = 0;
+  let totalWeight = 0;
+  for (const m of matches) {
+    const w = decayWeight(m.date, referenceDate, halfLife);
+    totalWeightedGoals += (m.homeGoals + m.awayGoals) * w;
+    totalWeight += w;
+  }
+  return Math.max(0.1, totalWeight > 0 ? totalWeightedGoals / totalWeight : 2.5);
 }
 
 /**

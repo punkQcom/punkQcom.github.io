@@ -53,6 +53,21 @@ export function calculateEloRatings(matches, initialRatings = {}) {
 }
 
 /**
+ * Regress Elo ratings toward the mean between seasons.
+ * Accounts for roster changes, coaching changes, etc.
+ * @param {Object} ratings - { teamName: rating }
+ * @param {number} factor - Regression factor (0.5 = pull halfway to 1500)
+ * @returns {Object} Regressed ratings
+ */
+export function regressToMean(ratings, factor = 0.5) {
+  const result = {};
+  for (const [team, rating] of Object.entries(ratings)) {
+    result[team] = DEFAULT_RATING + (rating - DEFAULT_RATING) * (1 - factor);
+  }
+  return result;
+}
+
+/**
  * Convert Elo ratings to Poisson lambda values.
  * Maps the Elo advantage into expected goals using the league average.
  * @param {number} homeElo - Home team Elo rating
