@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>BettingPro — Sports Betting Calculator</title>
-  <link rel="stylesheet" href="css/style.css?v=1775422006">
+  <link rel="stylesheet" href="css/style.css?v=1775422066">
 </head>
 <body>
   <div class="container">
@@ -109,7 +109,7 @@
     <details class="card">
       <summary><h2 style="display:inline">Settings</h2></summary>
       <div class="setting">
-        <label>Market Trust: <span id="market-trust-value">50%</span>
+        <label>Market Trust: <span id="market-trust-value">--</span>
           <span class="help-tip" title="How much to trust bookmaker odds vs our statistical model. Higher = rely more on the betting market (recommended early in the season when little match data is available). Lower = rely more on our Poisson/Elo model (better later in the season with more data). At 50%, the model needs ~30 played matches to reach equal weight with the market.">?</span>
         </label>
         <input type="range" id="market-trust-slider" min="0" max="100" step="5" value="50">
@@ -136,6 +136,6 @@
 
   </div>
 
-  <script type="module" src="js/app.js?v=1775422006"></script>
+  <script type="module" src="js/app.js?v=1775422066"></script>
 </body>
 </html>

@@ -159,6 +159,23 @@ function populateSeasonSelect(league) {
   select.innerHTML = `<option value="${league.season}">${league.season}</option>`;
 }
 
+/**
+ * Set Market Trust slider default based on how many matches have been played.
+ * Early season (few matches) → high trust in market.
+ * Late season (many matches) → low trust, our model is reliable.
+ * Veikkausliiga: 12 teams, 33 rounds, ~198 matches total.
+ */
+function updateMarketTrustDefault(matchCount) {
+  const slider = document.getElementById('market-trust-slider');
+  const label = document.getElementById('market-trust-value');
+  if (!slider) return;
+
+  // Map: 0 matches → 80%, 50 matches → 50%, 150+ matches → 15%
+  const pct = Math.max(10, Math.min(85, Math.round(80 - matchCount * 0.45)));
+  slider.value = pct;
+  if (label) label.textContent = pct + '%';
+}
+
 async function loadAndShowLeague(leagueId, season) {
   currentLeagueId = leagueId;
   const listEl = document.getElementById('match-list');
@@ -166,6 +183,7 @@ async function loadAndShowLeague(leagueId, season) {
 
   currentLeagueData = await loadLeagueData(leagueId, season);
   populateBookmakerDropdown(currentLeagueData);
+  updateMarketTrustDefault((currentLeagueData?.matches || []).length);
   initDateView(currentLeagueData);
 }
 
@@ -691,6 +709,7 @@ async function handleUpdateData() {
     currentMeta = result.meta;
 
     populateBookmakerDropdown(currentLeagueData);
+    updateMarketTrustDefault((currentLeagueData?.matches || []).length);
     initDateView(currentLeagueData);
     updateLastUpdateDisplay(result.meta.lastUpdate);
 
