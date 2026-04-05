@@ -2,18 +2,22 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { expectedGoals, scoreMatrix } from './poisson.js?v=1775425636';
-import { applyDixonColes } from './dixon-coles.js?v=1775425636';
-import { shinProbabilities } from './shin.js?v=1775425636';
-import { calculateEloRatings, eloToPoisson } from './elo.js?v=1775425636';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775425636';
-import { calculateTeamAverages, calculateLeagueAvg } from './sources/league-data.js?v=1775425636';
+import { shinProbabilities } from './shin.js?v=1775430190';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775430190';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775430190';
+import {
+  buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
+} from './prediction.js?v=1775430190';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775430190';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775430190';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775430190';
 
-import { loadMeta, loadLeagueData, triggerUpdate } from './data-loader.js?v=1775425636';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775430190';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775430190';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, setupSliders, setupHelpModal
-} from './ui.js?v=1775425636';
+} from './ui.js?v=1775430190';
 
 // Loaded data state
 let currentMeta = null;
@@ -27,6 +31,9 @@ let visibleRange = { start: 0, end: 0 };
 
 // Bookmaker selection
 let selectedBookmaker = 'veikkaus';
+
+// Elo carryover from previous seasons
+let initialEloRatings = {};
 
 /**
  * Get the model trust threshold from the Market Trust slider.
@@ -189,9 +196,53 @@ async function loadAndShowLeague(leagueId, season) {
   listEl.innerHTML = '<p class="muted">Loading matches...</p>';
 
   currentLeagueData = await loadLeagueData(leagueId, season);
+
+  // Load previous season data for Elo carryover
+  initialEloRatings = {};
+  const league = (currentMeta?.leagues || []).find(l => l.id === leagueId);
+  const prevSeasons = currentMeta?.previousSeasons?.[leagueId] || league?.previousSeasons || [];
+  if (prevSeasons.length > 0) {
+    try {
+      const prevMatches = await loadPreviousSeasons(leagueId, prevSeasons);
+      if (prevMatches.length > 0) {
+        const endOfSeasonElo = calculateEloRatings(prevMatches);
+        initialEloRatings = regressToMean(endOfSeasonElo, 0.5);
+      }
+    } catch {
+      // Previous season loading is best-effort
+    }
+  }
+
   populateBookmakerDropdown(currentLeagueData);
   updateMarketTrustDefault((currentLeagueData?.matches || []).length);
   initDateView(currentLeagueData);
+
+  // Elo ratings table
+  const eloData = buildEloTable(currentLeagueData?.matches || [], initialEloRatings);
+  renderEloTable(eloData, 'elo-table');
+
+  // Prediction tracker (walk-forward, runs in background to avoid blocking UI)
+  const matches = currentLeagueData?.matches || [];
+  if (matches.length >= 10) {
+    setTimeout(() => {
+      const trackerOpts = {
+        rho: parseFloat(document.getElementById('rho-slider')?.value || -0.13),
+        modelTrustThreshold: getModelTrustThreshold(),
+        halfLife: 60,
+        initialEloRatings,
+      };
+      const trackerData = generatePredictionTracker(matches, trackerOpts);
+      renderTracker(trackerData, 'tracker-container');
+
+      // P/L simulation
+      const plData = simulateSeasonPL(matches, {
+        ...trackerOpts,
+        kellyFrac: parseFloat(document.getElementById('kelly-fraction-slider')?.value || 0.25),
+        bankroll: parseFloat(document.getElementById('bankroll')?.value || 1000),
+      });
+      renderPLSimulation(plData, 'pl-container');
+    }, 100);
+  }
 }
 
 // ── Date-based match list ────────────────────────────────────────────
@@ -252,87 +303,20 @@ function formatDate(dateStr) {
   return label;
 }
 
-/**
- * Build a blended score matrix from Poisson model + Elo ratings.
- * Returns the Dixon-Coles-corrected matrix with Elo-adjusted lambdas.
- */
-function buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho) {
-  const averages = calculateTeamAverages(matches);
-  const homeStats = averages[homeName] || { homeScored: leagueAvg / 2, homeConceded: leagueAvg / 2 };
-  const awayStats = averages[awayName] || { awayScored: leagueAvg / 2, awayConceded: leagueAvg / 2 };
+// buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure
+// are now imported from prediction.js
 
-  // Poisson lambdas from team stats
-  const poissonEg = expectedGoals(
-    homeStats.homeScored, homeStats.homeConceded,
-    awayStats.awayScored, awayStats.awayConceded,
-    leagueAvg
-  );
-
-  // Elo lambdas from power ratings
-  const eloRatings = calculateEloRatings(matches);
-  const homeElo = eloRatings[homeName] || 1500;
-  const awayElo = eloRatings[awayName] || 1500;
-  const eloEg = eloToPoisson(homeElo, awayElo, leagueAvg);
-
-  // Blend: early season → more Elo weight, late season → more Poisson weight
-  const eloWeight = Math.max(0.2, 1 - matches.length / (matches.length + getModelTrustThreshold()));
-  const lambdaHome = eloWeight * eloEg.lambdaHome + (1 - eloWeight) * poissonEg.lambdaHome;
-  const lambdaAway = eloWeight * eloEg.lambdaAway + (1 - eloWeight) * poissonEg.lambdaAway;
-
-  const rawMatrix = scoreMatrix(lambdaHome, lambdaAway, 7);
-  return applyDixonColes(rawMatrix, lambdaHome, lambdaAway, rho);
-}
 
 /**
- * Blend model outcomes with odds-derived probabilities.
- * Early season: trust odds more. Late season: trust model more.
- */
-function blendWithOdds(modelOutcomes, oddsObj, matchCount) {
-  if (!oddsObj) return modelOutcomes;
-
-  // Get consensus odds for blending (average across all bookmakers)
-  const consensus = getConsensusOdds(oddsObj);
-  if (!consensus || !consensus.home || !consensus.draw || !consensus.away) return modelOutcomes;
-
-  // Convert odds to true probabilities via Shin's method
-  const oddsProbs = shinProbabilities([consensus.home, consensus.draw, consensus.away]);
-  if (!oddsProbs || oddsProbs.length !== 3) return modelOutcomes;
-
-  // Weight: more matches → trust model more
-  const modelWeight = matchCount / (matchCount + getModelTrustThreshold());
-
-  const raw = {
-    home: modelWeight * modelOutcomes.home + (1 - modelWeight) * oddsProbs[0],
-    draw: modelWeight * modelOutcomes.draw + (1 - modelWeight) * oddsProbs[1],
-    away: modelWeight * modelOutcomes.away + (1 - modelWeight) * oddsProbs[2],
-  };
-  // Normalize to ensure probabilities sum to 1.0 (Dixon-Coles can shift the total)
-  const sum = raw.home + raw.draw + raw.away;
-  return { home: raw.home / sum, draw: raw.draw / sum, away: raw.away / sum };
-}
-
-/**
- * Quick prediction for a match — returns predicted score and outcome probabilities.
- * Blends Poisson+Elo model with odds-derived baseline.
+ * Quick prediction for a match — thin wrapper around predictMatchPure.
+ * Reads DOM settings and delegates to the pure function.
  */
 function predictMatch(homeName, awayName) {
   const matches = currentLeagueData?.matches || [];
   if (matches.length === 0) return null;
 
-  const leagueAvg = calculateLeagueAvg(matches);
   const rho = parseFloat(document.getElementById('rho-slider')?.value || -0.13);
-
-  const matrix = buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho);
-
-  // Model outcomes from matrix
-  let home = 0, draw = 0, away = 0;
-  for (let i = 0; i < matrix.length; i++) {
-    for (let j = 0; j < matrix[i].length; j++) {
-      if (i > j) home += matrix[i][j];
-      else if (i === j) draw += matrix[i][j];
-      else away += matrix[i][j];
-    }
-  }
+  const threshold = getModelTrustThreshold();
 
   // Get match odds for blending
   const odds = currentLeagueData?.odds || [];
@@ -341,24 +325,14 @@ function predictMatch(homeName, awayName) {
   let matchOddsMulti = findOdds({ homeTeam: homeName, awayTeam: awayName }, odds);
   if (!matchOddsMulti && matchObj?.odds) matchOddsMulti = migrateOdds(matchObj.odds);
 
-  // Blend model with odds
-  const blended = blendWithOdds({ home, draw, away }, matchOddsMulti, matches.length);
-
-  // Rescale matrix cells to match blended 1X2 ratios, then pick best score
-  const homeScale = home > 0 ? blended.home / home : 1;
-  const drawScale = draw > 0 ? blended.draw / draw : 1;
-  const awayScale = away > 0 ? blended.away / away : 1;
-
-  let bestScore = { home: 0, away: 0, prob: 0 };
-  for (let i = 0; i < matrix.length; i++) {
-    for (let j = 0; j < matrix[i].length; j++) {
-      const scale = i > j ? homeScale : i === j ? drawScale : awayScale;
-      const adjusted = matrix[i][j] * scale;
-      if (adjusted > bestScore.prob) bestScore = { home: i, away: j, prob: adjusted };
-    }
-  }
-
-  return { score: `${bestScore.home}-${bestScore.away}`, ...blended };
+  return predictMatchPure(homeName, awayName, matches, {
+    rho,
+    modelTrustThreshold: threshold,
+    consensusOdds: matchOddsMulti,
+    halfLife: 60,
+    referenceDate: new Date().toISOString().slice(0, 10),
+    initialEloRatings,
+  });
 }
 
 function initDateView(data) {
@@ -393,6 +367,8 @@ function renderDateView() {
     html += '<button class="round-nav-btn hide-nav-btn" id="hide-earlier">Hide earlier dates</button>';
   }
 
+  const today = new Date().toISOString().slice(0, 10);
+
   for (let i = visibleRange.start; i <= visibleRange.end && i < allDates.length; i++) {
     const date = allDates[i];
     const matches = dateGroups[date] || [];
@@ -400,8 +376,9 @@ function renderDateView() {
     const allFinished = matches.every(m => m.status === 'finished');
     const allUpcoming = matches.every(m => m.status === 'upcoming');
     const statusLabel = allFinished ? 'Results' : allUpcoming ? 'Upcoming' : 'In Progress';
+    const isToday = date === today;
 
-    html += `<div class="match-round-header" data-date="${date}">
+    html += `<div class="match-round-header${isToday ? ' today-group' : ''}" data-date="${date}"${isToday ? ' id="today-header"' : ''}>
       <span class="round-title">${formatDate(date)}</span>
       <span class="col-headers">
         <span class="col-h">Prediction</span>
@@ -509,6 +486,21 @@ function renderDateView() {
     document.getElementById('results').classList.add('hidden');
     renderDateView();
   });
+
+  // Auto-scroll to today's date or first upcoming group
+  requestAnimationFrame(() => {
+    const todayEl = document.getElementById('today-header');
+    if (todayEl) {
+      todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    // No matches today — scroll to first upcoming group
+    const firstUpcoming = listEl.querySelector('.match-row.upcoming');
+    if (firstUpcoming) {
+      const header = firstUpcoming.closest('.match-date-group')?.previousElementSibling;
+      if (header) header.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
 }
 
 function findOdds(match, odds) {
@@ -549,7 +541,7 @@ function analyzeMatch(homeName, awayName) {
 
   // Team stats from historical data
   const matches = currentLeagueData?.matches || [];
-  const leagueAvg = calculateLeagueAvg(matches);
+  const leagueAvg = calculateLeagueAvg(matches, { halfLife: 60, referenceDate: new Date().toISOString().slice(0, 10) });
 
   // Odds — resolve for selected bookmaker
   const odds = currentLeagueData?.odds || [];
@@ -584,18 +576,6 @@ function analyzeMatch(homeName, awayName) {
 
 // ── Calculation (same math, parameterized) ──────────────────────────
 
-function calculateOutcomes(matrix) {
-  let home = 0, draw = 0, away = 0;
-  for (let i = 0; i < matrix.length; i++) {
-    for (let j = 0; j < matrix[i].length; j++) {
-      if (i > j) home += matrix[i][j];
-      else if (i === j) draw += matrix[i][j];
-      else away += matrix[i][j];
-    }
-  }
-  return { home, draw, away };
-}
-
 function calculateOverUnder(matrix, lines) {
   const maxGoals = matrix.length;
   const totalGoalsProbs = [];
@@ -619,12 +599,15 @@ function calculateOverUnder(matrix, lines) {
 function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds, rho, kellyFrac, bankroll) {
   document.getElementById('selected-match-title').textContent = `${homeName} vs ${awayName}`;
 
+  const threshold = getModelTrustThreshold();
+  const decayOptions = { halfLife: 60, referenceDate: new Date().toISOString().slice(0, 10) };
+
   // Blended score matrix (Poisson + Elo)
-  const matrix = buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho);
+  const matrix = buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho, threshold, decayOptions, initialEloRatings);
   const modelOutcomes = calculateOutcomes(matrix);
 
   // Blend model outcomes with odds-derived probabilities
-  const outcomes = blendWithOdds(modelOutcomes, matchOddsMulti, matches.length);
+  const outcomes = blendWithOdds(modelOutcomes, matchOddsMulti, matches.length, threshold);
 
   // Rescale matrix cells to match blended 1X2 ratios for display
   const homeScale = modelOutcomes.home > 0 ? outcomes.home / modelOutcomes.home : 1;
@@ -707,62 +690,6 @@ function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds,
 }
 
 
-// ── Update Data ─────────────────────────────────────────────────────
-
-async function handleUpdateData() {
-  const btn = document.getElementById('update-data-btn');
-  const statusDiv = document.getElementById('update-status');
-  const messageEl = document.getElementById('update-message');
-
-  btn.disabled = true;
-  statusDiv.classList.remove('hidden');
-  messageEl.textContent = 'Updating...';
-  messageEl.style.color = '';
-
-  // Safety: always hide spinner after 130s no matter what
-  const safetyTimer = setTimeout(() => {
-    statusDiv.classList.add('hidden');
-    messageEl.style.color = '';
-    btn.disabled = false;
-  }, 130000);
-
-  try {
-    const leagueId = currentLeagueId || document.getElementById('league-select').value;
-    messageEl.textContent = `Fetching data for ${leagueId}...`;
-
-    const result = await triggerUpdate(leagueId);
-
-    // Use the returned data directly
-    currentLeagueData = {
-      matches: result.matches,
-      upcoming: result.upcoming,
-      odds: result.odds,
-    };
-    currentMeta = result.meta;
-
-    populateBookmakerDropdown(currentLeagueData);
-    updateMarketTrustDefault((currentLeagueData?.matches || []).length);
-    initDateView(currentLeagueData);
-    updateLastUpdateDisplay(result.meta.lastUpdate);
-
-    messageEl.textContent = 'Done! Data updated.';
-    btn.disabled = true; // Keep disabled — data is now fresh
-    document.getElementById('update-btn-wrapper').title = 'Data is fresh (less than 6 hours old)';
-  } catch (err) {
-    console.error('Update failed:', err);
-    messageEl.textContent = `Error: ${err.message}`;
-    messageEl.style.color = '#f87171';
-    btn.disabled = false;
-    document.getElementById('update-btn-wrapper').title = 'Click to fetch latest data';
-  } finally {
-    clearTimeout(safetyTimer);
-    setTimeout(() => {
-      statusDiv.classList.add('hidden');
-      messageEl.style.color = '';
-    }, 5000);
-  }
-}
-
 function updateLastUpdateDisplay(isoString) {
   const el = document.getElementById('last-update');
   if (isoString) {
@@ -797,9 +724,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Update button
-  document.getElementById('update-data-btn').addEventListener('click', handleUpdateData);
-
   // Close results button
   document.getElementById('close-results').addEventListener('click', () => {
     document.getElementById('results').classList.add('hidden');
@@ -831,11 +755,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load initial data
   currentMeta = await loadMeta();
   updateLastUpdateDisplay(currentMeta.lastUpdate);
-
-  // Enable/disable update button based on freshness
-  const updateBtn = document.getElementById('update-data-btn');
-  updateBtn.disabled = currentMeta.isFresh;
-  document.getElementById('update-btn-wrapper').title = currentMeta.isFresh ? 'Data is fresh (less than 6 hours old)' : 'Click to fetch latest data';
 
   // Populate selectors and load first league
   populateLeagueDropdown('football');

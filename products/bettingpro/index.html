@@ -8,26 +8,15 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>BettingPro — Sports Betting Calculator</title>
-  <link rel="stylesheet" href="css/style.css?v=1775425636">
+  <link rel="stylesheet" href="css/style.css?v=1775430190">
 </head>
 <body>
   <div class="container">
     <header>
       <h1>BettingPro</h1>
       <p class="subtitle">Sports Betting Probability Calculator</p>
+      <span id="last-update" class="last-update"></span>
     </header>
-
-    <!-- Update Bar -->
-    <section class="card update-data-bar">
-      <div class="update-controls">
-        <span id="last-update" class="last-update"></span>
-        <span id="update-btn-wrapper" class="update-btn-wrapper" title="Data is fresh (less than 6 hours old)"><button id="update-data-btn" class="update-btn" disabled>Update Data</button></span>
-      </div>
-      <div id="update-status" class="update-status hidden">
-        <span class="spinner"></span>
-        <span id="update-message">Updating...</span>
-      </div>
-    </section>
 
     <!-- Selector Bar -->
     <section class="card selector-bar">
@@ -138,6 +127,24 @@
       </div>
     </details>
 
+    <!-- Season P/L Simulation -->
+    <details class="card">
+      <summary><h2 style="display:inline">Season P/L Simulation</h2></summary>
+      <div id="pl-container"></div>
+    </details>
+
+    <!-- Prediction Tracker -->
+    <details class="card">
+      <summary><h2 style="display:inline">Prediction Tracker</h2></summary>
+      <div id="tracker-container"></div>
+    </details>
+
+    <!-- Elo Ratings -->
+    <details class="card">
+      <summary><h2 style="display:inline">Elo Ratings</h2></summary>
+      <div id="elo-table"></div>
+    </details>
+
     <!-- Help Modal -->
     <div id="help-modal" class="help-modal hidden">
       <div class="help-modal-backdrop"></div>
@@ -152,6 +159,6 @@
 
   </div>
 
-  <script type="module" src="js/app.js?v=1775425636"></script>
+  <script type="module" src="js/app.js?v=1775430190"></script>
 </body>
 </html>

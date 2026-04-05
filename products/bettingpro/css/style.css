@@ -855,3 +855,129 @@ details.card[open] summary h2::before {
   font-weight: 700;
   background: rgba(74, 222, 128, 0.12);
 }
+
+/* === P/L Chart === */
+.pl-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+  height: 80px;
+  margin-bottom: 16px;
+  padding: 4px 0;
+  border-bottom: 1px solid #3a3a5a;
+}
+
+.pl-bar {
+  flex: 1;
+  min-width: 2px;
+  border-radius: 2px 2px 0 0;
+  transition: opacity 0.15s;
+}
+
+.pl-bar:hover {
+  opacity: 0.7;
+}
+
+.pl-bar-pos { background: #4ade80; }
+.pl-bar-neg { background: #f87171; }
+
+/* === Tracker Summary === */
+.tracker-summary {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.tracker-stat {
+  flex: 1;
+  min-width: 100px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.tracker-stat-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #60a5fa;
+}
+
+.tracker-stat-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.tracker-table td {
+  font-size: 0.8rem;
+}
+
+/* === Elo Table === */
+.elo-table td, .elo-table th {
+  text-align: center;
+}
+
+.elo-table td:nth-child(2) {
+  text-align: left;
+}
+
+.form-cell {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+}
+
+.form-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.form-w { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+.form-d { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.form-l { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+
+/* === Today Highlight === */
+.match-round-header.today-group {
+  border-bottom-color: #4ade80;
+}
+
+.match-round-header.today-group .round-title {
+  color: #4ade80;
+}
+
+/* === Mobile Polish === */
+@media (max-width: 600px) {
+  .score-matrix th,
+  .score-matrix td {
+    font-size: 0.65rem;
+    padding: 3px;
+  }
+
+  .recalculate-row {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .match-col-pred {
+    display: none;
+  }
+
+  .match-result-group,
+  .col-headers {
+    grid-template-columns: 0px 110px 45px;
+  }
+
+  .col-headers .col-h:first-child {
+    display: none;
+  }
+}
