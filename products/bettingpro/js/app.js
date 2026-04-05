@@ -19,9 +19,9 @@ let currentMeta = null;
 let currentLeagueData = null; // { matches, upcoming, odds }
 let currentLeagueId = null;
 
-// Round navigation state
-let roundData = {};         // { [roundNumber]: matches[] }
-let allRoundNumbers = [];   // sorted array of round numbers
+// Date-based navigation state
+let dateGroups = {};        // { [date]: matches[] }
+let allDates = [];          // sorted array of date strings
 let visibleRange = { start: 0, end: 0 };
 
 // ── Selector logic ──────────────────────────────────────────────────
@@ -57,92 +57,98 @@ async function loadAndShowLeague(leagueId, season) {
   listEl.innerHTML = '<p class="muted">Loading matches...</p>';
 
   currentLeagueData = await loadLeagueData(leagueId, season);
-  initRoundView(currentLeagueData);
+  initDateView(currentLeagueData);
 }
 
-// ── Round-based match list ──────────────────────────────────────────
+// ── Date-based match list ────────────────────────────────────────────
 
-function buildRoundData(matches, upcoming, odds) {
-  const rounds = {};
+function buildDateGroups(matches, upcoming, odds) {
+  const groups = {};
 
   for (const m of matches) {
-    const r = m.round || 'unknown';
-    if (!rounds[r]) rounds[r] = [];
-    rounds[r].push({ ...m, status: 'finished' });
+    const d = m.date || 'unknown';
+    if (!groups[d]) groups[d] = [];
+    groups[d].push({ ...m, status: 'finished' });
   }
 
   for (const m of upcoming) {
-    const r = m.round || 'unknown';
-    if (!rounds[r]) rounds[r] = [];
+    const d = m.date || 'unknown';
+    if (!groups[d]) groups[d] = [];
     const matchOdds = findOdds(m, odds);
-    rounds[r].push({ ...m, status: 'upcoming', odds: matchOdds });
+    groups[d].push({ ...m, status: 'upcoming', odds: matchOdds });
   }
 
-  return rounds;
+  return groups;
 }
 
-function findDefaultRange(rounds, roundNumbers) {
+function findDefaultDateRange(groups, dates) {
+  const today = new Date().toISOString().slice(0, 10);
   let lastFinishedIdx = -1;
-  let firstUpcomingIdx = roundNumbers.length;
+  let firstUpcomingIdx = dates.length;
 
-  for (let i = 0; i < roundNumbers.length; i++) {
-    const matches = rounds[roundNumbers[i]];
+  for (let i = 0; i < dates.length; i++) {
+    const matches = groups[dates[i]];
     if (matches.some(m => m.status === 'finished')) lastFinishedIdx = i;
     if (matches.some(m => m.status === 'upcoming') && i < firstUpcomingIdx) firstUpcomingIdx = i;
   }
 
   const start = lastFinishedIdx >= 0 ? lastFinishedIdx : 0;
-  const end = firstUpcomingIdx < roundNumbers.length ? firstUpcomingIdx : roundNumbers.length - 1;
+  const end = firstUpcomingIdx < dates.length ? firstUpcomingIdx : dates.length - 1;
   return { start, end };
 }
 
-function formatDateRange(startDate, endDate) {
-  const opts = { day: 'numeric', month: 'short' };
-  const start = new Date(startDate + 'T12:00:00').toLocaleDateString('en-GB', opts);
-  if (startDate === endDate) return start;
-  const end = new Date(endDate + 'T12:00:00').toLocaleDateString('en-GB', opts);
-  return `${start} – ${end}`;
+function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const isSameDay = (a, b) => a.toDateString() === b.toDateString();
+
+  let label = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  if (isSameDay(d, today)) label = 'Today — ' + label;
+  else if (isSameDay(d, yesterday)) label = 'Yesterday — ' + label;
+  else if (isSameDay(d, tomorrow)) label = 'Tomorrow — ' + label;
+  return label;
 }
 
-function initRoundView(data) {
-  roundData = buildRoundData(data.matches, data.upcoming, data.odds);
+function initDateView(data) {
+  dateGroups = buildDateGroups(data.matches, data.upcoming, data.odds);
 
-  allRoundNumbers = Object.keys(roundData)
-    .filter(r => r !== 'unknown')
-    .map(Number)
-    .sort((a, b) => a - b);
+  allDates = Object.keys(dateGroups)
+    .filter(d => d !== 'unknown')
+    .sort();
 
-  if (allRoundNumbers.length === 0) {
+  if (allDates.length === 0) {
     document.getElementById('match-list').innerHTML = '<p class="muted">No match data available</p>';
     return;
   }
 
-  visibleRange = findDefaultRange(roundData, allRoundNumbers);
-  renderRoundView();
+  visibleRange = findDefaultDateRange(dateGroups, allDates);
+  renderDateView();
 }
 
-function renderRoundView() {
+function renderDateView() {
   const listEl = document.getElementById('match-list');
   let html = '';
 
   if (visibleRange.start > 0) {
-    html += '<button class="round-nav-btn" id="show-earlier">Show earlier rounds</button>';
+    html += '<button class="round-nav-btn" id="show-earlier">Show earlier dates</button>';
   }
 
-  for (let i = visibleRange.start; i <= visibleRange.end && i < allRoundNumbers.length; i++) {
-    const roundNum = allRoundNumbers[i];
-    const matches = roundData[roundNum] || [];
+  for (let i = visibleRange.start; i <= visibleRange.end && i < allDates.length; i++) {
+    const date = allDates[i];
+    const matches = dateGroups[date] || [];
 
     const allFinished = matches.every(m => m.status === 'finished');
     const allUpcoming = matches.every(m => m.status === 'upcoming');
     const statusLabel = allFinished ? 'Results' : allUpcoming ? 'Upcoming' : 'In Progress';
 
-    const dates = matches.map(m => m.date).filter(Boolean).sort();
-    const dateRange = dates.length > 0 ? formatDateRange(dates[0], dates[dates.length - 1]) : '';
-
     html += `<div class="match-round-header">
-      <span class="round-title">Round ${roundNum}</span>
-      <span class="round-meta">${dateRange} — ${statusLabel}</span>
+      <span class="round-title">${formatDate(date)}</span>
+      <span class="round-meta">${statusLabel}</span>
     </div>`;
 
     for (const m of matches) {
@@ -164,8 +170,8 @@ function renderRoundView() {
     }
   }
 
-  if (visibleRange.end < allRoundNumbers.length - 1) {
-    html += '<button class="round-nav-btn" id="show-later">Show later rounds</button>';
+  if (visibleRange.end < allDates.length - 1) {
+    html += '<button class="round-nav-btn" id="show-later">Show later dates</button>';
   }
 
   listEl.innerHTML = html;
@@ -178,11 +184,11 @@ function renderRoundView() {
   // Navigation handlers
   document.getElementById('show-earlier')?.addEventListener('click', () => {
     visibleRange.start = Math.max(0, visibleRange.start - 1);
-    renderRoundView();
+    renderDateView();
   });
   document.getElementById('show-later')?.addEventListener('click', () => {
-    visibleRange.end = Math.min(allRoundNumbers.length - 1, visibleRange.end + 1);
-    renderRoundView();
+    visibleRange.end = Math.min(allDates.length - 1, visibleRange.end + 1);
+    renderDateView();
   });
 }
 
@@ -398,7 +404,7 @@ async function handleUpdateData() {
     };
     currentMeta = result.meta;
 
-    initRoundView(currentLeagueData);
+    initDateView(currentLeagueData);
     updateLastUpdateDisplay(result.meta.lastUpdate);
 
     messageEl.textContent = 'Done! Data updated.';
