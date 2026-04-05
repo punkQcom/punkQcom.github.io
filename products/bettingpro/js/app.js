@@ -2,22 +2,22 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { shinProbabilities } from './shin.js?v=1775432405';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775432405';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775432405';
+import { shinProbabilities } from './shin.js?v=1775432597';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775432597';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775432597';
 import {
   buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-} from './prediction.js?v=1775432405';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775432405';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775432405';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775432405';
+} from './prediction.js?v=1775432597';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775432597';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775432597';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775432597';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775432405';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775432405';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775432597';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775432597';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, setupSliders, setupHelpModal
-} from './ui.js?v=1775432405';
+} from './ui.js?v=1775432597';
 
 // Loaded data state
 let currentMeta = null;
@@ -193,14 +193,14 @@ function updateMarketTrustDefault(matchCount) {
 
 /**
  * Set Previous Season slider default based on matches played.
- * Decays rapidly: by ~round 8 (48 matches), previous season has near-zero weight.
+ * Starts at ~50%, decays rapidly to near-zero by round 5-6.
  */
 function updatePrevSeasonDefault(matchCount) {
   const slider = document.getElementById('prev-season-slider');
   const label = document.getElementById('prev-season-value');
   if (!slider) return;
 
-  const pct = Math.max(0, Math.min(90, Math.round(85 - matchCount * 1.8)));
+  const pct = Math.max(0, Math.min(55, Math.round(50 - matchCount * 1.5)));
   slider.value = pct;
   if (label) label.textContent = pct + '%';
 }
