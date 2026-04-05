@@ -2,19 +2,19 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { expectedGoals, scoreMatrix } from './poisson.js?v=1775424603';
-import { applyDixonColes } from './dixon-coles.js?v=1775424603';
-import { removeMargin } from './odds.js?v=1775424603';
-import { shinProbabilities } from './shin.js?v=1775424603';
-import { calculateEloRatings, eloToPoisson } from './elo.js?v=1775424603';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775424603';
-import { calculateTeamAverages, calculateLeagueAvg } from './sources/league-data.js?v=1775424603';
+import { expectedGoals, scoreMatrix } from './poisson.js?v=1775424728';
+import { applyDixonColes } from './dixon-coles.js?v=1775424728';
+import { removeMargin } from './odds.js?v=1775424728';
+import { shinProbabilities } from './shin.js?v=1775424728';
+import { calculateEloRatings, eloToPoisson } from './elo.js?v=1775424728';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775424728';
+import { calculateTeamAverages, calculateLeagueAvg } from './sources/league-data.js?v=1775424728';
 
-import { loadMeta, loadLeagueData, triggerUpdate } from './data-loader.js?v=1775424603';
+import { loadMeta, loadLeagueData, triggerUpdate } from './data-loader.js?v=1775424728';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, setupSliders, setupHelpModal
-} from './ui.js?v=1775424603';
+} from './ui.js?v=1775424728';
 
 // Loaded data state
 let currentMeta = null;
