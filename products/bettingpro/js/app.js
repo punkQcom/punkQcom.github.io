@@ -152,15 +152,7 @@ async function loadAndShowLeague(leagueId, season) {
 
 // ── Date-based match list ────────────────────────────────────────────
 
-// TODO: Remove after real odds are flowing from backend
-const DEV_ODDS = {
-  'Inter Turku vs VPS':       { veikkaus: { home: 1.72, draw: 3.80, away: 4.50, overUnder: {} } },
-  'HJK Helsinki vs SJK Seinajoki': { veikkaus: { home: 1.35, draw: 5.00, away: 7.50, overUnder: {} } },
-  'Ilves vs KuPS':            { veikkaus: { home: 3.10, draw: 3.40, away: 2.20, overUnder: {} } },
-  'Jaro vs Lahti':            { veikkaus: { home: 4.20, draw: 3.60, away: 1.80, overUnder: {} } },
-  'IFK Mariehamn vs TPS':     { veikkaus: { home: 2.90, draw: 3.30, away: 2.40, overUnder: {} } },
-  'Gnistan vs AC Oulu':       { veikkaus: { home: 5.50, draw: 4.00, away: 1.55, overUnder: {} } },
-};
+const DEV_ODDS = {};
 
 function buildDateGroups(matches, upcoming, odds) {
   const groups = {};
