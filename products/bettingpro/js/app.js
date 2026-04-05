@@ -126,6 +126,42 @@ function formatDate(dateStr) {
   return label;
 }
 
+/**
+ * Quick prediction for a match — returns predicted score and outcome probabilities.
+ */
+function predictMatch(homeName, awayName) {
+  const matches = currentLeagueData?.matches || [];
+  if (matches.length === 0) return null;
+
+  const averages = calculateTeamAverages(matches);
+  const leagueAvg = calculateLeagueAvg(matches);
+  const homeStats = averages[homeName] || { homeScored: leagueAvg / 2, homeConceded: leagueAvg / 2 };
+  const awayStats = averages[awayName] || { awayScored: leagueAvg / 2, awayConceded: leagueAvg / 2 };
+
+  const rho = parseFloat(document.getElementById('rho-slider')?.value || -0.13);
+  const eg = expectedGoals(
+    homeStats.homeScored, homeStats.homeConceded,
+    awayStats.awayScored, awayStats.awayConceded,
+    leagueAvg
+  );
+  const rawMatrix = scoreMatrix(eg.lambdaHome, eg.lambdaAway, 7);
+  const matrix = applyDixonColes(rawMatrix, eg.lambdaHome, eg.lambdaAway, rho);
+
+  // Find most likely score
+  let bestScore = { home: 0, away: 0, prob: 0 };
+  let home = 0, draw = 0, away = 0;
+  for (let i = 0; i < matrix.length; i++) {
+    for (let j = 0; j < matrix[i].length; j++) {
+      if (matrix[i][j] > bestScore.prob) bestScore = { home: i, away: j, prob: matrix[i][j] };
+      if (i > j) home += matrix[i][j];
+      else if (i === j) draw += matrix[i][j];
+      else away += matrix[i][j];
+    }
+  }
+
+  return { score: `${bestScore.home}-${bestScore.away}`, home, draw, away };
+}
+
 function initDateView(data) {
   dateGroups = buildDateGroups(data.matches, data.upcoming, data.odds);
 
@@ -182,13 +218,31 @@ function renderDateView() {
           </span>
         </div>`;
       } else {
+        const pred = predictMatch(m.homeTeam, m.awayTeam);
+        let predHtml = '';
+        if (pred) {
+          const best = pred.home >= pred.draw && pred.home >= pred.away ? '1'
+            : pred.away >= pred.home && pred.away >= pred.draw ? '2' : 'X';
+          predHtml = `<span class="match-prediction">
+            <span class="pred-score">${pred.score}</span>
+            <span class="pred-probs">
+              <span class="pred-p${best === '1' ? ' pred-best' : ''}">${(pred.home * 100).toFixed(0)}%</span>
+              <span class="pred-p${best === 'X' ? ' pred-best' : ''}">${(pred.draw * 100).toFixed(0)}%</span>
+              <span class="pred-p${best === '2' ? ' pred-best' : ''}">${(pred.away * 100).toFixed(0)}%</span>
+            </span>
+          </span>`;
+        }
+
         const oddsStr = m.odds
           ? `<span class="match-odds">${m.odds.home.toFixed(2)} / ${m.odds.draw.toFixed(2)} / ${m.odds.away.toFixed(2)}</span>`
-          : '<span class="match-odds muted">No odds</span>';
+          : '';
 
         html += `<div class="match-row upcoming" data-home="${m.homeTeam}" data-away="${m.awayTeam}">
           <span class="match-teams">${m.homeTeam} vs ${m.awayTeam}</span>
-          ${oddsStr}
+          <span class="match-result-group">
+            ${predHtml}
+            ${oddsStr}
+          </span>
         </div>`;
       }
     }
@@ -470,6 +524,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Manual calculate button
   document.getElementById('calculate-btn').addEventListener('click', manualCalculate);
+
+  // Re-render predictions when rho slider changes
+  document.getElementById('rho-slider').addEventListener('input', () => {
+    if (allDates.length > 0) renderDateView();
+  });
 
   // Manual odds margin display
   const oddsInputs = ['odds-home', 'odds-draw', 'odds-away'];
