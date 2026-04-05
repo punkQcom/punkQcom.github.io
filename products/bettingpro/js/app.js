@@ -13,7 +13,7 @@ import { calculateTeamAverages, calculateLeagueAvg } from './sources/league-data
 import { loadMeta, loadLeagueData, triggerUpdate } from './data-loader.js';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
-  renderOverUnder, renderValueBets, renderAllBets, setupSliders
+  renderOverUnder, renderValueBets, renderAllBets, setupSliders, setupHelpModal
 } from './ui.js';
 
 // Loaded data state
@@ -764,6 +764,7 @@ function updateLastUpdateDisplay(isoString) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   setupSliders();
+  setupHelpModal();
 
   // Re-render predictions when model sliders change + enable recalculate
   for (const id of ['rho-slider', 'market-trust-slider']) {
