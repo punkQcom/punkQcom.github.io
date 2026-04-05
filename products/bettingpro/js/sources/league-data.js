@@ -14,34 +14,67 @@ export const name = 'League Data';
  * Returns { homeScored, homeConceded, awayScored, awayConceded } per team.
  */
 export function calculateTeamAverages(matches) {
+  if (matches.length === 0) return {};
+
+  // Bayesian shrinkage: regress toward league average with early-season data.
+  // PRIOR_WEIGHT = number of "virtual games" at league average.
+  // With 1 real game: 17% actual + 83% league avg.
+  // With 5 games: 50/50. With 15 games: 75% actual.
+  const PRIOR_WEIGHT = 5;
+
+  const totalGoals = matches.reduce((s, m) => s + m.homeGoals + m.awayGoals, 0);
+  const leagueAvg = totalGoals / matches.length;
+  const avgPerTeam = leagueAvg / 2;
+
   const teams = {};
-
   for (const match of matches) {
-    // Home team stats
     if (!teams[match.homeTeam]) {
-      teams[match.homeTeam] = { homeGoalsFor: [], homeGoalsAgainst: [], awayGoalsFor: [], awayGoalsAgainst: [] };
+      teams[match.homeTeam] = { hFor: [], hAgainst: [], aFor: [], aAgainst: [] };
     }
-    teams[match.homeTeam].homeGoalsFor.push(match.homeGoals);
-    teams[match.homeTeam].homeGoalsAgainst.push(match.awayGoals);
+    teams[match.homeTeam].hFor.push(match.homeGoals);
+    teams[match.homeTeam].hAgainst.push(match.awayGoals);
 
-    // Away team stats
     if (!teams[match.awayTeam]) {
-      teams[match.awayTeam] = { homeGoalsFor: [], homeGoalsAgainst: [], awayGoalsFor: [], awayGoalsAgainst: [] };
+      teams[match.awayTeam] = { hFor: [], hAgainst: [], aFor: [], aAgainst: [] };
     }
-    teams[match.awayTeam].awayGoalsFor.push(match.awayGoals);
-    teams[match.awayTeam].awayGoalsAgainst.push(match.homeGoals);
+    teams[match.awayTeam].aFor.push(match.awayGoals);
+    teams[match.awayTeam].aAgainst.push(match.homeGoals);
   }
+
+  const sum = arr => arr.reduce((a, b) => a + b, 0);
+  const avg = arr => arr.length > 0 ? sum(arr) / arr.length : null;
 
   const averages = {};
   for (const [team, data] of Object.entries(teams)) {
-    const avg = arr => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+    const homeGames = data.hFor.length;
+    const awayGames = data.aFor.length;
+    const totalGames = homeGames + awayGames;
+
+    // Raw venue-specific averages (null if no games at that venue)
+    const rawHS = avg(data.hFor);
+    const rawHC = avg(data.hAgainst);
+    const rawAS = avg(data.aFor);
+    const rawAC = avg(data.aAgainst);
+
+    // Overall averages as fallback when team hasn't played at a venue
+    const overallScored = (sum(data.hFor) + sum(data.aFor)) / totalGames;
+    const overallConceded = (sum(data.hAgainst) + sum(data.aAgainst)) / totalGames;
+
+    const hs = rawHS !== null ? rawHS : overallScored;
+    const hc = rawHC !== null ? rawHC : overallConceded;
+    const as = rawAS !== null ? rawAS : overallScored;
+    const ac = rawAC !== null ? rawAC : overallConceded;
+
+    // Shrink toward league average — less data = more regression to mean
+    const w = totalGames / (totalGames + PRIOR_WEIGHT);
+
     averages[team] = {
       team,
-      played: data.homeGoalsFor.length + data.awayGoalsFor.length,
-      homeScored: avg(data.homeGoalsFor),
-      homeConceded: avg(data.homeGoalsAgainst),
-      awayScored: avg(data.awayGoalsFor),
-      awayConceded: avg(data.awayGoalsAgainst),
+      played: totalGames,
+      homeScored: w * hs + (1 - w) * avgPerTeam,
+      homeConceded: w * hc + (1 - w) * avgPerTeam,
+      awayScored: w * as + (1 - w) * avgPerTeam,
+      awayConceded: w * ac + (1 - w) * avgPerTeam,
     };
   }
 
