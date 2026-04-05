@@ -317,8 +317,12 @@ function renderDateView() {
         }
 
         const selOddsUp = getSelectedOdds(m.odds);
-        const oddsStr = selOddsUp
-          ? `<span class="match-odds">${selOddsUp.home.toFixed(2)} / ${selOddsUp.draw.toFixed(2)} / ${selOddsUp.away.toFixed(2)}</span>`
+        const oddsStr = selOddsUp && selOddsUp.home && selOddsUp.draw && selOddsUp.away
+          ? `<div class="match-odds-table">
+              <span class="odds-cell"><span class="odds-label">1</span>${selOddsUp.home.toFixed(2)}</span>
+              <span class="odds-cell"><span class="odds-label">X</span>${selOddsUp.draw.toFixed(2)}</span>
+              <span class="odds-cell"><span class="odds-label">2</span>${selOddsUp.away.toFixed(2)}</span>
+            </div>`
           : '';
 
         html += `<div class="match-row upcoming" data-home="${m.homeTeam}" data-away="${m.awayTeam}">
