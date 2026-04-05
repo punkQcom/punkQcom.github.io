@@ -101,12 +101,12 @@ function populateBookmakerDropdown(data) {
   const sorted = [...bookmakers].filter(k => k !== 'veikkaus').sort();
 
   let html = '<option value="veikkaus">Veikkaus</option>';
+  if (bookmakers.size > 1) {
+    html += '<option value="consensus">Consensus (avg)</option>';
+  }
   for (const key of sorted) {
     const name = BOOKMAKER_NAMES[key] || key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
     html += `<option value="${key}">${name}</option>`;
-  }
-  if (bookmakers.size > 1) {
-    html += '<option value="consensus">Consensus (avg)</option>';
   }
 
   select.innerHTML = html;
