@@ -315,11 +315,9 @@ function predictMatch(homeName, awayName) {
   const matrix = buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho);
 
   // Model outcomes from matrix
-  let bestScore = { home: 0, away: 0, prob: 0 };
   let home = 0, draw = 0, away = 0;
   for (let i = 0; i < matrix.length; i++) {
     for (let j = 0; j < matrix[i].length; j++) {
-      if (matrix[i][j] > bestScore.prob) bestScore = { home: i, away: j, prob: matrix[i][j] };
       if (i > j) home += matrix[i][j];
       else if (i === j) draw += matrix[i][j];
       else away += matrix[i][j];
@@ -335,6 +333,20 @@ function predictMatch(homeName, awayName) {
 
   // Blend model with odds
   const blended = blendWithOdds({ home, draw, away }, matchOddsMulti, matches.length);
+
+  // Rescale matrix cells to match blended 1X2 ratios, then pick best score
+  const homeScale = home > 0 ? blended.home / home : 1;
+  const drawScale = draw > 0 ? blended.draw / draw : 1;
+  const awayScale = away > 0 ? blended.away / away : 1;
+
+  let bestScore = { home: 0, away: 0, prob: 0 };
+  for (let i = 0; i < matrix.length; i++) {
+    for (let j = 0; j < matrix[i].length; j++) {
+      const scale = i > j ? homeScale : i === j ? drawScale : awayScale;
+      const adjusted = matrix[i][j] * scale;
+      if (adjusted > bestScore.prob) bestScore = { home: i, away: j, prob: adjusted };
+    }
+  }
 
   return { score: `${bestScore.home}-${bestScore.away}`, ...blended };
 }
@@ -602,10 +614,18 @@ function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds,
   // Blend model outcomes with odds-derived probabilities
   const outcomes = blendWithOdds(modelOutcomes, matchOddsMulti, matches.length);
 
+  // Rescale matrix cells to match blended 1X2 ratios for display
+  const homeScale = modelOutcomes.home > 0 ? outcomes.home / modelOutcomes.home : 1;
+  const drawScale = modelOutcomes.draw > 0 ? outcomes.draw / modelOutcomes.draw : 1;
+  const awayScale = modelOutcomes.away > 0 ? outcomes.away / modelOutcomes.away : 1;
+  const displayMatrix = matrix.map((row, i) =>
+    row.map((cell, j) => cell * (i > j ? homeScale : i === j ? drawScale : awayScale))
+  );
+
   const has1x2Odds = odds.home > 0 && odds.draw > 0 && odds.away > 0;
   const bookProbs1x2 = has1x2Odds ? shinProbabilities([odds.home, odds.draw, odds.away]) : [0, 0, 0];
 
-  renderScoreMatrix(matrix, homeName, awayName);
+  renderScoreMatrix(displayMatrix, homeName, awayName);
   renderMatchOutcome(outcomes, bookProbs1x2, homeName, awayName);
 
   // Over/Under
