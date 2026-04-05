@@ -422,11 +422,13 @@ async function handleUpdateData() {
 
     messageEl.textContent = 'Done! Data updated.';
     btn.disabled = true; // Keep disabled — data is now fresh
+    btn.title = 'Data is fresh (less than 6 hours old)';
   } catch (err) {
     console.error('Update failed:', err);
     messageEl.textContent = `Error: ${err.message}`;
     messageEl.style.color = '#f87171';
     btn.disabled = false;
+    btn.title = 'Click to fetch latest data';
   } finally {
     clearTimeout(safetyTimer);
     setTimeout(() => {
@@ -485,7 +487,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateLastUpdateDisplay(currentMeta.lastUpdate);
 
   // Enable/disable update button based on freshness
-  document.getElementById('update-data-btn').disabled = currentMeta.isFresh;
+  const updateBtn = document.getElementById('update-data-btn');
+  updateBtn.disabled = currentMeta.isFresh;
+  updateBtn.title = currentMeta.isFresh ? 'Data is fresh (less than 6 hours old)' : 'Click to fetch latest data';
 
   // Populate selectors and load first league
   populateLeagueDropdown('football');
