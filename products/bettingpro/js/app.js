@@ -2,22 +2,22 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { shinProbabilities } from './shin.js?v=1775430190';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775430190';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775430190';
+import { shinProbabilities } from './shin.js?v=1775431228';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775431228';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775431228';
 import {
   buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-} from './prediction.js?v=1775430190';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775430190';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775430190';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775430190';
+} from './prediction.js?v=1775431228';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775431228';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775431228';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775431228';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775430190';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775430190';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775431228';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775431228';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, setupSliders, setupHelpModal
-} from './ui.js?v=1775430190';
+} from './ui.js?v=1775431228';
 
 // Loaded data state
 let currentMeta = null;
@@ -34,6 +34,7 @@ let selectedBookmaker = 'veikkaus';
 
 // Elo carryover from previous seasons
 let initialEloRatings = {};
+let rawPrevSeasonElo = {}; // unregressed end-of-season ratings (for slider recompute)
 
 /**
  * Get the model trust threshold from the Market Trust slider.
@@ -190,6 +191,30 @@ function updateMarketTrustDefault(matchCount) {
   if (label) label.textContent = pct + '%';
 }
 
+/**
+ * Set Previous Season slider default based on matches played.
+ * Decays rapidly: by ~round 8 (48 matches), previous season has near-zero weight.
+ */
+function updatePrevSeasonDefault(matchCount) {
+  const slider = document.getElementById('prev-season-slider');
+  const label = document.getElementById('prev-season-value');
+  if (!slider) return;
+
+  const pct = Math.max(0, Math.min(90, Math.round(85 - matchCount * 1.8)));
+  slider.value = pct;
+  if (label) label.textContent = pct + '%';
+}
+
+/**
+ * Read the Previous Season slider and return the regression factor for regressToMean().
+ * 100% slider → factor 0 (full carryover), 0% slider → factor 1 (all teams at 1500).
+ */
+function getPrevSeasonFactor() {
+  const slider = document.getElementById('prev-season-slider');
+  const pct = slider ? parseInt(slider.value) : 50;
+  return 1 - pct / 100;
+}
+
 async function loadAndShowLeague(leagueId, season) {
   currentLeagueId = leagueId;
   const listEl = document.getElementById('match-list');
@@ -199,14 +224,14 @@ async function loadAndShowLeague(leagueId, season) {
 
   // Load previous season data for Elo carryover
   initialEloRatings = {};
+  rawPrevSeasonElo = {};
   const league = (currentMeta?.leagues || []).find(l => l.id === leagueId);
   const prevSeasons = currentMeta?.previousSeasons?.[leagueId] || league?.previousSeasons || [];
   if (prevSeasons.length > 0) {
     try {
       const prevMatches = await loadPreviousSeasons(leagueId, prevSeasons);
       if (prevMatches.length > 0) {
-        const endOfSeasonElo = calculateEloRatings(prevMatches);
-        initialEloRatings = regressToMean(endOfSeasonElo, 0.5);
+        rawPrevSeasonElo = calculateEloRatings(prevMatches);
       }
     } catch {
       // Previous season loading is best-effort
@@ -214,7 +239,11 @@ async function loadAndShowLeague(leagueId, season) {
   }
 
   populateBookmakerDropdown(currentLeagueData);
-  updateMarketTrustDefault((currentLeagueData?.matches || []).length);
+  const matchCount = (currentLeagueData?.matches || []).length;
+  updateMarketTrustDefault(matchCount);
+  updatePrevSeasonDefault(matchCount);
+  initialEloRatings = Object.keys(rawPrevSeasonElo).length > 0
+    ? regressToMean(rawPrevSeasonElo, getPrevSeasonFactor()) : {};
   initDateView(currentLeagueData);
 
   // Elo ratings table
@@ -712,6 +741,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       enableRecalculate();
     });
   }
+
+  // Previous Season slider — recompute Elo carryover + re-render
+  document.getElementById('prev-season-slider').addEventListener('input', () => {
+    const label = document.getElementById('prev-season-value');
+    if (label) label.textContent = document.getElementById('prev-season-slider').value + '%';
+    if (Object.keys(rawPrevSeasonElo).length > 0) {
+      initialEloRatings = regressToMean(rawPrevSeasonElo, getPrevSeasonFactor());
+    }
+    if (allDates.length > 0) renderDateView();
+    const matches = currentLeagueData?.matches || [];
+    const eloData = buildEloTable(matches, initialEloRatings);
+    renderEloTable(eloData, 'elo-table');
+    enableRecalculate();
+  });
 
   // Enable recalculate when betting settings change
   document.getElementById('kelly-fraction-slider').addEventListener('input', enableRecalculate);

@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>BettingPro — Sports Betting Calculator</title>
-  <link rel="stylesheet" href="css/style.css?v=1775430190">
+  <link rel="stylesheet" href="css/style.css?v=1775431228">
 </head>
 <body>
   <div class="container">
@@ -103,6 +103,12 @@
         <input type="range" id="market-trust-slider" min="0" max="100" step="5" value="50">
       </div>
       <div class="setting">
+        <label>Previous Season: <span id="prev-season-value">--</span>
+          <button type="button" class="help-tip" data-help="prev-season">?</button>
+        </label>
+        <input type="range" id="prev-season-slider" min="0" max="100" step="5" value="50">
+      </div>
+      <div class="setting">
         <label>Low-Score Correction: <span id="rho-value">-0.13</span>
           <button type="button" class="help-tip" data-help="rho">?</button>
         </label>
@@ -159,6 +165,6 @@
 
   </div>
 
-  <script type="module" src="js/app.js?v=1775430190"></script>
+  <script type="module" src="js/app.js?v=1775431228"></script>
 </body>
 </html>
