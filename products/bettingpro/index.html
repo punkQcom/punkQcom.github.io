@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>BettingPro — Sports Betting Calculator</title>
-  <link rel="stylesheet" href="css/style.css?v=1775465528">
+  <link rel="stylesheet" href="css/style.css?v=1775465644">
 </head>
 <body>
   <div class="container">
@@ -100,13 +100,13 @@
         <label>Market Trust: <span id="market-trust-value">--</span>
           <button type="button" class="help-tip" data-help="market-trust">?</button>
         </label>
-        <input type="range" id="market-trust-slider" min="0" max="100" step="5" value="50">
+        <input type="range" id="market-trust-slider" min="0" max="100" step="1" value="50">
       </div>
       <div class="setting">
         <label>Previous Season: <span id="prev-season-value">--</span>
           <button type="button" class="help-tip" data-help="prev-season">?</button>
         </label>
-        <input type="range" id="prev-season-slider" min="0" max="100" step="5" value="50">
+        <input type="range" id="prev-season-slider" min="0" max="100" step="1" value="50">
       </div>
       <div class="setting">
         <label>Low-Score Correction: <span id="rho-value">-0.13</span>
@@ -118,7 +118,7 @@
         <label>Kelly Fraction: <span id="kelly-fraction-value">25%</span>
           <button type="button" class="help-tip" data-help="kelly">?</button>
         </label>
-        <input type="range" id="kelly-fraction-slider" min="0.10" max="1.00" step="0.05" value="0.25">
+        <input type="range" id="kelly-fraction-slider" min="0.10" max="1.00" step="0.01" value="0.25">
       </div>
       <div class="setting">
         <label>Bankroll
@@ -160,6 +160,6 @@
 
   </div>
 
-  <script type="module" src="js/app.js?v=1775465528"></script>
+  <script type="module" src="js/app.js?v=1775465644"></script>
 </body>
 </html>
