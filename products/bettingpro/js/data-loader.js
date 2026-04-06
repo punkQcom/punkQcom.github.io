@@ -6,7 +6,7 @@
  */
 
 const DATA_BASE = 'https://punkq.com/products/bettingpro/data';
-const API_BASE = 'https://bettingpro-api.azurewebsites.net/api';
+export const API_BASE = 'https://bettingpro-api.azurewebsites.net/api';
 const STALE_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 // localStorage fallback keys
@@ -152,4 +152,16 @@ export async function triggerUpdate(leagueId) {
   lsSet('meta', data.meta);
 
   return data;
+}
+
+/**
+ * Load precomputed predictions for a league/season.
+ * Returns { predictions, eloRatings, tracker, plSimulation } or null if unavailable.
+ */
+export async function loadPredictions(leagueId, season) {
+  try {
+    return await fetchJSON(`${DATA_BASE}/${leagueId}-${season}-predictions.json`);
+  } catch {
+    return null;
+  }
 }
