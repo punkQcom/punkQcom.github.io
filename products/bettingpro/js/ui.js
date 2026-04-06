@@ -47,17 +47,26 @@ export function renderScoreMatrix(matrix, homeName, awayName, predictedScore, ou
       draw: `Draw (${(outcomes.draw * 100).toFixed(0)}%)`,
       away: `Away Win (${(outcomes.away * 100).toFixed(0)}%)`,
     };
+    const outcomeLabelsfi = {
+      home: `Kotivoitto (${(outcomes.home * 100).toFixed(0)}%)`,
+      draw: `Tasapeli (${(outcomes.draw * 100).toFixed(0)}%)`,
+      away: `Vierasvoitto (${(outcomes.away * 100).toFixed(0)}%)`,
+    };
+    const outcomeSumFi = { home: 'kotivoitto', draw: 'tasapeli', away: 'vierasvoitto' };
 
     let explanation;
     if (predOutcome !== mlOutcome) {
-      // Most common case: e.g. prediction is away win but most likely single score is a draw
       explanation = `The prediction is the most likely score for the predicted outcome (${outcomeLabels[predOutcome]}). `
         + `${maxI}-${maxJ} has the highest individual probability, but adding up all ${predOutcome === 'home' ? 'home win' : predOutcome === 'away' ? 'away win' : 'draw'} scorelines gives a higher total. `
-        + `For <strong>1X2 bets</strong>, follow the outcome probabilities below. For <strong>exact score bets</strong>, use the matrix.`;
+        + `For <strong>1X2 bets</strong>, follow the outcome probabilities below. For <strong>exact score bets</strong>, use the matrix.`
+        + `<br>Ennuste on todennäköisin tulos ennustetulle lopputulokselle (${outcomeLabelsfi[predOutcome]}). `
+        + `${maxI}-${maxJ}:llä on korkein yksittäinen todennäköisyys, mutta kaikkien ${outcomeSumFi[predOutcome]}tulosten summa on suurempi. `
+        + `<strong>1X2-vedoissa</strong> seuraa lopputulostodennäköisyyksiä alla. <strong>Täsmätulosvedoissa</strong> käytä matriisia.`;
     } else {
-      // Same outcome but different scoreline within it
       explanation = `Both scores belong to the same outcome (${outcomeLabels[predOutcome]}), but ${mostLikely} has the highest individual probability across all scorelines. `
-        + `For <strong>1X2 bets</strong>, follow the outcome probabilities below. For <strong>exact score bets</strong>, use the matrix.`;
+        + `For <strong>1X2 bets</strong>, follow the outcome probabilities below. For <strong>exact score bets</strong>, use the matrix.`
+        + `<br>Molemmat tulokset kuuluvat samaan lopputulokseen (${outcomeLabelsfi[predOutcome]}), mutta ${mostLikely}:llä on korkein yksittäinen todennäköisyys. `
+        + `<strong>1X2-vedoissa</strong> seuraa lopputulostodennäköisyyksiä alla. <strong>Täsmätulosvedoissa</strong> käytä matriisia.`;
     }
 
     el.innerHTML =
@@ -379,6 +388,63 @@ const helpContent = {
 <div class="help-section">
   <p><strong>Important:</strong> No model can predict sports with certainty. Value betting is a long-term strategy — individual bets can and will lose. Always bet responsibly and only with money you can afford to lose.</p>
 </div>
+
+<hr>
+<p><strong>Suomeksi:</strong></p>
+
+<p><strong>BettingPro</strong> on urheiluvedonlyönnin todennäköisyyslaskuri, joka käyttää tilastollista mallinnusta arvovedosten löytämiseen — tilanteisiin, joissa vedonvälittäjän kertoimet ovat korkeammat kuin mallimme ennustaa.</p>
+
+<div class="help-section">
+  <p><strong>Mitä malli tekee:</strong></p>
+  <ul>
+    <li>Ennustaa jokaisen mahdollisen lopputuloksen todennäköisyyden jokaiselle ottelulle</li>
+    <li>Vertaa todennäköisyyksiä vedonvälittäjän kertoimiin löytääkseen etuja</li>
+    <li>Laskee optimaalisen panostuksen Kelly-kriteerin avulla</li>
+  </ul>
+</div>
+
+<div class="help-section">
+  <p><strong>Käytetyt tilastolliset menetelmät:</strong></p>
+  <ul>
+    <li><strong>Poisson-regressio</strong> — mallintaa joukkueiden odotetut maalit hyökkäys- ja puolustusvahvuuksien perusteella, aikahajautetulla painotuksella (viimeaikaiset ottelut painottuvat enemmän)</li>
+    <li><strong>Dixon-Coles-korjaus</strong> — korjaa tunnettua korrelaatiota vähämaalisissa otteluissa (0-0, 1-0, 0-1, 1-1 esiintyvät useammin kuin itsenäinen Poisson ennustaa)</li>
+    <li><strong>Elo-luokitus</strong> — voimasuhdelista, jossa joukkueet saavat/menettävät pisteitä ottelutulosten perusteella. Erityisen hyödyllinen kauden alussa</li>
+    <li><strong>Bayesiläinen kutistus</strong> — estää äärimmäiset ennusteet rajoitetulla datalla vetämällä arviot kohti sarjan keskiarvoja</li>
+    <li><strong>Shinin menetelmä</strong> — poistaa vedonvälittäjän marginaalin kertoimista todellisten todennäköisyyksien selvittämiseksi</li>
+    <li><strong>Markkinasekoitus</strong> — yhdistää mallin ennusteet ja vedonvälittäjän todennäköisyydet. Painotus siirtyy automaattisesti markkinapainotteisesta (kauden alku) mallipainotteiseen (kauden loppu)</li>
+  </ul>
+</div>
+
+<div class="help-section">
+  <p><strong>Datalähteet:</strong></p>
+  <ul>
+    <li>Historialliset ottelutulokset (tulokset, päivämäärät, paikat)</li>
+    <li>Vedonvälittäjien kertoimet useista lähteistä (Veikkaus, Pinnacle, Bet365 ym.)</li>
+    <li>Edellisen kauden tulokset Elo-siirtoa varten</li>
+  </ul>
+</div>
+
+<div class="help-section">
+  <p><strong>Keskeiset ominaisuudet:</strong></p>
+  <ul>
+    <li><strong>Tulosmatriisi</strong> — 7x7 ruudukko ennustetuista tulosten todennäköisyyksistä</li>
+    <li><strong>Arvovedot</strong> — lopputulokset, joissa malli on eri mieltä vedonvälittäjän kanssa sinun eduksesi</li>
+    <li><strong>Fadet</strong> — lopputulokset, jotka vedonvälittäjä yliarvostaa, vastavedosehdotuksineen</li>
+    <li><strong>Vedonvälittäjävertailu</strong> — löydä parhaat kertoimet kaikilta vedonvälittäjiltä</li>
+    <li><strong>Kelly-panostus</strong> — matemaattisesti optimaalinen panostus pankkisi ja riskinsietokykysi mukaan</li>
+    <li><strong>Ennusteseuranta</strong> — eteenpäin kulkeva tarkkuusarviointi (ei tulevaisuuden datavuotoa)</li>
+    <li><strong>Tuottosimulatio</strong> — simuloitu kauden tuotto mallin arvovetojen seuraamisesta</li>
+  </ul>
+</div>
+
+<div class="help-section">
+  <p><strong>Säädettävät asetukset:</strong></p>
+  <p>Kaikkia mallin parametreja voi säätää liukusäätimillä Asetukset-paneelissa. Markkinoiden luottamus ja Edellinen kausi säätyvät automaattisesti pelattujen otteluiden mukaan. Klikkaa <strong>?</strong>-painiketta minkä tahansa osion vierestä saadaksesi yksityiskohtaisen selityksen.</p>
+</div>
+
+<div class="help-section">
+  <p><strong>Tärkeää:</strong> Mikään malli ei voi ennustaa urheilua varmasti. Arvovedot ovat pitkän aikavälin strategia — yksittäiset vedot voivat ja tulevat häviämään. Lyö vetoa vastuullisesti ja vain rahalla, jonka voit hävitä.</p>
+</div>
     `,
   },
   'market-trust': {
@@ -401,6 +467,18 @@ const helpContent = {
       </div>
       <div class="help-section">
         <p><strong>Recommendation:</strong> Leave it on auto (default) unless you have a specific reason to override. If you believe bookmaker odds are particularly sharp for a league, increase it. If you think your model has an edge, decrease it.</p>
+      </div>
+
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Mitä tekee:</strong> Säätää tasapainoa vedonvälittäjän kertoimien ja tilastollisen mallimme (Poisson + Elo) välillä ennusteita laskettaessa.</p>
+      <p><strong>Korkeat arvot (70-100%):</strong> Luota enemmän vedonlyöntimarkkinoihin. Vedonvälittäjän kertoimet heijastavat valtavaa datamäärää ja ammattilaisten rahaa. Paras valinta <strong>kauden alussa</strong>, kun otteluita on pelattu vähän.</p>
+      <p><strong>Matalat arvot (0-30%):</strong> Luota enemmän Poisson/Elo-malliimme. Kauden edetessä mallimme tarkentuu ja voi löytää etuja, joita markkinat eivät huomaa.</p>
+      <div class="help-section">
+        <p><strong>Automaattisäätö:</strong> Oletusarvo muuttuu automaattisesti kauden edetessä — alkaa korkealta (luota markkinoihin) ja laskee otteluiden kertyessä. Voit ohittaa sen manuaalisesti milloin tahansa.</p>
+      </div>
+      <div class="help-section">
+        <p><strong>Suositus:</strong> Jätä automaattiasetukselle, ellei sinulla ole erityistä syytä muuttaa. Jos uskot vedonvälittäjän kertoimien olevan erityisen tarkkoja, nosta arvoa. Jos uskot mallin löytävän etuja, laske arvoa.</p>
       </div>
     `,
   },
@@ -425,6 +503,28 @@ const helpContent = {
       </div>
       <div class="help-section">
         <p><strong>Recommendation:</strong> Leave on auto. Increase manually if you believe last season's results are strongly predictive (stable rosters). Decrease if many teams had major squad changes.</p>
+      </div>
+
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Mitä tekee:</strong> Säätää kuinka paljon edellisen kauden Elo-luokituksia siirretään kuluvalle kaudelle. Hyvin menestyneet joukkueet aloittavat korkeammilla luokituksilla.</p>
+      <p><strong>Korkeat arvot (70-100%):</strong> Vahva siirto — edellisen kauden kärkijoukkueet ovat selvästi suosikkeja kauden alussa.</p>
+      <p><strong>Matalat arvot (0-20%):</strong> Minimaalinen siirto — kaikki joukkueet aloittavat läheltä tasapisteiltä (Elo 1500).</p>
+      <div class="help-section">
+        <p><strong>Miten toimii:</strong></p>
+        <ul>
+          <li>Edellisen kauden lopulliset Elo-luokitukset ladataan</li>
+          <li>Liukusäädin säätää kuinka paljon luokitukset "regressoituvat keskiarvoa kohti" (vedetään takaisin kohti 1500:aa)</li>
+          <li>100%: täysi siirto — 1600-luokitteinen joukkue pysyy 1600:ssa</li>
+          <li>50%: puolikas regressio — 1600:sta tulee 1550</li>
+          <li>0%: täysi regressio — kaikki joukkueet aloittavat 1500:sta</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Automaattisäätö:</strong> Oletusarvo laskee nopeasti kauden edetessä. Noin 48 pelatun ottelun (kierros 8) kohdalla arvo on 0%, koska kuluvan kauden data riittää.</p>
+      </div>
+      <div class="help-section">
+        <p><strong>Suositus:</strong> Jätä automaattiasetukselle. Nosta manuaalisesti, jos uskot edellisen kauden tulosten ennustavan hyvin (vakaat kokoonpanot). Laske, jos monilla joukkueilla on suuria kokoonpanomuutoksia.</p>
       </div>
     `,
   },
@@ -454,6 +554,22 @@ const helpContent = {
       <div class="help-section">
         <p><strong>Recommendation:</strong> Keep the default -0.13 for most leagues. Only adjust if you have strong evidence that a specific league has unusually high or low draw rates.</p>
       </div>
+
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Mitä tekee:</strong> Säätää vähämaalisten tulosten (0-0, 1-0, 0-1, 1-1) todennäköisyyttä, joita perus-Poisson-malli arvioi väärin.</p>
+      <p><strong>Ongelma:</strong> Perus-Poisson olettaa koti- ja vierasmaalien olevan toisistaan riippumattomia. Todellisuudessa ne korreloivat vähämaalisissa peleissä — kun joukkue puolustaa matalalla, molemmat tekevät vähemmän maaleja. Siksi 0-0 ja 1-0 tulokset esiintyvät useammin kuin Poisson ennustaa.</p>
+      <div class="help-section">
+        <p><strong>Rho-parametri:</strong></p>
+        <ul>
+          <li><strong>-0.13 (oletus):</strong> Eurooppalaisille sarjoille kalibroitu vakiokorjaus</li>
+          <li><strong>Negatiivisempi (-0.20 – -0.30):</strong> Vahvempi korjaus — enemmän todennäköisyyttä tasapeleille. Puolustaville sarjoille</li>
+          <li><strong>0.00:</strong> Ei korjausta — puhdas itsenäinen Poisson</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Suositus:</strong> Pidä oletusarvo -0.13 useimmille sarjoille. Säädä vain, jos sarjassa on poikkeuksellisen korkea tai matala tasapelimäärä.</p>
+      </div>
     `,
   },
   'kelly': {
@@ -475,6 +591,26 @@ const helpContent = {
       </div>
       <div class="help-section">
         <p><strong>Recommendation:</strong> 25% (quarter Kelly) is a solid default. Only increase if you have strong confidence in your probability estimates. Decrease if you want more conservative bankroll management or if you're uncertain about the model's accuracy.</p>
+      </div>
+
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Mitä tekee:</strong> Säätää kuinka aggressiivisesti panostat arvovedon löytyessä. Määrittää kuinka suuren osan matemaattisesti optimaalisesta Kelly-panoksesta todellisuudessa lyöt.</p>
+      <p><strong>Kelly-kriteeri:</strong> Kaava, joka laskee matemaattisesti optimaalisen panostuksen pankin pitkän aikavälin kasvun maksimoimiseksi: <code>f* = (b*p - q) / b</code> missä b = kerroin - 1, p = voiton todennäköisyys, q = 1 - p.</p>
+      <div class="help-section">
+        <p><strong>Miksi käyttää murto-osaa?</strong></p>
+        <ul>
+          <li><strong>Täysi Kelly (100%):</strong> Maksimoi teoreettisen kasvuvauhdin, mutta varianssi on valtava. Pankki voi pudota yli 50% ennen palautumista</li>
+          <li><strong>Puolikas Kelly (50%):</strong> 75% täyden Kellyn kasvuvauhdista, paljon tasaisempi kurvaus</li>
+          <li><strong>Neljännes-Kelly (25%, oletus):</strong> Ammattilaisten standardi. ~50% kasvuvauhdista, dramaattisesti pienempi varianssi</li>
+          <li><strong>Kymmenesosa-Kelly (10%):</strong> Hyvin konservatiivinen. Pienet panokset, hidas kasvu, lähes nolla riski merkittävään laskuun</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Esimerkki:</strong> Jos täysi Kelly sanoo panosta 8% pankistasi ja Kelly-murto-osa on 25%, ehdotettu panos on 2% pankistasi.</p>
+      </div>
+      <div class="help-section">
+        <p><strong>Suositus:</strong> 25% (neljännes-Kelly) on hyvä oletus. Nosta vain jos luotat vahvasti todennäköisyysarvioihin. Laske konservatiivisempaan pankinhoitoon.</p>
       </div>
     `,
   },
@@ -500,6 +636,28 @@ const helpContent = {
       <div class="help-section">
         <p><strong>Tip:</strong> Set this to your actual dedicated betting bankroll — the amount you've set aside specifically for betting and can afford to lose entirely. Never bet with money you can't afford to lose.</p>
       </div>
+
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Mitä tekee:</strong> Vedonlyöntipankkisi euroissa. Käytetään ainoastaan ehdotetun panoksen laskemiseen.</p>
+      <p><strong>Tärkeää:</strong> Tämä asetus vaikuttaa vain "Panos"-sarakkeeseen arvovedoissa. Se <strong>ei</strong> muuta todennäköisyyksiä, etuja tai Kelly-prosentteja.</p>
+      <div class="help-section">
+        <p><strong>Miten panokset lasketaan:</strong></p>
+        <ul>
+          <li>Kelly-kriteeri määrittää kuinka suuren osan pankistasi panostat</li>
+          <li>Prosentti skaalataan Kelly-murto-osalla</li>
+          <li>Lopullinen panos = pankki &times; Kelly-% &times; Kelly-murto-osa</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Esimerkki:</strong> 1000&euro; pankilla, 25% Kelly-murto-osalla, ja vedolla jossa täysi Kelly suosittelee 8%:</p>
+        <ul>
+          <li>Panos = 1000 &times; 8% &times; 25% = <strong>20&euro;</strong></li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Vinkki:</strong> Aseta tämä todelliseen vedonlyöntipankkiisi — summaan, jonka olet varannut vedonlyöntiin ja jonka voit hävitä kokonaan.</p>
+      </div>
     `,
   },
   'edge-threshold': {
@@ -515,6 +673,19 @@ const helpContent = {
 </ul>
 <p><strong>Hidden bets:</strong> When bets are filtered out, a note at the bottom shows how many were hidden (e.g., "2 more bets below 5% edge threshold").</p>
 <p><strong>Recommendation:</strong> Start at 3%. Increase to 5% if you want fewer, stronger bets. Decrease to 0% to see everything the model finds.</p>
+
+<hr>
+<p><strong>Suomeksi:</strong></p>
+<p><strong>Mitä tekee:</strong> Suodattaa arvovedot näyttämään vain vedot, joissa etu ylittää tämän minimiprosenttirajan. Auttaa keskittymään vahvimpiin mahdollisuuksiin.</p>
+<p><strong>Miten toimii:</strong></p>
+<ul>
+  <li>Etu = mallimme todennäköisyys miinus vedonvälittäjän reilutodennäköisyys</li>
+  <li>0%: kaikki positiivisen edun vedot näytetään</li>
+  <li>3% (oletus): vain 3%+ edun vedot näkyvät — hyvä tasapaino signaalin ja kohinan välillä</li>
+  <li>10%+: hyvin valikoiva, vain vahvat erimielisyydet vedonvälittäjän kanssa</li>
+</ul>
+<p><strong>Piilotetut vedot:</strong> Suodatettujen vetojen määrä näytetään taulukon lopussa.</p>
+<p><strong>Suositus:</strong> Aloita 3%:lla. Nosta 5%:iin, jos haluat vähemmän mutta vahvempia vetoja. Laske 0%:iin nähdäksesi kaiken.</p>
     `,
   },
   'settings': {
@@ -531,6 +702,20 @@ const helpContent = {
   <li><strong>Min. Edge</strong> — filters Value Bets to only show edges above this threshold. Default 3% removes noise from marginal edges</li>
 </ul>
 <p><strong>Auto-adjust:</strong> Market Trust and Previous Season sliders set themselves to sensible defaults when data loads. You can override them manually at any time — they won't reset until you reload the page.</p>
+
+<hr>
+<p><strong>Suomeksi:</strong></p>
+<p>Kaikki liukusäätimet päivittävät ennusteet <strong>dynaamisesti</strong> — ottelulista ja analyysipaneeli päivittyvät reaaliajassa vetäessä. Ei tarvitse painaa mitään nappia.</p>
+<p><strong>Liukusäätimet:</strong></p>
+<ul>
+  <li><strong>Markkinoiden luottamus</strong> — säätää vedonvälittäjän kertoimien painoa yhdistetyssä ennusteessa. Automaattisäätö pelattujen otteluiden mukaan</li>
+  <li><strong>Edellinen kausi</strong> — säätää edellisen kauden Elo-luokitusten siirtoa. Laskee automaattisesti 0%:iin kierros 6:een mennessä</li>
+  <li><strong>Vähämaalisten korjaus (rho)</strong> — Dixon-Coles-parametri puolustavien korrelaatioiden säätämiseen. Oletus -0.13</li>
+  <li><strong>Kelly-murto-osa</strong> — skaalaa Kelly-kriteerin panostusta. Oletus 25% on ammattilaisten standardi</li>
+  <li><strong>Pankki</strong> — vedonlyöntibudjettisi. Vaikuttaa vain panosmääriin euroissa</li>
+  <li><strong>Min. etu</strong> — suodattaa arvovedot näyttämään vain tämän rajan ylittävät edut. Oletus 3%</li>
+</ul>
+<p><strong>Automaattisäätö:</strong> Markkinoiden luottamus ja Edellinen kausi asettuvat järkeviin oletusarvoihin datan latautuessa. Voit ohittaa ne manuaalisesti milloin tahansa.</p>
     `,
   },
   'matches': {
@@ -587,6 +772,59 @@ const helpContent = {
 <p><strong>Under the hood:</strong> Predictions use a blended model incorporating goal averages, <strong>xG from shots</strong> (expected goals based on shot volume), <strong>Elo ratings</strong>, and bookmaker odds. The model also accounts for <strong>rest days</strong> — teams with shorter rest between matches get a slight penalty, while well-rested teams get a small boost.</p>
 <p><strong>Result</strong> — the final score for finished matches. Click any match to open the full analysis.</p>
 <p><strong>Today's matches</strong> are highlighted in green and auto-scrolled into view on page load.</p>
+
+<hr>
+<p><strong>Suomeksi:</strong></p>
+<p>Ottelulista näyttää kaikki kauden ottelut päivämäärän mukaan ryhmiteltyinä. Jokaisella ottelulla on kolme saraketta:</p>
+<p><strong>Ennuste</strong> — mallimme ennustama todennäköisin lopputulos. Pelatuilla otteluilla ennuste on värikoodattu:</p>
+<div style="margin:12px 0;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;padding:2px 8px;border:1px solid rgba(251,191,36,0.5);border-radius:4px;color:#fbbf24;font-weight:700;background:rgba(251,191,36,0.18);box-shadow:0 0 6px rgba(251,191,36,0.3);font-family:monospace;">2-1</span>
+    <span>Täsmätulos — ennustettu tulos oli täsmälleen oikein</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;padding:2px 8px;border:1px solid rgba(16,185,129,0.4);border-radius:4px;color:#6ee7b7;font-weight:700;background:rgba(16,185,129,0.15);font-family:monospace;">2-1</span>
+    <span>Oikea lopputulos — ennustettu 1X2-tulos vastasi todellista</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;padding:2px 8px;border:1px solid rgba(239,68,68,0.3);border-radius:4px;color:#fca5a5;font-weight:700;background:rgba(239,68,68,0.15);font-family:monospace;">1-0</span>
+    <span>Väärä lopputulos — ennustettu 1X2-tulos ei vastannut</span>
+  </div>
+</div>
+<p><strong>1 X 2</strong> — ennustetut todennäköisyydet kotivoidolle (1), tasapelille (X) ja vierasvoitolle (2). Todennäköisin lopputulos on korostettu värireunuksella:</p>
+<div style="margin:12px 0;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;padding:2px 8px;border:2px solid #4ade80;border-radius:3px;color:#4ade80;font-weight:700;background:rgba(74,222,128,0.12);">45%+</span>
+    <span>Korkea luottamus — malli on melko varma tästä lopputuloksesta</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;padding:2px 8px;border:2px solid #fb923c;border-radius:3px;color:#fb923c;font-weight:700;background:rgba(251,146,60,0.12);">35–44%</span>
+    <span>Keskitason luottamus — tasainen ottelu, lopputulos epävarmempi</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;padding:2px 8px;border:2px solid #f87171;border-radius:3px;color:#f87171;font-weight:700;background:rgba(248,113,113,0.12);">&lt;35%</span>
+    <span>Matala luottamus — tasapeli tai paras lopputulos on silti epätodennäköinen</span>
+  </div>
+</div>
+<p>Todennäköisyyksien alla näytetään vedonvälittäjän desimaalikertoimet (jos saatavilla). Pelatuissa otteluissa oikea tulos on korostettu vihreällä.</p>
+<p><strong>Putkimerkinnät</strong> näkyvät joukkueiden nimien vieressä tulevissa otteluissa, kun joukkueella on 3+ peräkkäistä samantyyppistä tulosta:</p>
+<div style="margin:12px 0;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;font-size:0.75rem;font-weight:700;padding:1px 6px;border-radius:3px;color:#4ade80;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);">W4</span>
+    <span>Voittoputki (4 voittoa putkeen) — joukkue on hyvässä vireessä</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;font-size:0.75rem;font-weight:700;padding:1px 6px;border-radius:3px;color:#fbbf24;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);">D3</span>
+    <span>Tasapeliputki (3 tasapeliä putkeen)</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;font-size:0.75rem;font-weight:700;padding:1px 6px;border-radius:3px;color:#f87171;background:rgba(248,113,113,0.15);border:1px solid rgba(248,113,113,0.4);">L3</span>
+    <span>Tappioputki (3 tappiota putkeen) — joukkue kärsii</span>
+  </div>
+</div>
+<p>Pitkät voittoputket voivat ennakoida regressiota — dominoivatkin joukkueet häviävät lopulta. Kun putkijoukkueella on hyvin matalat kertoimet, harkitse Fadet-osiota vastavedoille.</p>
+<p><strong>Tulos</strong> — lopputulos pelatuille otteluille. Klikkaa mitä tahansa ottelua avataksesi täyden analyysin.</p>
+<p><strong>Päivän ottelut</strong> korostetaan vihreällä ja näytetään automaattisesti sivun latautuessa.</p>
     `,
   },
   'score-matrix': {
@@ -610,6 +848,27 @@ const helpContent = {
 <p><strong>Why the prediction and most likely scoreline can differ:</strong></p>
 <p>The predicted score (shown in the match list) is the most likely scoreline <em>within the predicted outcome</em>. For example, if the model predicts an away win (43%), the predicted score will be the most likely away-win scoreline (e.g. 1-2 at 11.2%) — even if a draw scoreline like 1-1 (12.9%) is the single most probable score overall.</p>
 <p>This is because draws split their probability across fewer scorelines (0-0, 1-1, 2-2...), making individual draw scores appear high. But when you add up <em>all</em> away-win scorelines (0-1, 0-2, 1-2, 1-3...), the total away-win probability can be much higher than the total draw probability. The prediction reflects this overall picture.</p>
+
+<hr>
+<p><strong>Suomeksi:</strong></p>
+<p>7x7-ruudukko, joka näyttää jokaisen mahdollisen lopputuloksen ennustetun todennäköisyyden 0-0:sta 6-6:een.</p>
+<p><strong>Miten se rakennetaan:</strong></p>
+<ul>
+  <li>Jokainen solu = <em>P(Koti tekee i) x P(Vieras tekee j)</em> Poisson-jakaumalla</li>
+  <li>Odotetut maalit johdetaan joukkueiden hyökkäys-/puolustusvahvuuksista, yhdistettynä <strong>xG:hen laukaisuista</strong> ja <strong>Elo-luokituksiin</strong></li>
+  <li><strong>Lepopäivien</strong> säätö: lyhyellä levolla pelaavat joukkueet saavat hieman matalammat odotetut maalit</li>
+  <li>Vähämaaliset solut (0-0, 1-0, 0-1, 1-1) säädetään <strong>Dixon-Coles-korjauksella</strong></li>
+  <li>Koko matriisi <strong>skaalataan uudelleen</strong> vastaamaan yhdistettyä 1X2-ennustetta</li>
+</ul>
+<p><strong>Matriisin lukeminen:</strong></p>
+<ul>
+  <li>Kotijoukkueen maalit ovat pystyakselilla (vasemmalla), vierasjoukkueen vaakaakselilla (ylhäällä)</li>
+  <li>Kirkkaammat/korkeammat solut ovat todennäköisempiä</li>
+  <li>Korostettu solu on yksittäisesti todennäköisin tulos</li>
+</ul>
+<p><strong>Miksi ennuste ja todennäköisin tulos voivat erota:</strong></p>
+<p>Ennustettu tulos (ottelulistassa) on todennäköisin lopputulos <em>ennustetun lopputuloksen sisällä</em>. Esimerkiksi jos malli ennustaa vierasvoittoa (43%), ennustettu tulos on todennäköisin vierasvoittotulos (esim. 1-2, 11.2%) — vaikka tasapelitulos kuten 1-1 (12.9%) olisi yksittäisesti todennäköisin.</p>
+<p>Tämä johtuu siitä, että tasapelit jakautuvat harvempiin tuloksiin (0-0, 1-1, 2-2...), jolloin yksittäiset tasapelitulokset vaikuttavat korkeilta. Mutta kun lasketaan yhteen <em>kaikki</em> vierasvoittotulokset (0-1, 0-2, 1-2, 1-3...), vierasvoiton kokonaistodennäköisyys voi olla paljon korkeampi. Ennuste heijastaa tätä kokonaiskuvaa.</p>
     `,
   },
   'match-outcome': {
@@ -625,6 +884,19 @@ const helpContent = {
   <li>Bar and dotted line <strong>align</strong> → our model and the bookmaker roughly agree</li>
 </ul>
 <p>The bigger the gap between the bar and the dotted line, the stronger the disagreement — and the bigger the potential edge.</p>
+
+<hr>
+<p><strong>Suomeksi:</strong></p>
+<p>Näyttää ennustetun todennäköisyyden jokaiselle ottelutulokselle: <strong>Kotivoitto (1)</strong>, <strong>Tasapeli (X)</strong> ja <strong>Vierasvoitto (2)</strong>.</p>
+<p><strong>Värillinen palkki</strong> = mallimme ennustama todennäköisyys (yhdistetty Poisson + Elo + markkinakertoimet).</p>
+<p><strong>Pisteviiva</strong> = vedonvälittäjän reilutodennäköisyys (marginaali poistettu Shinin menetelmällä). Tämä on vedonvälittäjän todellinen arvio lopputuloksen todennäköisyydestä.</p>
+<p><strong>Miten lukea eroa:</strong></p>
+<ul>
+  <li>Palkki ulottuu pisteviivan <strong>ohi</strong> → mallimme pitää tätä lopputulosta <em>todennäköisempänä</em> kuin vedonvälittäjä → potentiaalinen <strong>arvoveto</strong></li>
+  <li>Palkki jää pisteviivan <strong>alle</strong> → vedonvälittäjä pitää tätä <em>todennäköisempänä</em> kuin mallimme → vedonvälittäjä <strong>yliarvostaa</strong> tätä lopputulosta (fade-ehdokas)</li>
+  <li>Palkki ja pisteviiva <strong>kohdakkain</strong> → mallimme ja vedonvälittäjä ovat suunnilleen samaa mieltä</li>
+</ul>
+<p>Mitä suurempi ero palkin ja pisteviivan välillä, sitä vahvempi erimielisyys — ja sitä suurempi potentiaalinen etu.</p>
     `,
   },
   'over-under': {
@@ -642,6 +914,22 @@ const helpContent = {
   <li><strong>Over 2.5</strong> — the most popular O/U line. Typically ~50/50 in most leagues</li>
   <li><strong>Over 1.5</strong> — very likely (most matches have 2+ goals)</li>
   <li><strong>Over 3.5</strong> — less likely, but higher odds when it hits</li>
+</ul>
+
+<hr>
+<p><strong>Suomeksi:</strong></p>
+<p>Ennustaa ylittääkö vai alittaako ottelun maalimäärä tietyn rajan (1.5, 2.5, 3.5 maalia).</p>
+<p><strong>Miten toimii:</strong></p>
+<ul>
+  <li>Todennäköisyydet lasketaan suoraan tulosmatriisista — summaamalla kaikki solut, joissa maalimäärä ylittää tai alittaa rajan</li>
+  <li>Vedonvälittäjän todennäköisyydet käyttävät Shinin menetelmää marginaalin poistamiseen</li>
+  <li>Etu = sinun todennäköisyytesi miinus vedonvälittäjän reilutodennäköisyys</li>
+</ul>
+<p><strong>Yleiset rajat:</strong></p>
+<ul>
+  <li><strong>Yli 2.5</strong> — suosituin yli/alle-raja. Tyypillisesti ~50/50 useimmissa sarjoissa</li>
+  <li><strong>Yli 1.5</strong> — hyvin todennäköinen (useimmissa otteluissa 2+ maalia)</li>
+  <li><strong>Yli 3.5</strong> — epätodennäköisempi, mutta korkeammat kertoimet osuessaan</li>
 </ul>
     `,
   },
@@ -665,6 +953,26 @@ const helpContent = {
   <li>Use quarter Kelly (25%) to manage risk — full Kelly is too aggressive in practice</li>
   <li>Value bets still lose sometimes — the edge is a long-term advantage, not a guarantee</li>
 </ul>
+
+<hr>
+<p><strong>Suomeksi:</strong></p>
+<p><strong>Arvoveto</strong> syntyy, kun mallimme todennäköisyys lopputulokselle on korkeampi kuin vedonvälittäjän reilutodennäköisyys. Kertoimet ovat puolellasi — vedonvälittäjä tarjoaa paremmat kertoimet kuin pitäisi.</p>
+<p><strong>Sarakkeet:</strong></p>
+<ul>
+  <li><strong>Your %</strong> — mallimme todennäköisyys tälle lopputulokselle</li>
+  <li><strong>Book %</strong> — vedonvälittäjän reilutodennäköisyys (marginaali poistettu)</li>
+  <li><strong>Edge</strong> — ero (sinun % miinus vedonvälittäjän %). Suurempi etu = enemmän arvoa</li>
+  <li><strong>Kelly %</strong> — optimaalinen panoskoko prosentteina pankista</li>
+  <li><strong>Stake</strong> — ehdotettu panos euroissa</li>
+</ul>
+<p><strong>Parhaat kertoimet:</strong> Useamman vedonvälittäjän ollessa saatavilla näytetään, kuka tarjoaa korkeimmat kertoimet (esim. "Best: Pinnacle @ 2.45"). Lyö aina parhailla saatavilla olevilla kertoimilla.</p>
+<p><strong>Eturaja:</strong> Käytä <em>Min. etu</em> -liukusäädintä Asetuksissa suodattaaksesi marginaaliset edut. Piilotettujen vetojen määrä näytetään taulukon lopussa.</p>
+<p><strong>Vinkit:</strong></p>
+<ul>
+  <li>Yli 5% edut ovat vahvoja arvomahdollisuuksia</li>
+  <li>Käytä neljännes-Kellyä (25%) riskin hallintaan — täysi Kelly on käytännössä liian aggressiivinen</li>
+  <li>Arvovedotkin häviävät joskus — etu on pitkän aikavälin hyöty, ei takuu</li>
+</ul>
     `,
   },
   'all-bets': {
@@ -678,6 +986,17 @@ const helpContent = {
   <li><span style="color:#f87171;background:#f8717130;padding:1px 4px;border-radius:3px;font-size:0.8em;font-weight:700;">OV</span> — Overvalued tag, shown when the bookmaker overvalues by more than 3%</li>
 </ul>
 <p>This is the complete picture — Value Bets and Fades are subsets of this table filtered by positive or negative edge.</p>
+
+<hr>
+<p><strong>Suomeksi:</strong></p>
+<p>Näyttää kaikki mahdolliset vedot ottelulle — sekä arvovedot että yliarvostetut lopputulokset — edun mukaan järjestettynä.</p>
+<p><strong>Taulukon lukeminen:</strong></p>
+<ul>
+  <li><span style="color:#4ade80;">Vihreä etu</span> — arvoveto. Mallimme antaa tälle lopputulokselle korkeamman todennäköisyyden kuin vedonvälittäjä</li>
+  <li><span style="color:#f87171;">Punainen etu</span> — yliarvostettu. Vedonvälittäjä pitää tätä todennäköisempänä kuin mallimme</li>
+  <li><span style="color:#f87171;background:#f8717130;padding:1px 4px;border-radius:3px;font-size:0.8em;font-weight:700;">OV</span> — Yliarvostettu-merkintä, näytetään kun vedonvälittäjä yliarvostaa yli 3%</li>
+</ul>
+<p>Tämä on kokonaiskuva — Arvovedot ja Fadet ovat tämän taulukon osajoukot suodatettuna positiivisen tai negatiivisen edun mukaan.</p>
     `,
   },
   'fades': {
@@ -692,6 +1011,18 @@ const helpContent = {
   <li>Combine with the Bookmaker Comparison to find which bookmaker offers the best counter-bet odds</li>
 </ul>
 <p><strong>Threshold:</strong> Only outcomes overvalued by more than 3% are shown. Small differences are normal noise.</p>
+
+<hr>
+<p><strong>Suomeksi:</strong></p>
+<p><strong>Fadet</strong> ovat lopputuloksia, joissa vedonvälittäjän todennäköisyys on merkittävästi korkeampi kuin mallimme arvio — vedonvälittäjä on <em>liian itsevarma</em> kyseisestä lopputuloksesta.</p>
+<p>Kun vedonvälittäjä yliarvostaa yhtä lopputulosta, vastakkaiset lopputulokset ovat todennäköisesti aliarvostettuja — mikä luo arvovetomhdollisuuksia. Jokainen fade näyttää yliarvostetun lopputuloksen ja ehdottaa vastavetoja.</p>
+<p><strong>Miten käyttää:</strong></p>
+<ul>
+  <li>Etsi lopputuloksia, jotka vedonvälittäjä yliarvostaa 5%+ — nämä viittaavat liian aggressiiviseen hinnoitteluun</li>
+  <li>&#8627; vastavedot näyttävät missä arvo on vastapuolella</li>
+  <li>Yhdistä vedonvälittäjävertailuun löytääksesi parhaat vastaveto-kertoimet</li>
+</ul>
+<p><strong>Raja:</strong> Vain yli 3% yliarvostetut lopputulokset näytetään. Pienet erot ovat normaalia kohinaa.</p>
     `,
   },
   'bookmaker-comparison': {
@@ -710,6 +1041,23 @@ const helpContent = {
   <li>Look for the <strong>BEST</strong> badge — always bet at the bookmaker with the highest odds for your chosen outcome</li>
   <li>If you've found a value bet, scan the column for that outcome — the BEST badge tells you where to place it</li>
   <li>Large red deviations suggest a bookmaker is overconfident about an outcome — consider fading it</li>
+</ul>
+
+<hr>
+<p><strong>Suomeksi:</strong></p>
+<p>Vertaa jokaisen vedonvälittäjän todennäköisyyksiä <strong>konsensukseen</strong> (kaikkien vedonvälittäjien keskiarvo). Auttaa löytämään parhaan vedonvälittäjän jokaiselle vedolle.</p>
+<p><strong>Taulukon lukeminen:</strong></p>
+<ul>
+  <li>Jokainen solu näyttää desimaalikertoimet ja poikkeaman konsensuksesta suluissa</li>
+  <li><span style="color:#4ade80;">Vihreä reunus</span> = vedonvälittäjä tarjoaa paremmat kertoimet kuin konsensus (enemmän arvoa vedonlyöjälle)</li>
+  <li><span style="color:#f87171;">Punainen reunus</span> = vedonvälittäjä tarjoaa huonommat kertoimet kuin konsensus (vähemmän arvoa)</li>
+  <li><span style="display:inline-block;font-size:0.65rem;font-weight:700;padding:1px 4px;border-radius:3px;color:#4ade80;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);">BEST</span> = tällä vedonvälittäjällä on korkeimmat kertoimet kyseiselle lopputulokselle</li>
+</ul>
+<p><strong>Miten käyttää:</strong></p>
+<ul>
+  <li>Etsi <strong>BEST</strong>-merkintää — lyö aina vedonvälittäjällä, jolla on korkeimmat kertoimet valitsemallesi lopputulokselle</li>
+  <li>Jos olet löytänyt arvovedon, selaa kyseisen lopputuloksen saraketta — BEST-merkintä kertoo minne lyödä</li>
+  <li>Suuret punaiset poikkeamat viittaavat liian itsevarmoihin kertoimiin — harkitse fadea</li>
 </ul>
     `,
   },
@@ -740,6 +1088,33 @@ const helpContent = {
       <div class="help-section">
         <p><strong>How it's used in predictions:</strong> Elo ratings are converted to expected goal rates (Poisson lambdas) and blended with the statistical model. Early in the season, Elo has more influence since the Poisson model has limited data. As more matches are played, the statistical model takes over.</p>
       </div>
+
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Mikä se on:</strong> Voimasuhdelista, joka luokittelee joukkueet ottelutulosten perusteella. Joukkueet saavat pisteitä voitoista ja menettävät tappioista, määrän riippuessa tuloksen yllättävyydestä.</p>
+      <div class="help-section">
+        <p><strong>Miten Elo toimii:</strong></p>
+        <ul>
+          <li>Jokainen joukkue aloittaa <strong>1500</strong> pisteestä (tai siirtona edelliseltä kaudelta)</li>
+          <li>Jokaisen ottelun jälkeen voittaja saa pisteitä ja häviäjä menettää</li>
+          <li>Vahvan joukkueen voittaminen antaa enemmän pisteitä kuin heikon</li>
+          <li>Yllätystulos (heikko voittaa vahvan) aiheuttaa suuren pistemuutoksen</li>
+          <li>Kotijoukkue saa <strong>+50 pisteen bonuksen</strong> odotusarvolaskennassa (kotietu)</li>
+          <li>K-kerroin on <strong>32</strong> — jokainen ottelu voi siirtää luokitusta enintään 32 pistettä</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Taulukon sarakkeet:</strong></p>
+        <ul>
+          <li><strong>Rating</strong> — nykyinen Elo-pistemäärä. Korkeampi = vahvempi joukkue</li>
+          <li><strong>Change</strong> — viimeisimmässä ottelussa saadut tai menetetyt pisteet</li>
+          <li><strong>Form</strong> — viiden viimeisen ottelun tulokset värillisillä pisteillä: vihreä = voitto, keltainen = tasapeli, punainen = tappio</li>
+          <li><strong>Played</strong> — kauden pelattujen otteluiden määrä</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Miten käytetään ennusteissa:</strong> Elo-luokitukset muunnetaan odotetuiksi maalimääriksi (Poisson-lambdat) ja yhdistetään tilastolliseen malliin. Kauden alussa Elolla on suurempi vaikutus, koska Poisson-mallilla on rajallisesti dataa. Otteluiden kertyessä tilastollinen malli ottaa vallan.</p>
+      </div>
     `,
   },
   'prediction-tracker': {
@@ -766,6 +1141,31 @@ const helpContent = {
       </div>
       <div class="help-section">
         <p><strong>Prediction table:</strong> Shows recent predictions with the predicted outcome and score vs the actual result. A checkmark means the 1X2 outcome was correct.</p>
+      </div>
+
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Mikä se on:</strong> Eteenpäin kulkeva arviointi, joka mittaa mallin ennusteiden tarkkuutta kauden aikana — ilman tulevaisuuden datan käyttöä.</p>
+      <div class="help-section">
+        <p><strong>Walk-forward-menetelmä:</strong></p>
+        <ul>
+          <li>Ottelut järjestetään aikajärjestykseen</li>
+          <li>Jokaista ottelua varten malli koulutetaan käyttäen <strong>vain sitä ennen pelattuja otteluita</strong></li>
+          <li>Ennustetta verrataan todelliseen tulokseen</li>
+          <li>Tämä estää "datavuodon" — malli ei koskaan näe tulevaisuutta</li>
+          <li>Ennusteet alkavat 10 pelatun ottelun jälkeen (minimikoulutusdataa)</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Mittarit:</strong></p>
+        <ul>
+          <li><strong>1X2 Accuracy</strong> — prosentti otteluista, joissa ennustettu lopputulos (kotivoitto / tasapeli / vierasvoitto) oli oikein. Tyypillinen jalkapallolle: 35-50%</li>
+          <li><strong>Exact Score</strong> — prosentti otteluista, joissa ennustettu tulos oli täsmälleen oikein. Tyypillinen: 5-15%</li>
+          <li><strong>Brier Score</strong> — mittaa todennäköisyyksien kalibraatiota. <strong>Matalampi on parempi.</strong> 0 = täydelliset ennusteet, ~0.67 = satunnainen arvaus. Hyvä malli saa 0.40-0.55</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Ennustetaulukko:</strong> Näyttää viimeaikaiset ennusteet ennustetun lopputuloksen ja tuloksen kanssa. Merkki tarkoittaa, että 1X2-lopputulos oli oikein.</p>
       </div>
     `,
   },
@@ -796,6 +1196,34 @@ const helpContent = {
       </div>
       <div class="help-section">
         <p><strong>Important:</strong> Past performance does not guarantee future results. This simulation uses consensus odds available at prediction time. Actual results depend on the specific bookmaker odds you get and when you place bets.</p>
+      </div>
+
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Mikä se on:</strong> Simuloitu vedonlyöntikausi, joka näyttää mitä olisi tapahtunut, jos olisit seurannut mallin arvovetoja Kelly-panostuksella kauden alusta.</p>
+      <div class="help-section">
+        <p><strong>Miten toimii:</strong></p>
+        <ul>
+          <li>Käyttää samaa <strong>walk-forward</strong>-menetelmää kuin Ennusteseuranta — ei tulevaisuuden dataa</li>
+          <li>Jokaiselle ottelulle malli tunnistaa <strong>arvovedot</strong> (mallin todennäköisyys > vedonvälittäjän reilutodennäköisyys)</li>
+          <li>Panokset lasketaan <strong>Kelly-kriteerillä</strong>, skaalattuna Kelly-murto-osa-asetuksella</li>
+          <li>Vain ottelut, joilla on kertoimet, sisällytetään — ilman kertoimia olevat ohitetaan</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Yhteenvetomittarit:</strong></p>
+        <ul>
+          <li><strong>Total P/L</strong> — kokonaisvoitto tai -tappio kaikista lyödyistä vedoista</li>
+          <li><strong>ROI</strong> — sijoitetun pääoman tuotto: kokonais-P/L / kokonaispanokset &times; 100. Positiivinen = kannattava</li>
+          <li><strong>Win Rate</strong> — voittaneiden vetojen prosenttiosuus</li>
+          <li><strong>Max Drawdown</strong> — suurin huipusta pohjaan lasku kumulatiivisessa P/L:ssä. Näyttää pahimman tappioputken</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>P/L-kaavio:</strong> Näyttää kumulatiivisen voiton/tappion ajan myötä. Vihreät palkit = juokseva voitto, punaiset palkit = juokseva tappio. Tasaisesti nouseva viiva viittaa kannattavaan strategiaan.</p>
+      </div>
+      <div class="help-section">
+        <p><strong>Tärkeää:</strong> Mennyt tuotto ei takaa tulevaa. Tämä simulaatio käyttää konsensuskertoimia ennustehetkellä. Todelliset tulokset riippuvat saamistasi kertoimista ja vedon ajoituksesta.</p>
       </div>
     `,
   },
