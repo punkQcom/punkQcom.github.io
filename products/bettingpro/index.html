@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>BettingPro — Sports Betting Calculator</title>
-  <link rel="stylesheet" href="css/style.css?v=1775466333">
+  <link rel="stylesheet" href="css/style.css?v=1775466841">
 </head>
 <body>
   <div class="container">
@@ -86,6 +86,18 @@
         <table id="value-bets" class="results-table"></table>
       </section>
 
+      <!-- Fades (Overvalued by Bookmaker) -->
+      <section class="card">
+        <h2>Fades <button type="button" class="help-tip" data-help="fades">?</button></h2>
+        <table id="fades-table" class="results-table"></table>
+      </section>
+
+      <!-- Bookmaker Comparison -->
+      <section class="card">
+        <h2>Bookmaker Comparison <button type="button" class="help-tip" data-help="bookmaker-comparison">?</button></h2>
+        <div id="bookmaker-comparison"></div>
+      </section>
+
       <!-- All Bets Overview -->
       <section class="card">
         <h2>All Bets Overview</h2>
@@ -160,6 +172,6 @@
 
   </div>
 
-  <script type="module" src="js/app.js?v=1775466333"></script>
+  <script type="module" src="js/app.js?v=1775466841"></script>
 </body>
 </html>

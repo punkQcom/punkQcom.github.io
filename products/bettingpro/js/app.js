@@ -2,22 +2,23 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { shinProbabilities } from './shin.js?v=1775466333';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775466333';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775466333';
+import { shinProbabilities } from './shin.js?v=1775466841';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775466841';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775466841';
 import {
   buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-} from './prediction.js?v=1775466333';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775466333';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775466333';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775466333';
+} from './prediction.js?v=1775466841';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775466841';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775466841';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775466841';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775466333';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775466333';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775466841';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775466841';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
-  renderOverUnder, renderValueBets, renderAllBets, setupSliders, setupHelpModal
-} from './ui.js?v=1775466333';
+  renderOverUnder, renderValueBets, renderAllBets, renderFades,
+  renderBookmakerComparison, setupSliders, setupHelpModal
+} from './ui.js?v=1775466841';
 
 // Loaded data state
 let currentMeta = null;
@@ -104,6 +105,29 @@ function getConsensusOdds(oddsObj) {
     };
   }
   return result;
+}
+
+/** Compare each bookmaker's implied probs against consensus to find outliers */
+function buildBookmakerComparison(matchOddsMulti) {
+  if (!matchOddsMulti || Object.keys(matchOddsMulti).length < 2) return [];
+  const consensus = getConsensusOdds(matchOddsMulti);
+  if (!consensus || !consensus.home || !consensus.draw || !consensus.away) return [];
+  const consensusProbs = shinProbabilities([consensus.home, consensus.draw, consensus.away]);
+
+  const rows = [];
+  for (const [bookmaker, odds] of Object.entries(matchOddsMulti)) {
+    if (!odds.home || !odds.draw || !odds.away) continue;
+    const probs = shinProbabilities([odds.home, odds.draw, odds.away]);
+    rows.push({
+      bookmaker,
+      home: { odds: odds.home, prob: probs[0], diff: probs[0] - consensusProbs[0] },
+      draw: { odds: odds.draw, prob: probs[1], diff: probs[1] - consensusProbs[1] },
+      away: { odds: odds.away, prob: probs[2], diff: probs[2] - consensusProbs[2] },
+    });
+  }
+  // Sort alphabetically by bookmaker name
+  rows.sort((a, b) => a.bookmaker.localeCompare(b.bookmaker));
+  return rows;
 }
 
 /** Extract all unique bookmaker keys from loaded data */
@@ -745,7 +769,22 @@ function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds,
     }
   }
 
+  // Build fades — outcomes the bookmaker overvalues (book prob >> model prob)
+  const fades = allBets
+    .filter(b => b.bookProb > 0 && b.edge < -0.03)
+    .map(b => ({
+      ...b,
+      overvaluedBy: Math.abs(b.edge),
+      counterBets: allBets.filter(cb => cb.edge > 0 && cb.label !== b.label),
+    }))
+    .sort((a, b) => b.overvaluedBy - a.overvaluedBy);
+
+  // Build cross-bookmaker comparison
+  const comparison = buildBookmakerComparison(matchOddsMulti);
+
   renderValueBets(allBets);
+  renderFades(fades);
+  renderBookmakerComparison(comparison, homeName, awayName);
   renderAllBets(allBets);
   showResults();
 }

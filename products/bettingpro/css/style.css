@@ -424,6 +424,30 @@ summary .help-tip {
   color: #f87171;
 }
 
+.overvalued-tag {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  background: #f8717130;
+  color: #f87171;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.counter-bet-row td {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  border-top: none !important;
+  padding-top: 0 !important;
+}
+
+#bookmaker-comparison small {
+  color: #9ca3af;
+  font-size: 0.8em;
+}
+
 /* === Update Data Bar === */
 .update-data-bar {
   border-color: #3b82f6;
