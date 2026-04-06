@@ -305,6 +305,13 @@ summary .help-tip {
   margin-bottom: 12px;
 }
 
+.score-matrix-note {
+  color: #9ca3af;
+  font-weight: normal;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
 /* === Score Matrix === */
 .score-matrix-container {
   overflow-x: auto;
