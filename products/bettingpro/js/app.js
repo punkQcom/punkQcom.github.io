@@ -2,23 +2,23 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { shinProbabilities } from './shin.js?v=1775472757';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775472757';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775472757';
+import { shinProbabilities } from './shin.js?v=1775473062';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775473062';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775473062';
 import {
   buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-} from './prediction.js?v=1775472757';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775472757';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775472757';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775472757';
+} from './prediction.js?v=1775473062';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775473062';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775473062';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775473062';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775472757';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775472757';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775473062';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775473062';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal
-} from './ui.js?v=1775472757';
+} from './ui.js?v=1775473062';
 
 // Loaded data state
 let currentMeta = null;
@@ -341,7 +341,9 @@ function findDefaultDateRange(groups, dates) {
   }
 
   const start = lastFinishedIdx >= 0 ? lastFinishedIdx : 0;
-  const end = firstUpcomingIdx < dates.length ? firstUpcomingIdx : dates.length - 1;
+  // Show through next upcoming date (previous round + today/current + next round)
+  let end = firstUpcomingIdx < dates.length ? firstUpcomingIdx : dates.length - 1;
+  if (end + 1 < dates.length) end = end + 1;
   return { start, end };
 }
 
