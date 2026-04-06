@@ -428,6 +428,22 @@ const helpContent = {
   </div>
 </div>
 <p>Below the probabilities, the bookmaker's decimal odds are shown (if available). On finished matches, the correct result column is highlighted in green.</p>
+<p><strong>Streak badges</strong> appear next to team names on upcoming matches when a team has 3+ consecutive results of the same type:</p>
+<div style="margin:12px 0;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;font-size:0.75rem;font-weight:700;padding:1px 6px;border-radius:3px;color:#4ade80;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);">W4</span>
+    <span>Winning streak (4 wins in a row) — team is in strong form</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;font-size:0.75rem;font-weight:700;padding:1px 6px;border-radius:3px;color:#fbbf24;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);">D3</span>
+    <span>Draw streak (3 draws in a row) — team is grinding out results</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;font-size:0.75rem;font-weight:700;padding:1px 6px;border-radius:3px;color:#f87171;background:rgba(248,113,113,0.15);border:1px solid rgba(248,113,113,0.4);">L3</span>
+    <span>Losing streak (3 losses in a row) — team is struggling</span>
+  </div>
+</div>
+<p>Long winning streaks can signal regression risk — even dominant teams eventually lose. When a streaking team has very short bookmaker odds, consider the Fades section for counter-bets.</p>
 <p><strong>Result</strong> — the final score for finished matches. Click any match to open the full analysis.</p>
 <p><strong>Today's matches</strong> are highlighted in green and auto-scrolled into view on page load.</p>
     `,

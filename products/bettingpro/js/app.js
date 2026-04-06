@@ -2,23 +2,23 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { shinProbabilities } from './shin.js?v=1775473323';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775473323';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775473323';
+import { shinProbabilities } from './shin.js?v=1775473546';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775473546';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775473546';
 import {
   buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-} from './prediction.js?v=1775473323';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775473323';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775473323';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775473323';
+} from './prediction.js?v=1775473546';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775473546';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775473546';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775473546';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775473323';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775473323';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775473546';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775473546';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal
-} from './ui.js?v=1775473323';
+} from './ui.js?v=1775473546';
 
 // Loaded data state
 let currentMeta = null;
@@ -329,6 +329,32 @@ function buildDateGroups(matches, upcoming, odds) {
   return groups;
 }
 
+/** Compute current W/D/L streak for each team from finished matches */
+function computeStreaks(matches) {
+  const sorted = [...matches].filter(m => m.homeGoals !== undefined).sort((a, b) => a.date.localeCompare(b.date));
+  const teamMatches = {};
+  for (const m of sorted) {
+    const homeResult = m.homeGoals > m.awayGoals ? 'W' : m.homeGoals === m.awayGoals ? 'D' : 'L';
+    const awayResult = m.homeGoals < m.awayGoals ? 'W' : m.homeGoals === m.awayGoals ? 'D' : 'L';
+    if (!teamMatches[m.homeTeam]) teamMatches[m.homeTeam] = [];
+    if (!teamMatches[m.awayTeam]) teamMatches[m.awayTeam] = [];
+    teamMatches[m.homeTeam].push(homeResult);
+    teamMatches[m.awayTeam].push(awayResult);
+  }
+  const streaks = {};
+  for (const [team, results] of Object.entries(teamMatches)) {
+    if (results.length === 0) { streaks[team] = { type: '-', count: 0 }; continue; }
+    const last = results[results.length - 1];
+    let count = 0;
+    for (let i = results.length - 1; i >= 0; i--) {
+      if (results[i] === last) count++;
+      else break;
+    }
+    streaks[team] = { type: last, count };
+  }
+  return streaks;
+}
+
 function findDefaultDateRange(groups, dates) {
   const today = new Date().toISOString().slice(0, 10);
   let lastFinishedIdx = -1;
@@ -420,6 +446,7 @@ function renderDateView() {
     html += '<button class="round-nav-btn" id="show-earlier">Show earlier dates</button>';
   }
 
+  const streaks = computeStreaks(currentLeagueData?.matches || []);
   const defaultRange = findDefaultDateRange(dateGroups, allDates);
   const canHideEarlier = visibleRange.start < defaultRange.start;
   const canHideLater = visibleRange.end > defaultRange.end;
@@ -487,8 +514,14 @@ function renderDateView() {
       const scoreTitle = isFinished ? '' : 'title="Not yet played"';
       const resultCls = isFinished ? 'match-col-result' : 'match-col-result not-played';
 
+      // Streak badges for upcoming matches
+      const homeStreak = !isFinished && streaks[m.homeTeam]?.count >= 3 ? streaks[m.homeTeam] : null;
+      const awayStreak = !isFinished && streaks[m.awayTeam]?.count >= 3 ? streaks[m.awayTeam] : null;
+      const homeBadge = homeStreak ? ` <span class="streak-badge streak-${homeStreak.type}">${homeStreak.type}${homeStreak.count}</span>` : '';
+      const awayBadge = awayStreak ? ` <span class="streak-badge streak-${awayStreak.type}">${awayStreak.type}${awayStreak.count}</span>` : '';
+
       html += `<div class="match-row${isFinished ? ' finished' : ' upcoming'}" data-home="${m.homeTeam}" data-away="${m.awayTeam}">
-        <span class="match-teams">${m.homeTeam} vs ${m.awayTeam}</span>
+        <span class="match-teams">${m.homeTeam}${homeBadge} vs ${m.awayTeam}${awayBadge}</span>
         <span class="match-result-group">
           <span class="match-col-pred">${predContent}</span>
           <span class="match-col-1x2">${onextwContent}</span>
