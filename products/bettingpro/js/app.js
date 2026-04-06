@@ -2,23 +2,23 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { shinProbabilities } from './shin.js?v=1775473546';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775473546';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775473546';
+import { shinProbabilities } from './shin.js?v=1775474918';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775474918';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775474918';
 import {
   buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-} from './prediction.js?v=1775473546';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775473546';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775473546';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775473546';
+} from './prediction.js?v=1775474918';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775474918';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775474918';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775474918';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775473546';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775473546';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775474918';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775474918';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal
-} from './ui.js?v=1775473546';
+} from './ui.js?v=1775474918';
 
 // Loaded data state
 let currentMeta = null;
@@ -105,6 +105,18 @@ function getConsensusOdds(oddsObj) {
     };
   }
   return result;
+}
+
+/** Find which bookmaker offers the best (highest) odds per outcome */
+function findBestOdds(matchOddsMulti) {
+  if (!matchOddsMulti) return {};
+  const best = { home: { book: null, odds: 0 }, draw: { book: null, odds: 0 }, away: { book: null, odds: 0 } };
+  for (const [bookmaker, odds] of Object.entries(matchOddsMulti)) {
+    if (odds.home > best.home.odds) best.home = { book: bookmaker, odds: odds.home };
+    if (odds.draw > best.draw.odds) best.draw = { book: bookmaker, odds: odds.draw };
+    if (odds.away > best.away.odds) best.away = { book: bookmaker, odds: odds.away };
+  }
+  return best;
 }
 
 /** Compare each bookmaker's implied probs against consensus to find outliers */
@@ -419,6 +431,7 @@ function predictMatch(homeName, awayName) {
     halfLife: 60,
     referenceDate: new Date().toISOString().slice(0, 10),
     initialEloRatings,
+    matchDate: matchObj?.date || new Date().toISOString().slice(0, 10),
   });
 }
 
@@ -675,11 +688,12 @@ function analyzeMatch(homeName, awayName) {
   // Odds — resolve for selected bookmaker
   const odds = currentLeagueData?.odds || [];
   let matchOddsMulti = findOdds({ homeTeam: homeName, awayTeam: awayName }, odds);
-  if (!matchOddsMulti) {
-    const allObjects = [...(currentLeagueData?.matches || []), ...(currentLeagueData?.upcoming || [])];
-    const obj = allObjects.find(m => m.homeTeam === homeName && m.awayTeam === awayName);
-    if (obj?.odds) matchOddsMulti = migrateOdds(obj.odds);
+  const allObjects = [...(currentLeagueData?.matches || []), ...(currentLeagueData?.upcoming || [])];
+  const obj = allObjects.find(m => m.homeTeam === homeName && m.awayTeam === awayName);
+  if (!matchOddsMulti && obj?.odds) {
+    matchOddsMulti = migrateOdds(obj.odds);
   }
+  const matchDate = obj?.date || new Date().toISOString().slice(0, 10);
 
   let selOdds = matchOddsMulti ? getSelectedOdds(matchOddsMulti) : null;
   // Fall back to consensus when selected bookmaker has no odds for this match
@@ -696,7 +710,7 @@ function analyzeMatch(homeName, awayName) {
   const bankroll = parseFloat(document.getElementById('bankroll').value) || 0;
 
   // Run calculation with blended model
-  calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, oddsData, rho, kellyFrac, bankroll);
+  calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, oddsData, rho, kellyFrac, bankroll, matchDate);
 }
 
 // ── Calculation (same math, parameterized) ──────────────────────────
@@ -721,14 +735,14 @@ function calculateOverUnder(matrix, lines) {
   });
 }
 
-function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds, rho, kellyFrac, bankroll) {
+function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds, rho, kellyFrac, bankroll, matchDate) {
   document.getElementById('selected-match-title').textContent = `${homeName} vs ${awayName}`;
 
   const threshold = getModelTrustThreshold();
   const decayOptions = { halfLife: 60, referenceDate: new Date().toISOString().slice(0, 10) };
 
   // Blended score matrix (Poisson + Elo)
-  const matrix = buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho, threshold, decayOptions, initialEloRatings);
+  const matrix = buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho, threshold, decayOptions, initialEloRatings, matchDate);
   const modelOutcomes = calculateOutcomes(matrix);
 
   // Blend model outcomes with odds-derived probabilities
@@ -817,12 +831,14 @@ function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds,
     }))
     .sort((a, b) => b.overvaluedBy - a.overvaluedBy);
 
-  // Build cross-bookmaker comparison
+  // Build cross-bookmaker comparison + best odds per outcome
   const comparison = buildBookmakerComparison(matchOddsMulti);
+  const bestOdds = findBestOdds(matchOddsMulti);
+  const minEdge = parseInt(document.getElementById('edge-threshold-slider')?.value || '3');
 
-  renderValueBets(allBets);
+  renderValueBets(allBets, minEdge, bestOdds);
   renderFades(fades);
-  renderBookmakerComparison(comparison, homeName, awayName, outcomes);
+  renderBookmakerComparison(comparison, homeName, awayName, outcomes, bestOdds);
   renderAllBets(allBets);
   showResults();
 }
@@ -865,6 +881,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Enable recalculate when betting settings change
   document.getElementById('kelly-fraction-slider').addEventListener('input', reanalyzeIfNeeded);
   document.getElementById('bankroll').addEventListener('input', reanalyzeIfNeeded);
+  document.getElementById('edge-threshold-slider').addEventListener('input', reanalyzeIfNeeded);
 
   // Close results button
   document.getElementById('close-results').addEventListener('click', () => {

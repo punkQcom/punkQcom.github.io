@@ -107,11 +107,13 @@ export function renderOverUnder(ouResults) {
   table.innerHTML = html;
 }
 
-export function renderValueBets(bets) {
+export function renderValueBets(bets, minEdge = 0, bestOdds = {}) {
   const table = document.getElementById('value-bets');
-  const valueBets = bets.filter(b => b.edge > 0);
+  const minEdgeFrac = minEdge / 100;
+  const valueBets = bets.filter(b => b.edge > minEdgeFrac);
+  const belowThreshold = bets.filter(b => b.edge > 0 && b.edge <= minEdgeFrac).length;
 
-  if (valueBets.length === 0) {
+  if (valueBets.length === 0 && belowThreshold === 0) {
     table.innerHTML = '<tbody><tr><td colspan="6" style="text-align:center;color:#9ca3af;">No value bets found</td></tr></tbody>';
     return;
   }
@@ -120,14 +122,25 @@ export function renderValueBets(bets) {
 
   valueBets.sort((a, b) => b.edge - a.edge);
   for (const bet of valueBets) {
+    // Find best bookmaker for this outcome
+    let bestInfo = '';
+    const bo = bet.label.includes('Home Win') ? bestOdds.home
+      : bet.label === 'Draw' ? bestOdds.draw
+      : bet.label.includes('Away Win') ? bestOdds.away : null;
+    if (bo?.book) bestInfo = `<span class="best-odds-info">Best: ${formatBookmaker(bo.book)} @ ${bo.odds.toFixed(2)}</span>`;
+
     html += `<tr>
-      <td>${bet.label}</td>
+      <td>${bet.label}${bestInfo}</td>
       <td class="value-positive">${(bet.yourProb * 100).toFixed(1)}%</td>
       <td>${(bet.bookProb * 100).toFixed(1)}%</td>
       <td class="value-positive">+${(bet.edge * 100).toFixed(1)}%</td>
       <td>${(bet.kellyPct * 100).toFixed(1)}%</td>
       <td>${bet.stake.toFixed(2)}</td>
     </tr>`;
+  }
+
+  if (belowThreshold > 0) {
+    html += `<tr><td colspan="6" style="text-align:center;color:#9ca3af;font-size:0.85rem;">${belowThreshold} more bet${belowThreshold > 1 ? 's' : ''} below ${minEdge}% edge threshold</td></tr>`;
   }
 
   html += '</tbody>';
@@ -189,7 +202,7 @@ export function renderFades(fades) {
   table.innerHTML = html;
 }
 
-export function renderBookmakerComparison(rows, homeName, awayName, modelOutcomes) {
+export function renderBookmakerComparison(rows, homeName, awayName, modelOutcomes, bestOdds = {}) {
   const container = document.getElementById('bookmaker-comparison');
 
   if (rows.length === 0) {
@@ -217,9 +230,9 @@ export function renderBookmakerComparison(rows, homeName, awayName, modelOutcome
   for (const row of rows) {
     html += `<tr>
       <td>${formatBookmaker(row.bookmaker)}</td>
-      ${comparisonCell(row.home)}
-      ${comparisonCell(row.draw)}
-      ${comparisonCell(row.away)}
+      ${comparisonCell(row.home, bestOdds.home?.book === row.bookmaker)}
+      ${comparisonCell(row.draw, bestOdds.draw?.book === row.bookmaker)}
+      ${comparisonCell(row.away, bestOdds.away?.book === row.bookmaker)}
     </tr>`;
   }
 
@@ -231,13 +244,14 @@ function formatBookmaker(key) {
   return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
-function comparisonCell(data) {
+function comparisonCell(data, isBest = false) {
   const diffPct = (data.diff * 100).toFixed(1);
   const sign = data.diff > 0 ? '+' : '';
   // Positive diff = bookmaker thinks outcome more likely than consensus = worse odds for bettor
   // Negative diff = bookmaker thinks outcome less likely = better odds for bettor
   const cls = data.diff < -0.02 ? 'comp-value' : data.diff > 0.02 ? 'comp-overvalued' : '';
-  return `<td><span class="comp-cell ${cls}">${data.odds.toFixed(2)}</span> <small>(${sign}${diffPct}%)</small></td>`;
+  const bestTag = isBest ? ' <span class="best-odds-badge">BEST</span>' : '';
+  return `<td><span class="comp-cell ${cls}">${data.odds.toFixed(2)}</span> <small>(${sign}${diffPct}%)</small>${bestTag}</td>`;
 }
 
 export function setupSliders() {
@@ -264,6 +278,14 @@ export function setupSliders() {
   if (prevSeasonSlider) {
     prevSeasonSlider.addEventListener('input', () => {
       prevSeasonValue.textContent = prevSeasonSlider.value + '%';
+    });
+  }
+
+  const edgeSlider = document.getElementById('edge-threshold-slider');
+  const edgeValue = document.getElementById('edge-threshold-value');
+  if (edgeSlider) {
+    edgeSlider.addEventListener('input', () => {
+      edgeValue.textContent = edgeSlider.value + '%';
     });
   }
 }
@@ -392,6 +414,21 @@ const helpContent = {
       </div>
     `,
   },
+  'edge-threshold': {
+    title: 'Minimum Edge Threshold',
+    body: `
+<p><strong>What it does:</strong> Filters the Value Bets table to only show bets where the edge exceeds this minimum percentage. Helps you focus on the strongest opportunities and ignore marginal edges that may be noise.</p>
+<p><strong>How it works:</strong></p>
+<ul>
+  <li>Edge = our model's probability minus the bookmaker's fair probability</li>
+  <li>At 0%: all positive-edge bets are shown (even tiny 0.1% edges)</li>
+  <li>At 3% (default): only bets with 3%+ edge appear — a good balance of signal vs noise</li>
+  <li>At 10%+: very selective, only strong disagreements with the bookmaker</li>
+</ul>
+<p><strong>Hidden bets:</strong> When bets are filtered out, a note at the bottom shows how many were hidden (e.g., "2 more bets below 5% edge threshold").</p>
+<p><strong>Recommendation:</strong> Start at 3%. Increase to 5% if you want fewer, stronger bets. Decrease to 0% to see everything the model finds.</p>
+    `,
+  },
   'settings': {
     title: 'Settings',
     body: `
@@ -403,6 +440,7 @@ const helpContent = {
   <li><strong>Low-Score Correction (rho)</strong> — Dixon-Coles parameter adjusting for defensive correlations in low-scoring games. Default -0.13 is calibrated for European football leagues</li>
   <li><strong>Kelly Fraction</strong> — scales down the Kelly criterion bet sizing. Default 25% (quarter Kelly) is the industry standard for conservative bankroll management</li>
   <li><strong>Bankroll</strong> — your total betting budget. Only affects stake amounts in euros, not probabilities or edge calculations</li>
+  <li><strong>Min. Edge</strong> — filters Value Bets to only show edges above this threshold. Default 3% removes noise from marginal edges</li>
 </ul>
 <p><strong>Auto-adjust:</strong> Market Trust and Previous Season sliders set themselves to sensible defaults when data loads. You can override them manually at any time — they won't reset until you reload the page.</p>
     `,
@@ -444,6 +482,7 @@ const helpContent = {
   </div>
 </div>
 <p>Long winning streaks can signal regression risk — even dominant teams eventually lose. When a streaking team has very short bookmaker odds, consider the Fades section for counter-bets.</p>
+<p><strong>Under the hood:</strong> Predictions use a blended model incorporating goal averages, <strong>xG from shots</strong> (expected goals based on shot volume), <strong>Elo ratings</strong>, and bookmaker odds. The model also accounts for <strong>rest days</strong> — teams with shorter rest between matches get a slight penalty, while well-rested teams get a small boost.</p>
 <p><strong>Result</strong> — the final score for finished matches. Click any match to open the full analysis.</p>
 <p><strong>Today's matches</strong> are highlighted in green and auto-scrolled into view on page load.</p>
     `,
@@ -455,6 +494,8 @@ const helpContent = {
 <p><strong>How it's built:</strong></p>
 <ul>
   <li>Each cell = <em>P(Home scores i) x P(Away scores j)</em> using Poisson distribution</li>
+  <li>Expected goals are derived from team attack/defense strengths, blended with <strong>xG from shots</strong> (when shot data is available) and <strong>Elo ratings</strong></li>
+  <li>A <strong>rest days</strong> adjustment is applied: teams with short rest get slightly lower expected goals, well-rested teams get a small boost</li>
   <li>Low-scoring cells (0-0, 1-0, 0-1, 1-1) are adjusted by the <strong>Dixon-Coles correction</strong> to account for defensive correlations</li>
   <li>The entire matrix is <strong>rescaled</strong> so the 1X2 totals match the blended prediction (model + market odds)</li>
 </ul>
@@ -511,6 +552,8 @@ const helpContent = {
   <li><strong>Kelly %</strong> — optimal bet size as % of bankroll (scaled by Kelly Fraction setting)</li>
   <li><strong>Stake</strong> — suggested bet amount in euros based on your bankroll</li>
 </ul>
+<p><strong>Best odds:</strong> When multiple bookmakers are available, each value bet shows which bookmaker offers the highest odds for that outcome (e.g., "Best: Pinnacle @ 2.45"). Always place your bet at the best available odds to maximize value.</p>
+<p><strong>Edge threshold:</strong> Use the <em>Min. Edge</em> slider in Settings to filter out marginal edges. Only bets above the threshold are shown; hidden bets are counted at the bottom of the table.</p>
 <p><strong>Tips:</strong></p>
 <ul>
   <li>Edges above 5% are strong value opportunities</li>
@@ -553,14 +596,15 @@ const helpContent = {
 <p><strong>Reading the table:</strong></p>
 <ul>
   <li>Each cell shows the decimal odds and the deviation from consensus in parentheses</li>
-  <li><span style="color:#4ade80;">Green</span> = bookmaker offers better odds than consensus (lower implied probability = more value for bettors)</li>
-  <li><span style="color:#f87171;">Red</span> = bookmaker offers worse odds than consensus (higher implied probability = less value)</li>
+  <li><span style="color:#4ade80;">Green border</span> = bookmaker offers better odds than consensus (lower implied probability = more value for bettors)</li>
+  <li><span style="color:#f87171;">Red border</span> = bookmaker offers worse odds than consensus (higher implied probability = less value)</li>
+  <li><span style="display:inline-block;font-size:0.65rem;font-weight:700;padding:1px 4px;border-radius:3px;color:#4ade80;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);">BEST</span> = this bookmaker has the absolute highest odds for that outcome across all bookmakers</li>
 </ul>
 <p><strong>How to use:</strong></p>
 <ul>
-  <li>If you've found a value bet, scan the column for that outcome — find the bookmaker with the greenest cell (best odds)</li>
+  <li>Look for the <strong>BEST</strong> badge — always bet at the bookmaker with the highest odds for your chosen outcome</li>
+  <li>If you've found a value bet, scan the column for that outcome — the BEST badge tells you where to place it</li>
   <li>Large red deviations suggest a bookmaker is overconfident about an outcome — consider fading it</li>
-  <li>Consistent green across a row means that bookmaker is generally offering better odds</li>
 </ul>
     `,
   },
