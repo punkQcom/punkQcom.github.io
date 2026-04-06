@@ -3,7 +3,7 @@
  * Uses only past data to predict each match (no future data leakage).
  */
 
-import { predictMatchPure } from './prediction.js?v=1775473546';
+import { predictMatchPure } from './prediction.js?v=1775474918';
 
 const MIN_TRAINING_MATCHES = 10;
 
@@ -41,6 +41,7 @@ export function generatePredictionTracker(allMatches, options = {}) {
       halfLife,
       referenceDate: match.date,
       initialEloRatings,
+      matchDate: match.date,
     });
 
     if (!pred) continue;

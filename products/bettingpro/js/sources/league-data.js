@@ -55,18 +55,28 @@ export function calculateTeamAverages(matches, options = {}) {
     const w = useDecay ? decayWeight(match.date, referenceDate, halfLife) : 1;
 
     if (!teams[match.homeTeam]) {
-      teams[match.homeTeam] = { hFor: [], hAgainst: [], aFor: [], aAgainst: [], hWeights: [], aWeights: [] };
+      teams[match.homeTeam] = { hFor: [], hAgainst: [], aFor: [], aAgainst: [], hWeights: [], aWeights: [], hShots: [], hShotsAg: [], aShots: [], aShotsAg: [], hShotW: [], aShotW: [] };
     }
     teams[match.homeTeam].hFor.push(match.homeGoals);
     teams[match.homeTeam].hAgainst.push(match.awayGoals);
     teams[match.homeTeam].hWeights.push(w);
+    if (match.stats?.homeShots !== undefined) {
+      teams[match.homeTeam].hShots.push(match.stats.homeShots);
+      teams[match.homeTeam].hShotsAg.push(match.stats.awayShots || 0);
+      teams[match.homeTeam].hShotW.push(w);
+    }
 
     if (!teams[match.awayTeam]) {
-      teams[match.awayTeam] = { hFor: [], hAgainst: [], aFor: [], aAgainst: [], hWeights: [], aWeights: [] };
+      teams[match.awayTeam] = { hFor: [], hAgainst: [], aFor: [], aAgainst: [], hWeights: [], aWeights: [], hShots: [], hShotsAg: [], aShots: [], aShotsAg: [], hShotW: [], aShotW: [] };
     }
     teams[match.awayTeam].aFor.push(match.awayGoals);
     teams[match.awayTeam].aAgainst.push(match.homeGoals);
     teams[match.awayTeam].aWeights.push(w);
+    if (match.stats?.awayShots !== undefined) {
+      teams[match.awayTeam].aShots.push(match.stats.awayShots);
+      teams[match.awayTeam].aShotsAg.push(match.stats.homeShots || 0);
+      teams[match.awayTeam].aShotW.push(w);
+    }
   }
 
   const wSum = (arr, weights) => arr.reduce((s, v, i) => s + v * weights[i], 0);
@@ -75,6 +85,16 @@ export function calculateTeamAverages(matches, options = {}) {
     const tw = wTotal(weights);
     return tw > 0 ? wSum(arr, weights) / tw : null;
   };
+
+  // League-wide shot conversion rate for xG
+  let lgGoals = 0, lgShots = 0;
+  for (const m of matches) {
+    if (m.stats?.homeShots !== undefined) {
+      lgGoals += m.homeGoals + m.awayGoals;
+      lgShots += m.stats.homeShots + (m.stats.awayShots || 0);
+    }
+  }
+  const leagueConversion = lgShots > 0 ? lgGoals / lgShots : 0;
 
   const averages = {};
   for (const [team, data] of Object.entries(teams)) {
@@ -102,13 +122,33 @@ export function calculateTeamAverages(matches, options = {}) {
     // Shrink toward league average — effective sample size replaces raw count
     const w = totalEffective / (totalEffective + PRIOR_WEIGHT);
 
+    let homeScored = w * hs + (1 - w) * avgPerTeam;
+    let homeConceded = w * hc + (1 - w) * avgPerTeam;
+    let awayScored = w * as + (1 - w) * avgPerTeam;
+    let awayConceded = w * ac + (1 - w) * avgPerTeam;
+
+    // Blend with xG from shots (30% weight) if enough data
+    const shotMatches = data.hShotW.length + data.aShotW.length;
+    if (leagueConversion > 0 && shotMatches >= 3) {
+      const xgBlend = 0.3;
+      if (data.hShotW.length > 0) {
+        const xgHS = w * wAvg(data.hShots, data.hShotW) * leagueConversion + (1 - w) * avgPerTeam;
+        const xgHC = w * wAvg(data.hShotsAg, data.hShotW) * leagueConversion + (1 - w) * avgPerTeam;
+        homeScored = (1 - xgBlend) * homeScored + xgBlend * xgHS;
+        homeConceded = (1 - xgBlend) * homeConceded + xgBlend * xgHC;
+      }
+      if (data.aShotW.length > 0) {
+        const xgAS = w * wAvg(data.aShots, data.aShotW) * leagueConversion + (1 - w) * avgPerTeam;
+        const xgAC = w * wAvg(data.aShotsAg, data.aShotW) * leagueConversion + (1 - w) * avgPerTeam;
+        awayScored = (1 - xgBlend) * awayScored + xgBlend * xgAS;
+        awayConceded = (1 - xgBlend) * awayConceded + xgBlend * xgAC;
+      }
+    }
+
     averages[team] = {
       team,
       played: data.hFor.length + data.aFor.length,
-      homeScored: w * hs + (1 - w) * avgPerTeam,
-      homeConceded: w * hc + (1 - w) * avgPerTeam,
-      awayScored: w * as + (1 - w) * avgPerTeam,
-      awayConceded: w * ac + (1 - w) * avgPerTeam,
+      homeScored, homeConceded, awayScored, awayConceded,
     };
   }
 

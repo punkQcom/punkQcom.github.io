@@ -3,11 +3,11 @@
  * All prediction logic extracted from app.js for reuse in tracker, P/L sim, etc.
  */
 
-import { expectedGoals, scoreMatrix } from './poisson.js?v=1775473546';
-import { applyDixonColes } from './dixon-coles.js?v=1775473546';
-import { shinProbabilities } from './shin.js?v=1775473546';
-import { calculateEloRatings, eloToPoisson } from './elo.js?v=1775473546';
-import { calculateTeamAverages, calculateLeagueAvg } from './sources/league-data.js?v=1775473546';
+import { expectedGoals, scoreMatrix } from './poisson.js?v=1775474918';
+import { applyDixonColes } from './dixon-coles.js?v=1775474918';
+import { shinProbabilities } from './shin.js?v=1775474918';
+import { calculateEloRatings, eloToPoisson } from './elo.js?v=1775474918';
+import { calculateTeamAverages, calculateLeagueAvg } from './sources/league-data.js?v=1775474918';
 
 /**
  * Calculate outcomes (home/draw/away probabilities) from a score matrix.
@@ -56,6 +56,18 @@ export function migrateOdds(odds) {
   return odds;
 }
 
+/** Compute days since a team's most recent match before a given date. */
+function computeTeamRestDays(teamName, matchDate, matches) {
+  let latest = null;
+  for (const m of matches) {
+    if ((m.homeTeam === teamName || m.awayTeam === teamName) && m.date && m.date < matchDate) {
+      if (!latest || m.date > latest) latest = m.date;
+    }
+  }
+  if (!latest) return 7; // default baseline
+  return Math.round((new Date(matchDate + 'T12:00:00') - new Date(latest + 'T12:00:00')) / 86400000);
+}
+
 /**
  * Build a blended score matrix from Poisson model + Elo ratings (pure, no DOM).
  * @param {string} homeName
@@ -66,9 +78,10 @@ export function migrateOdds(odds) {
  * @param {number} threshold - Model trust threshold
  * @param {Object} decayOptions - { halfLife, referenceDate }
  * @param {Object} initialEloRatings - Optional initial Elo ratings
+ * @param {string|null} matchDate - Date of the match being predicted (for rest days)
  * @returns {number[][]} Score matrix
  */
-export function buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho, threshold, decayOptions = {}, initialEloRatings = {}) {
+export function buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho, threshold, decayOptions = {}, initialEloRatings = {}, matchDate = null) {
   const averages = calculateTeamAverages(matches, decayOptions);
   const homeStats = averages[homeName] || { homeScored: leagueAvg / 2, homeConceded: leagueAvg / 2 };
   const awayStats = averages[awayName] || { awayScored: leagueAvg / 2, awayConceded: leagueAvg / 2 };
@@ -88,8 +101,16 @@ export function buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho, 
 
   // Blend: early season → more Elo weight, late season → more Poisson weight
   const eloWeight = Math.max(0.2, 1 - matches.length / (matches.length + threshold));
-  const lambdaHome = eloWeight * eloEg.lambdaHome + (1 - eloWeight) * poissonEg.lambdaHome;
-  const lambdaAway = eloWeight * eloEg.lambdaAway + (1 - eloWeight) * poissonEg.lambdaAway;
+  let lambdaHome = eloWeight * eloEg.lambdaHome + (1 - eloWeight) * poissonEg.lambdaHome;
+  let lambdaAway = eloWeight * eloEg.lambdaAway + (1 - eloWeight) * poissonEg.lambdaAway;
+
+  // Rest days adjustment: short rest → slight penalty, long rest → slight boost
+  if (matchDate) {
+    const daysH = computeTeamRestDays(homeName, matchDate, matches);
+    const daysA = computeTeamRestDays(awayName, matchDate, matches);
+    lambdaHome *= Math.min(1.08, Math.max(0.92, 1 + 0.01 * (daysH - 7)));
+    lambdaAway *= Math.min(1.08, Math.max(0.92, 1 + 0.01 * (daysA - 7)));
+  }
 
   const rawMatrix = scoreMatrix(lambdaHome, lambdaAway, 7);
   return applyDixonColes(rawMatrix, lambdaHome, lambdaAway, rho);
@@ -146,12 +167,13 @@ export function predictMatchPure(homeName, awayName, matches, options = {}) {
     halfLife = 0,
     referenceDate = null,
     initialEloRatings = {},
+    matchDate = null,
   } = options;
 
   const decayOptions = halfLife > 0 && referenceDate ? { halfLife, referenceDate } : {};
   const leagueAvg = calculateLeagueAvg(matches, decayOptions);
 
-  const matrix = buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho, modelTrustThreshold, decayOptions, initialEloRatings);
+  const matrix = buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho, modelTrustThreshold, decayOptions, initialEloRatings, matchDate);
   const modelOutcomes = calculateOutcomes(matrix);
 
   // Migrate odds if needed

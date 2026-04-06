@@ -3,9 +3,9 @@
  * Uses same walk-forward approach as tracker, but tracks Kelly-staked bets.
  */
 
-import { predictMatchPure, migrateOdds, getConsensusOdds } from './prediction.js?v=1775473546';
-import { shinProbabilities } from './shin.js?v=1775473546';
-import { kellyFraction } from './kelly.js?v=1775473546';
+import { predictMatchPure, migrateOdds, getConsensusOdds } from './prediction.js?v=1775474918';
+import { shinProbabilities } from './shin.js?v=1775474918';
+import { kellyFraction } from './kelly.js?v=1775474918';
 
 const MIN_TRAINING_MATCHES = 10;
 
@@ -54,6 +54,7 @@ export function simulateSeasonPL(allMatches, options = {}) {
       halfLife,
       referenceDate: match.date,
       initialEloRatings,
+      matchDate: match.date,
     });
 
     if (!pred) continue;
