@@ -97,61 +97,18 @@ export async function loadLeagueData(leagueId, season) {
  * @returns {Array} Combined array of all previous season matches
  */
 export async function loadPreviousSeasons(leagueId, seasons) {
-  const allMatches = [];
-
-  for (const season of seasons) {
+  const results = await Promise.all(seasons.map(async (season) => {
     const lsKey = `${leagueId}_${season}`;
     try {
       const matches = await fetchJSON(`${DATA_BASE}/${leagueId}-${season}-matches.json`);
       lsSet(`${lsKey}_matches`, matches);
-      allMatches.push(...matches);
+      return matches;
     } catch {
-      const cached = lsGet(`${lsKey}_matches`);
-      if (cached) allMatches.push(...cached);
+      return lsGet(`${lsKey}_matches`) || [];
     }
-  }
+  }));
 
-  return allMatches;
-}
-
-/**
- * Trigger a full data update via the Azure backend.
- * Returns the fresh data directly from the response.
- */
-export async function triggerUpdate(leagueId) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 120000); // 2min timeout
-
-  let res;
-  try {
-    res = await fetch(`${API_BASE}/update-data`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ league: leagueId }),
-      signal: controller.signal,
-    });
-  } catch (err) {
-    clearTimeout(timeout);
-    if (err.name === 'AbortError') throw new Error('Update timed out — try again later');
-    throw err;
-  }
-  clearTimeout(timeout);
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
-    throw new Error(err.error || `Update failed: ${res.status}`);
-  }
-
-  const data = await res.json();
-
-  // Cache locally
-  const lsKey = `${leagueId}_${data.season}`;
-  lsSet(`${lsKey}_matches`, data.matches);
-  lsSet(`${lsKey}_upcoming`, data.upcoming);
-  lsSet(`${lsKey}_odds`, data.odds);
-  lsSet('meta', data.meta);
-
-  return data;
+  return results.flat();
 }
 
 /**

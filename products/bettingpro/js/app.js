@@ -3,17 +3,24 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775493112';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775493112';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775493112';
+import { shinProbabilities } from './shin.js?v=1775502266';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775502266';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775502266';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775493112';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775502266';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation
-} from './ui.js?v=1775493112';
+} from './ui.js?v=1775502266';
+
+/** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
 
 // Loaded data state
 let currentMeta = null;
@@ -31,6 +38,7 @@ let previousSeasonMatches = [];
 let dateGroups = {};        // { [date]: matches[] }
 let allDates = [];          // sorted array of date strings
 let visibleRange = { start: 0, end: 0 };
+let defaultDateRange = { start: 0, end: 0 };
 
 // Bookmaker selection
 let selectedBookmaker = 'consensus';
@@ -300,16 +308,13 @@ async function loadAndShowLeague(leagueId, season) {
 
 // ── Date-based match list ────────────────────────────────────────────
 
-const DEV_ODDS = {};
-
 function buildDateGroups(matches, upcoming, odds) {
   const groups = {};
 
   for (const m of matches) {
     const d = m.date || 'unknown';
     if (!groups[d]) groups[d] = [];
-    const devOdds = DEV_ODDS[`${m.homeTeam} vs ${m.awayTeam}`] || null;
-    const migrated = migrateOdds(m.odds) || devOdds || null;
+    const migrated = migrateOdds(m.odds) || null;
     groups[d].push({ ...m, odds: migrated, status: 'finished' });
   }
 
@@ -403,7 +408,8 @@ function initDateView(data) {
     return;
   }
 
-  visibleRange = findDefaultDateRange(dateGroups, allDates);
+  defaultDateRange = findDefaultDateRange(dateGroups, allDates);
+  visibleRange = { ...defaultDateRange };
   renderDateView();
 }
 
@@ -416,9 +422,8 @@ function renderDateView() {
   }
 
   const streaks = computeStreaks(currentLeagueData?.matches || []);
-  const defaultRange = findDefaultDateRange(dateGroups, allDates);
-  const canHideEarlier = visibleRange.start < defaultRange.start;
-  const canHideLater = visibleRange.end > defaultRange.end;
+  const canHideEarlier = visibleRange.start < defaultDateRange.start;
+  const canHideLater = visibleRange.end > defaultDateRange.end;
 
   if (canHideEarlier) {
     html += '<button class="round-nav-btn hide-nav-btn" id="hide-earlier">Hide earlier dates</button>';
@@ -435,7 +440,7 @@ function renderDateView() {
     const statusLabel = allFinished ? 'Results' : allUpcoming ? 'Upcoming' : 'In Progress';
     const isToday = date === today;
 
-    html += `<div class="match-round-header${isToday ? ' today-group' : ''}" data-date="${date}"${isToday ? ' id="today-header"' : ''}>
+    html += `<div class="match-round-header${isToday ? ' today-group' : ''}" data-date="${date}"${isToday ? ' id="today-header"' : ''} tabindex="0" role="button" aria-expanded="true">
       <span class="round-title">${formatDate(date)}</span>
       <span class="col-headers">
         <span class="col-h">Prediction</span>
@@ -502,8 +507,8 @@ function renderDateView() {
       const homeBadge = homeStreak ? ` <span class="streak-badge streak-${homeStreak.type}">${homeStreak.type}${homeStreak.count}</span>` : '';
       const awayBadge = awayStreak ? ` <span class="streak-badge streak-${awayStreak.type}">${awayStreak.type}${awayStreak.count}</span>` : '';
 
-      html += `<div class="match-row${isFinished ? ' finished' : ' upcoming'}" data-home="${m.homeTeam}" data-away="${m.awayTeam}">
-        <span class="match-teams">${m.homeTeam}${homeBadge} vs ${m.awayTeam}${awayBadge}</span>
+      html += `<div class="match-row${isFinished ? ' finished' : ' upcoming'}" data-home="${esc(m.homeTeam)}" data-away="${esc(m.awayTeam)}" tabindex="0" role="button">
+        <span class="match-teams">${esc(m.homeTeam)}${homeBadge} vs ${esc(m.awayTeam)}${awayBadge}</span>
         <span class="match-result-group">
           <span class="match-col-pred">${predContent}</span>
           <span class="match-col-1x2">${onextwContent}</span>
@@ -524,23 +529,29 @@ function renderDateView() {
 
   listEl.innerHTML = html;
 
-  // Click handlers for date headers (collapse/expand)
+  // Click + keyboard handlers for date headers (collapse/expand)
   listEl.querySelectorAll('.match-round-header').forEach(header => {
-    header.addEventListener('click', () => {
+    const toggle = () => {
       const date = header.dataset.date;
       const group = listEl.querySelector(`[data-date-group="${date}"]`);
       const icon = header.querySelector('.toggle-icon');
-      if (group.classList.toggle('collapsed')) {
-        icon.textContent = '\u25B8'; // right arrow
-      } else {
-        icon.textContent = '\u25BE'; // down arrow
-      }
+      const collapsed = group.classList.toggle('collapsed');
+      icon.textContent = collapsed ? '\u25B8' : '\u25BE';
+      header.setAttribute('aria-expanded', !collapsed);
+    };
+    header.addEventListener('click', toggle);
+    header.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
     });
   });
 
-  // Click handlers for all matches (analysis)
+  // Click + keyboard handlers for all matches (analysis)
   listEl.querySelectorAll('.match-row').forEach(row => {
-    row.addEventListener('click', () => analyzeMatch(row.dataset.home, row.dataset.away));
+    const handler = () => analyzeMatch(row.dataset.home, row.dataset.away);
+    row.addEventListener('click', handler);
+    row.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); }
+    });
   });
 
   // Navigation handlers — also close results panel
@@ -555,12 +566,12 @@ function renderDateView() {
     renderDateView();
   });
   document.getElementById('hide-earlier')?.addEventListener('click', () => {
-    visibleRange.start = defaultRange.start;
+    visibleRange.start = defaultDateRange.start;
     document.getElementById('results').classList.add('hidden');
     renderDateView();
   });
   document.getElementById('hide-later')?.addEventListener('click', () => {
-    visibleRange.end = defaultRange.end;
+    visibleRange.end = defaultDateRange.end;
     document.getElementById('results').classList.add('hidden');
     renderDateView();
   });
@@ -673,7 +684,7 @@ async function analyzeMatch(homeName, awayName) {
     // Fallback: show what we can from precomputed data
     const pred = predictMatch(homeName, awayName);
     if (pred) {
-      document.getElementById('score-matrix-container').innerHTML =
+      document.getElementById('score-matrix').innerHTML =
         `<p class="muted">Detailed analysis unavailable — showing precomputed prediction</p>`;
       renderMatchOutcome(
         { home: pred.home, draw: pred.draw, away: pred.away },
@@ -681,7 +692,7 @@ async function analyzeMatch(homeName, awayName) {
         homeName, awayName
       );
     } else {
-      document.getElementById('score-matrix-container').innerHTML =
+      document.getElementById('score-matrix').innerHTML =
         `<p class="muted">Analysis unavailable — please try again</p>`;
     }
   }

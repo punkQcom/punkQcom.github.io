@@ -2,21 +2,17 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
+/** Escape HTML to prevent XSS when inserting into innerHTML. */
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
 export function showResults() {
   const el = document.getElementById('results');
   el.classList.remove('hidden');
   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-export function renderMargin(odds1x2) {
-  const el = document.getElementById('margin-display');
-  if (!odds1x2[0] || !odds1x2[1] || !odds1x2[2]) {
-    el.textContent = '';
-    return;
-  }
-  const totalImplied = odds1x2.reduce((sum, o) => sum + 1 / o, 0);
-  const margin = ((totalImplied - 1) * 100).toFixed(1);
-  el.textContent = `Bookmaker margin: ${margin}%`;
 }
 
 export function renderScoreMatrix(matrix, homeName, awayName, predictedScore, outcomes) {
@@ -70,7 +66,7 @@ export function renderScoreMatrix(matrix, homeName, awayName, predictedScore, ou
     }
 
     el.innerHTML =
-      `Prediction: ${homeName} <strong>${predictedScore}</strong> ${awayName} &nbsp;·&nbsp; Most likely scoreline: ${maxI} - ${maxJ} (${(maxProb * 100).toFixed(1)}%)`
+      `Prediction: ${esc(homeName)} <strong>${predictedScore}</strong> ${esc(awayName)} &nbsp;·&nbsp; Most likely scoreline: ${maxI} - ${maxJ} (${(maxProb * 100).toFixed(1)}%)`
       + `<br><small class="score-matrix-note">${explanation}</small>`;
   } else {
     el.textContent =
@@ -79,7 +75,7 @@ export function renderScoreMatrix(matrix, homeName, awayName, predictedScore, ou
 
   // Away team name spanning the top
   let html = '<table class="score-matrix">';
-  html += `<tr><th></th><th></th><th class="team-header" colspan="${maxGoals}">${awayName}</th></tr>`;
+  html += `<tr><th></th><th></th><th class="team-header" colspan="${maxGoals}">${esc(awayName)}</th></tr>`;
   // Away goal numbers
   html += '<tr><th></th><th></th>';
   for (let j = 0; j < maxGoals; j++) html += `<th>${j}</th>`;
@@ -89,7 +85,7 @@ export function renderScoreMatrix(matrix, homeName, awayName, predictedScore, ou
     html += '<tr>';
     // Home team name spanning rows (only on first data row)
     if (i === 0) {
-      html += `<th class="team-header team-header-vertical" rowspan="${maxGoals}">${homeName}</th>`;
+      html += `<th class="team-header team-header-vertical" rowspan="${maxGoals}">${esc(homeName)}</th>`;
     }
     html += `<th>${i}</th>`;
     for (let j = 0; j < maxGoals; j++) {
@@ -1249,6 +1245,8 @@ export function setupHelpModal() {
   }
 
   document.querySelectorAll('.help-tip[data-help]').forEach(btn => {
+    const content = helpContent[btn.dataset.help];
+    if (content) btn.setAttribute('aria-label', `Help: ${content.title}`);
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
