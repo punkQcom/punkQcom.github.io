@@ -3,17 +3,17 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775491229';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775491229';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775491229';
+import { shinProbabilities } from './shin.js?v=1775491375';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775491375';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775491375';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775491229';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775491375';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation
-} from './ui.js?v=1775491229';
+} from './ui.js?v=1775491375';
 
 // Loaded data state
 let currentMeta = null;
@@ -455,10 +455,16 @@ function renderDateView() {
       if (pred) {
         let predCls = 'pred-score';
         if (isFinished) {
-          const predOutcome = pred.home >= pred.draw && pred.home >= pred.away ? '1'
-            : pred.away >= pred.home && pred.away >= pred.draw ? '2' : 'X';
-          const actualOutcome = m.homeGoals > m.awayGoals ? '1' : m.homeGoals === m.awayGoals ? 'X' : '2';
-          predCls += predOutcome === actualOutcome ? ' pred-hit' : ' pred-miss';
+          const [pH, pAw] = pred.score.split('-').map(Number);
+          const exactHit = pH === m.homeGoals && pAw === m.awayGoals;
+          if (exactHit) {
+            predCls += ' pred-exact';
+          } else {
+            const predOutcome = pred.home >= pred.draw && pred.home >= pred.away ? '1'
+              : pred.away >= pred.home && pred.away >= pred.draw ? '2' : 'X';
+            const actualOutcome = m.homeGoals > m.awayGoals ? '1' : m.homeGoals === m.awayGoals ? 'X' : '2';
+            predCls += predOutcome === actualOutcome ? ' pred-hit' : ' pred-miss';
+          }
         }
         // Check if predicted score is not a draw — the most likely individual scoreline
         // is almost always a draw (e.g. 1-1), so flag when prediction differs
