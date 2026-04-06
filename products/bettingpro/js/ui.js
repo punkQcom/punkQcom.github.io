@@ -189,7 +189,7 @@ export function renderFades(fades) {
   table.innerHTML = html;
 }
 
-export function renderBookmakerComparison(rows, homeName, awayName) {
+export function renderBookmakerComparison(rows, homeName, awayName, modelOutcomes) {
   const container = document.getElementById('bookmaker-comparison');
 
   if (rows.length === 0) {
@@ -203,6 +203,16 @@ export function renderBookmakerComparison(rows, homeName, awayName) {
     <th>X Draw</th>
     <th>2 ${awayName}</th>
   </tr></thead><tbody>`;
+
+  // Model row — our predicted probabilities as reference
+  if (modelOutcomes) {
+    html += `<tr class="model-row">
+      <td><strong>Our Model</strong></td>
+      <td><strong>${(modelOutcomes.home * 100).toFixed(1)}%</strong></td>
+      <td><strong>${(modelOutcomes.draw * 100).toFixed(1)}%</strong></td>
+      <td><strong>${(modelOutcomes.away * 100).toFixed(1)}%</strong></td>
+    </tr>`;
+  }
 
   for (const row of rows) {
     html += `<tr>
@@ -226,8 +236,8 @@ function comparisonCell(data) {
   const sign = data.diff > 0 ? '+' : '';
   // Positive diff = bookmaker thinks outcome more likely than consensus = worse odds for bettor
   // Negative diff = bookmaker thinks outcome less likely = better odds for bettor
-  const cls = data.diff < -0.02 ? 'value-positive' : data.diff > 0.02 ? 'value-negative' : '';
-  return `<td class="${cls}">${data.odds.toFixed(2)} <small>(${sign}${diffPct}%)</small></td>`;
+  const cls = data.diff < -0.02 ? 'comp-value' : data.diff > 0.02 ? 'comp-overvalued' : '';
+  return `<td><span class="comp-cell ${cls}">${data.odds.toFixed(2)}</span> <small>(${sign}${diffPct}%)</small></td>`;
 }
 
 export function setupSliders() {

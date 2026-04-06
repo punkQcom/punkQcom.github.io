@@ -2,23 +2,23 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { shinProbabilities } from './shin.js?v=1775466841';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775466841';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775466841';
+import { shinProbabilities } from './shin.js?v=1775468036';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775468036';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775468036';
 import {
   buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-} from './prediction.js?v=1775466841';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775466841';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775466841';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775466841';
+} from './prediction.js?v=1775468036';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775468036';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775468036';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775468036';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775466841';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775466841';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775468036';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775468036';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal
-} from './ui.js?v=1775466841';
+} from './ui.js?v=1775468036';
 
 // Loaded data state
 let currentMeta = null;
@@ -784,7 +784,7 @@ function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds,
 
   renderValueBets(allBets);
   renderFades(fades);
-  renderBookmakerComparison(comparison, homeName, awayName);
+  renderBookmakerComparison(comparison, homeName, awayName, outcomes);
   renderAllBets(allBets);
   showResults();
 }
