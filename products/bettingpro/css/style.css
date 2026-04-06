@@ -448,6 +448,31 @@ summary .help-tip {
   font-size: 0.8em;
 }
 
+.model-row td {
+  background: #1e293b;
+  border-bottom: 2px solid #3b82f6;
+  color: #60a5fa;
+}
+
+.comp-cell {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.comp-value {
+  border: 2px solid #4ade80;
+  color: #4ade80;
+  background: #4ade8015;
+}
+
+.comp-overvalued {
+  border: 2px solid #f87171;
+  color: #f87171;
+  background: #f8717115;
+}
+
 /* === Update Data Bar === */
 .update-data-bar {
   border-color: #3b82f6;
