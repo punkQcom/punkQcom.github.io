@@ -392,6 +392,21 @@ const helpContent = {
       </div>
     `,
   },
+  'settings': {
+    title: 'Settings',
+    body: `
+<p>All sliders update predictions <strong>dynamically</strong> — the match list and analysis panel refresh in real-time as you drag. No need to press any button.</p>
+<p><strong>Sliders:</strong></p>
+<ul>
+  <li><strong>Market Trust</strong> — controls how much weight bookmaker odds get in the blended prediction vs our statistical model. Auto-adjusts based on matches played: high early in the season (limited data), decreasing as more results come in</li>
+  <li><strong>Previous Season</strong> — controls how much last season's Elo ratings carry over. Auto-adjusts: starts around 50% and drops to 0% by round 6 as current-season data takes over</li>
+  <li><strong>Low-Score Correction (rho)</strong> — Dixon-Coles parameter adjusting for defensive correlations in low-scoring games. Default -0.13 is calibrated for European football leagues</li>
+  <li><strong>Kelly Fraction</strong> — scales down the Kelly criterion bet sizing. Default 25% (quarter Kelly) is the industry standard for conservative bankroll management</li>
+  <li><strong>Bankroll</strong> — your total betting budget. Only affects stake amounts in euros, not probabilities or edge calculations</li>
+</ul>
+<p><strong>Auto-adjust:</strong> Market Trust and Previous Season sliders set themselves to sensible defaults when data loads. You can override them manually at any time — they won't reset until you reload the page.</p>
+    `,
+  },
   'matches': {
     title: 'Matches',
     body: `
