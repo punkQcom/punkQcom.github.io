@@ -2,22 +2,22 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { shinProbabilities } from './shin.js?v=1775432597';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775432597';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775432597';
+import { shinProbabilities } from './shin.js?v=1775460505';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775460505';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775460505';
 import {
   buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-} from './prediction.js?v=1775432597';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775432597';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775432597';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775432597';
+} from './prediction.js?v=1775460505';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775460505';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775460505';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775460505';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775432597';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775432597';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775460505';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775460505';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, setupSliders, setupHelpModal
-} from './ui.js?v=1775432597';
+} from './ui.js?v=1775460505';
 
 // Loaded data state
 let currentMeta = null;
@@ -30,7 +30,7 @@ let allDates = [];          // sorted array of date strings
 let visibleRange = { start: 0, end: 0 };
 
 // Bookmaker selection
-let selectedBookmaker = 'veikkaus';
+let selectedBookmaker = 'consensus';
 
 // Elo carryover from previous seasons
 let initialEloRatings = {};
@@ -134,10 +134,11 @@ function populateBookmakerDropdown(data) {
   const bookmakers = getAvailableBookmakers(data);
   const sorted = [...bookmakers].filter(k => k !== 'veikkaus').sort();
 
-  let html = '<option value="veikkaus">Veikkaus</option>';
+  let html = '';
   if (bookmakers.size > 1) {
     html += '<option value="consensus">Consensus (avg)</option>';
   }
+  html += '<option value="veikkaus">Veikkaus</option>';
   for (const key of sorted) {
     const name = BOOKMAKER_NAMES[key] || key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
     html += `<option value="${key}">${name}</option>`;
