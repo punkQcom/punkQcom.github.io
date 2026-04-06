@@ -2,23 +2,23 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { shinProbabilities } from './shin.js?v=1775469303';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775469303';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775469303';
+import { shinProbabilities } from './shin.js?v=1775472307';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775472307';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775472307';
 import {
   buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-} from './prediction.js?v=1775469303';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775469303';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775469303';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775469303';
+} from './prediction.js?v=1775472307';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775472307';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775472307';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775472307';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775469303';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775469303';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775472307';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775472307';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal
-} from './ui.js?v=1775469303';
+} from './ui.js?v=1775472307';
 
 // Loaded data state
 let currentMeta = null;
@@ -463,10 +463,12 @@ function renderDateView() {
       if (pred) {
         const best = pred.home >= pred.draw && pred.home >= pred.away ? '1'
           : pred.away >= pred.home && pred.away >= pred.draw ? '2' : 'X';
+        const bestProb = Math.max(pred.home, pred.draw, pred.away);
+        const conf = bestProb >= 0.45 ? 'conf-high' : bestProb >= 0.35 ? 'conf-mid' : 'conf-low';
         onextwContent += `<span class="pred-probs">
-            <span class="pred-p${best === '1' ? ' pred-best' : ''}">${(pred.home * 100).toFixed(0)}%</span>
-            <span class="pred-p${best === 'X' ? ' pred-best' : ''}">${(pred.draw * 100).toFixed(0)}%</span>
-            <span class="pred-p${best === '2' ? ' pred-best' : ''}">${(pred.away * 100).toFixed(0)}%</span>
+            <span class="pred-p${best === '1' ? ` pred-best ${conf}` : ''}">${(pred.home * 100).toFixed(0)}%</span>
+            <span class="pred-p${best === 'X' ? ` pred-best ${conf}` : ''}">${(pred.draw * 100).toFixed(0)}%</span>
+            <span class="pred-p${best === '2' ? ` pred-best ${conf}` : ''}">${(pred.away * 100).toFixed(0)}%</span>
           </span>`;
       }
       if (selOdds && selOdds.home && selOdds.draw && selOdds.away) {
@@ -582,13 +584,14 @@ function updatePredictions() {
     if (onextwEl && pred) {
       const best = pred.home >= pred.draw && pred.home >= pred.away ? '1'
         : pred.away >= pred.home && pred.away >= pred.draw ? '2' : 'X';
-      // Keep odds row if present, only update prediction probs
+      const bestProb = Math.max(pred.home, pred.draw, pred.away);
+      const conf = bestProb >= 0.45 ? 'conf-high' : bestProb >= 0.35 ? 'conf-mid' : 'conf-low';
       const probsEl = onextwEl.querySelector('.pred-probs');
       if (probsEl) {
         probsEl.innerHTML = `
-          <span class="pred-p${best === '1' ? ' pred-best' : ''}">${(pred.home * 100).toFixed(0)}%</span>
-          <span class="pred-p${best === 'X' ? ' pred-best' : ''}">${(pred.draw * 100).toFixed(0)}%</span>
-          <span class="pred-p${best === '2' ? ' pred-best' : ''}">${(pred.away * 100).toFixed(0)}%</span>`;
+          <span class="pred-p${best === '1' ? ` pred-best ${conf}` : ''}">${(pred.home * 100).toFixed(0)}%</span>
+          <span class="pred-p${best === 'X' ? ` pred-best ${conf}` : ''}">${(pred.draw * 100).toFixed(0)}%</span>
+          <span class="pred-p${best === '2' ? ` pred-best ${conf}` : ''}">${(pred.away * 100).toFixed(0)}%</span>`;
       }
     }
   }
