@@ -517,6 +517,10 @@ const helpContent = {
 <p><strong>Prediction</strong> — our model's predicted most likely scoreline for the match. For finished matches, the prediction is color-coded:</p>
 <div style="margin:12px 0;">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;padding:2px 8px;border:1px solid rgba(251,191,36,0.5);border-radius:4px;color:#fbbf24;font-weight:700;background:rgba(251,191,36,0.18);box-shadow:0 0 6px rgba(251,191,36,0.3);font-family:monospace;">2-1</span>
+    <span>Exact score — the predicted scoreline was exactly right</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
     <span style="display:inline-block;padding:2px 8px;border:1px solid rgba(16,185,129,0.4);border-radius:4px;color:#6ee7b7;font-weight:700;background:rgba(16,185,129,0.15);font-family:monospace;">2-1</span>
     <span>Correct outcome — the predicted 1X2 result matched the actual result</span>
   </div>
