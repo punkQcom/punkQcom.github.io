@@ -449,7 +449,17 @@ const helpContent = {
     title: 'Matches',
     body: `
 <p>The match list shows all matches for the selected season, grouped by date. Each match row has three columns:</p>
-<p><strong>Prediction</strong> — our model's predicted most likely scoreline for the match.</p>
+<p><strong>Prediction</strong> — our model's predicted most likely scoreline for the match. For finished matches, the prediction is color-coded:</p>
+<div style="margin:12px 0;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;padding:2px 8px;border:1px solid rgba(16,185,129,0.4);border-radius:4px;color:#6ee7b7;font-weight:700;background:rgba(16,185,129,0.15);font-family:monospace;">2-1</span>
+    <span>Correct outcome — the predicted 1X2 result matched the actual result</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;padding:2px 8px;border:1px solid rgba(239,68,68,0.3);border-radius:4px;color:#fca5a5;font-weight:700;background:rgba(239,68,68,0.15);font-family:monospace;">1-0</span>
+    <span>Wrong outcome — the predicted 1X2 result did not match</span>
+  </div>
+</div>
 <p><strong>1 X 2</strong> — predicted probabilities for Home Win (1), Draw (X), and Away Win (2). The most likely outcome is highlighted with a colored border:</p>
 <div style="margin:12px 0;">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
