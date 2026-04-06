@@ -3,17 +3,17 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775478193';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775478193';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775478193';
+import { shinProbabilities } from './shin.js?v=1775482640';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775482640';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775482640';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775478193';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775482640';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation
-} from './ui.js?v=1775478193';
+} from './ui.js?v=1775482640';
 
 // Loaded data state
 let currentMeta = null;
@@ -23,6 +23,9 @@ let currentSeason = null;
 
 // Precomputed predictions from backend
 let precomputedData = null; // { predictions, eloRatings, tracker, plSimulation }
+
+// Previous season matches for Elo carryover
+let previousSeasonMatches = [];
 
 // Date-based navigation state
 let dateGroups = {};        // { [date]: matches[] }
@@ -218,20 +221,56 @@ function updatePrevSeasonDefault(matchCount) {
   if (label) label.textContent = pct + '%';
 }
 
+/**
+ * Regress Elo ratings toward the mean (1500) between seasons.
+ * factor=0 means no regression (keep as-is), factor=1 means reset to 1500.
+ */
+function regressToMean(ratings, factor = 0.5) {
+  const result = {};
+  for (const [team, r] of Object.entries(ratings))
+    result[team] = 1500 + (r - 1500) * (1 - factor);
+  return result;
+}
+
+/**
+ * Recompute and render the Elo table based on the Previous Season slider.
+ */
+function updateEloTable() {
+  const matches = currentLeagueData?.matches || [];
+  const slider = document.getElementById('prev-season-slider');
+  const sliderPct = slider ? parseInt(slider.value) : 50;
+
+  let initialRatings = {};
+  if (previousSeasonMatches.length > 0) {
+    // Build end-of-previous-season ratings
+    const prevTable = buildEloTable(previousSeasonMatches, {});
+    const prevRatings = {};
+    for (const row of prevTable) prevRatings[row.team] = row.rating;
+    // Regress: 0% slider → full regression (factor=1), 100% → no regression (factor=0)
+    initialRatings = regressToMean(prevRatings, 1 - sliderPct / 100);
+  }
+
+  const eloData = buildEloTable(matches, initialRatings);
+  renderEloTable(eloData, 'elo-table');
+}
+
 async function loadAndShowLeague(leagueId, season) {
   currentLeagueId = leagueId;
   currentSeason = season;
   const listEl = document.getElementById('match-list');
   listEl.innerHTML = '<p class="muted">Loading matches...</p>';
 
-  // Load data and precomputed predictions in parallel
-  const [leagueData, predData] = await Promise.all([
+  // Load data, predictions, and previous season matches in parallel
+  const prevSeasons = currentMeta?.previousSeasons?.[leagueId] || [];
+  const [leagueData, predData, prevMatches] = await Promise.all([
     loadLeagueData(leagueId, season),
     loadPredictions(leagueId, season),
+    prevSeasons.length > 0 ? loadPreviousSeasons(leagueId, prevSeasons) : Promise.resolve([]),
   ]);
 
   currentLeagueData = leagueData;
   precomputedData = predData;
+  previousSeasonMatches = prevMatches;
 
   populateBookmakerDropdown(currentLeagueData);
   const matchCount = (currentLeagueData?.matches || []).length;
@@ -239,23 +278,8 @@ async function loadAndShowLeague(leagueId, season) {
   updatePrevSeasonDefault(matchCount);
   initDateView(currentLeagueData);
 
-  // Elo ratings table — use precomputed if available, else compute from elo-display.js
-  if (precomputedData?.eloRatings) {
-    // Build table data from precomputed ratings + local match history for form/change
-    const eloData = buildEloTable(currentLeagueData?.matches || [], {});
-    // Overlay precomputed ratings for accuracy
-    for (const row of eloData) {
-      if (precomputedData.eloRatings[row.team]) {
-        row.rating = Math.round(precomputedData.eloRatings[row.team]);
-      }
-    }
-    eloData.sort((a, b) => b.rating - a.rating);
-    eloData.forEach((t, i) => t.rank = i + 1);
-    renderEloTable(eloData, 'elo-table');
-  } else {
-    const eloData = buildEloTable(currentLeagueData?.matches || [], {});
-    renderEloTable(eloData, 'elo-table');
-  }
+  // Elo ratings table — computed client-side, reactive to Previous Season slider
+  updateEloTable();
 
   // Tracker and P/L — render from precomputed data
   if (precomputedData?.tracker) {
@@ -776,10 +800,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById(id).addEventListener('input', reanalyzeIfNeeded);
   }
 
-  // Previous Season slider — only affects detailed analysis
+  // Previous Season slider — updates Elo table + detailed analysis
   document.getElementById('prev-season-slider').addEventListener('input', () => {
     const label = document.getElementById('prev-season-value');
     if (label) label.textContent = document.getElementById('prev-season-slider').value + '%';
+    updateEloTable();
     reanalyzeIfNeeded();
   });
 
