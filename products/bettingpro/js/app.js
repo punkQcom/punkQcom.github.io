@@ -1,30 +1,28 @@
 /**
  * Main controller — selector bar, match list, auto-calculate on click.
+ * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775475735';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775475735';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775475735';
-import {
-  buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-  getConsensusOdds, migrateOdds,
-} from './prediction.js?v=1775475735';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775475735';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775475735';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775475735';
+import { shinProbabilities } from './shin.js?v=1775477151';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775477151';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775477151';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775475735';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775475735';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775477151';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
-  renderBookmakerComparison, setupSliders, setupHelpModal
-} from './ui.js?v=1775475735';
+  renderBookmakerComparison, setupSliders, setupHelpModal,
+  renderTracker, renderPLSimulation
+} from './ui.js?v=1775477151';
 
 // Loaded data state
 let currentMeta = null;
 let currentLeagueData = null; // { matches, upcoming, odds }
 let currentLeagueId = null;
+let currentSeason = null;
+
+// Precomputed predictions from backend
+let precomputedData = null; // { predictions, eloRatings, tracker, plSimulation }
 
 // Date-based navigation state
 let dateGroups = {};        // { [date]: matches[] }
@@ -34,26 +32,54 @@ let visibleRange = { start: 0, end: 0 };
 // Bookmaker selection
 let selectedBookmaker = 'consensus';
 
-// Elo carryover from previous seasons
-let initialEloRatings = {};
-let rawPrevSeasonElo = {}; // unregressed end-of-season ratings (for slider recompute)
-
-/**
- * Get the model trust threshold from the Market Trust slider.
- * Higher market trust = higher threshold = more matches needed before model dominates.
- * Slider 0% → threshold 5 (trust model almost immediately)
- * Slider 50% → threshold 30 (balanced)
- * Slider 100% → threshold 200 (almost always trust market)
- */
-function getModelTrustThreshold() {
-  const slider = document.getElementById('market-trust-slider');
-  const pct = slider ? parseInt(slider.value) : 50;
-  // Map 0-100% → threshold 5-200 (exponential scale)
-  return Math.round(5 * Math.pow(40, pct / 100));
-}
-
 // Currently analyzed match (for recalculate)
 let currentAnalyzedMatch = null;
+
+// Cached API response for display-only recalculations (kelly/bankroll/edge changes)
+let lastApiResponse = null;
+let lastAnalysisContext = null;
+
+// ── Odds utilities (standard format handling, not model secrets) ─────
+
+/** Migrate old flat odds { home, draw, away } to multi-bookmaker format */
+function migrateOdds(odds) {
+  if (!odds) return null;
+  if (odds.home !== undefined && typeof odds.home === 'number') {
+    return { veikkaus: { home: odds.home, draw: odds.draw, away: odds.away, overUnder: odds.overUnder || {} } };
+  }
+  return odds;
+}
+
+/** Average implied probabilities across bookmakers, convert back to odds */
+function getConsensusOdds(oddsObj) {
+  const entries = Object.values(oddsObj);
+  if (entries.length === 0) return null;
+
+  function avgOdds(values) {
+    const valid = values.filter(o => o > 0);
+    if (valid.length === 0) return 0;
+    const avgProb = valid.reduce((s, o) => s + 1 / o, 0) / valid.length;
+    return avgProb > 0 ? 1 / avgProb : 0;
+  }
+
+  const result = {
+    home: avgOdds(entries.map(b => b.home || 0)),
+    draw: avgOdds(entries.map(b => b.draw || 0)),
+    away: avgOdds(entries.map(b => b.away || 0)),
+    overUnder: {},
+  };
+  const allLines = new Set();
+  for (const e of entries) for (const line of Object.keys(e.overUnder || {})) allLines.add(line);
+  for (const line of allLines) {
+    const withLine = entries.filter(e => e.overUnder?.[line]);
+    if (withLine.length === 0) continue;
+    result.overUnder[line] = {
+      over: avgOdds(withLine.map(e => e.overUnder[line].over)),
+      under: avgOdds(withLine.map(e => e.overUnder[line].under)),
+    };
+  }
+  return result;
+}
 
 // ── Multi-bookmaker utilities ────────────────────────────────────────
 
@@ -96,7 +122,6 @@ function buildBookmakerComparison(matchOddsMulti) {
       away: { odds: odds.away, prob: probs[2], diff: probs[2] - consensusProbs[2] },
     });
   }
-  // Sort alphabetically by bookmaker name
   rows.sort((a, b) => a.bookmaker.localeCompare(b.bookmaker));
   return rows;
 }
@@ -143,10 +168,9 @@ function populateBookmakerDropdown(data) {
   select.value = selectedBookmaker;
 }
 
-// ── Selector logic ──────────────────────────────────────────────────
+// ── Selector logic ────────────────────────────────────���─────────────
 
 function populateSportDropdown() {
-  // Currently only football — more sports added later
   const select = document.getElementById('sport-select');
   select.innerHTML = '<option value="football">Football</option>';
 }
@@ -172,16 +196,11 @@ function populateSeasonSelect(league) {
 
 /**
  * Set Market Trust slider default based on how many matches have been played.
- * Early season (few matches) → high trust in market.
- * Late season (many matches) → low trust, our model is reliable.
- * Veikkausliiga: 12 teams, 33 rounds, ~198 matches total.
  */
 function updateMarketTrustDefault(matchCount) {
   const slider = document.getElementById('market-trust-slider');
   const label = document.getElementById('market-trust-value');
   if (!slider) return;
-
-  // Map: 0 matches → 80%, 50 matches → 50%, 150+ matches → 15%
   const pct = Math.max(10, Math.min(85, Math.round(80 - matchCount * 0.45)));
   slider.value = pct;
   if (label) label.textContent = pct + '%';
@@ -189,89 +208,69 @@ function updateMarketTrustDefault(matchCount) {
 
 /**
  * Set Previous Season slider default based on matches played.
- * Starts at ~50%, decays rapidly to near-zero by round 5-6.
  */
 function updatePrevSeasonDefault(matchCount) {
   const slider = document.getElementById('prev-season-slider');
   const label = document.getElementById('prev-season-value');
   if (!slider) return;
-
   const pct = Math.max(0, Math.min(55, Math.round(50 - matchCount * 1.5)));
   slider.value = pct;
   if (label) label.textContent = pct + '%';
 }
 
-/**
- * Read the Previous Season slider and return the regression factor for regressToMean().
- * 100% slider → factor 0 (full carryover), 0% slider → factor 1 (all teams at 1500).
- */
-function getPrevSeasonFactor() {
-  const slider = document.getElementById('prev-season-slider');
-  const pct = slider ? parseInt(slider.value) : 50;
-  return 1 - pct / 100;
-}
-
 async function loadAndShowLeague(leagueId, season) {
   currentLeagueId = leagueId;
+  currentSeason = season;
   const listEl = document.getElementById('match-list');
   listEl.innerHTML = '<p class="muted">Loading matches...</p>';
 
-  currentLeagueData = await loadLeagueData(leagueId, season);
+  // Load data and precomputed predictions in parallel
+  const [leagueData, predData] = await Promise.all([
+    loadLeagueData(leagueId, season),
+    loadPredictions(leagueId, season),
+  ]);
 
-  // Load previous season data for Elo carryover
-  initialEloRatings = {};
-  rawPrevSeasonElo = {};
-  const league = (currentMeta?.leagues || []).find(l => l.id === leagueId);
-  const prevSeasons = currentMeta?.previousSeasons?.[leagueId] || league?.previousSeasons || [];
-  if (prevSeasons.length > 0) {
-    try {
-      const prevMatches = await loadPreviousSeasons(leagueId, prevSeasons);
-      if (prevMatches.length > 0) {
-        rawPrevSeasonElo = calculateEloRatings(prevMatches);
-      }
-    } catch {
-      // Previous season loading is best-effort
-    }
-  }
+  currentLeagueData = leagueData;
+  precomputedData = predData;
 
   populateBookmakerDropdown(currentLeagueData);
   const matchCount = (currentLeagueData?.matches || []).length;
   updateMarketTrustDefault(matchCount);
   updatePrevSeasonDefault(matchCount);
-  initialEloRatings = Object.keys(rawPrevSeasonElo).length > 0
-    ? regressToMean(rawPrevSeasonElo, getPrevSeasonFactor()) : {};
   initDateView(currentLeagueData);
 
-  // Elo ratings table
-  const eloData = buildEloTable(currentLeagueData?.matches || [], initialEloRatings);
-  renderEloTable(eloData, 'elo-table');
-
-  // Prediction tracker (walk-forward, runs in background to avoid blocking UI)
-  const matches = currentLeagueData?.matches || [];
-  if (matches.length >= 10) {
-    setTimeout(() => {
-      const trackerOpts = {
-        rho: parseFloat(document.getElementById('rho-slider')?.value || -0.13),
-        modelTrustThreshold: getModelTrustThreshold(),
-        halfLife: 60,
-        initialEloRatings,
-      };
-      const trackerData = generatePredictionTracker(matches, trackerOpts);
-      renderTracker(trackerData, 'tracker-container');
-
-      // P/L simulation
-      const plData = simulateSeasonPL(matches, {
-        ...trackerOpts,
-        kellyFrac: parseFloat(document.getElementById('kelly-fraction-slider')?.value || 0.25),
-        bankroll: parseFloat(document.getElementById('bankroll')?.value || 1000),
-      });
-      renderPLSimulation(plData, 'pl-container');
-    }, 100);
+  // Elo ratings table — use precomputed if available, else compute from elo-display.js
+  if (precomputedData?.eloRatings) {
+    // Build table data from precomputed ratings + local match history for form/change
+    const eloData = buildEloTable(currentLeagueData?.matches || [], {});
+    // Overlay precomputed ratings for accuracy
+    for (const row of eloData) {
+      if (precomputedData.eloRatings[row.team]) {
+        row.rating = Math.round(precomputedData.eloRatings[row.team]);
+      }
+    }
+    eloData.sort((a, b) => b.rating - a.rating);
+    eloData.forEach((t, i) => t.rank = i + 1);
+    renderEloTable(eloData, 'elo-table');
   } else {
+    const eloData = buildEloTable(currentLeagueData?.matches || [], {});
+    renderEloTable(eloData, 'elo-table');
+  }
+
+  // Tracker and P/L — render from precomputed data
+  if (precomputedData?.tracker) {
+    renderTracker(precomputedData.tracker, 'tracker-container');
+  } else {
+    const matches = currentLeagueData?.matches || [];
     document.getElementById('tracker-container').innerHTML =
-      `<p class="muted">Needs at least 10 finished matches (currently ${matches.length})</p>`;
+      `<p class="muted">Prediction tracking will be available after the next data update</p>`;
+  }
+
+  if (precomputedData?.plSimulation) {
+    renderPLSimulation(precomputedData.plSimulation, 'pl-container');
+  } else {
     document.getElementById('pl-container').innerHTML =
-      `<p class="muted">Needs at least 10 finished matches (currently ${matches.length})</p>`;
+      `<p class="muted">P/L simulation will be available after the next data update</p>`;
   }
 }
 
@@ -327,7 +326,6 @@ function computeStreaks(matches) {
 }
 
 function findDefaultDateRange(groups, dates) {
-  const today = new Date().toISOString().slice(0, 10);
   let lastFinishedIdx = -1;
   let firstUpcomingIdx = dates.length;
 
@@ -338,7 +336,6 @@ function findDefaultDateRange(groups, dates) {
   }
 
   const start = lastFinishedIdx >= 0 ? lastFinishedIdx : 0;
-  // Show through next upcoming date (previous round + today/current + next round)
   let end = firstUpcomingIdx < dates.length ? firstUpcomingIdx : dates.length - 1;
   if (end + 1 < dates.length) end = end + 1;
   return { start, end };
@@ -355,43 +352,19 @@ function formatDate(dateStr) {
   const isSameDay = (a, b) => a.toDateString() === b.toDateString();
 
   let label = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-  if (isSameDay(d, today)) label = 'Today — ' + label;
+  if (isSameDay(d, today)) label = 'Today ��� ' + label;
   else if (isSameDay(d, yesterday)) label = 'Yesterday — ' + label;
   else if (isSameDay(d, tomorrow)) label = 'Tomorrow — ' + label;
   return label;
 }
 
-// buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure
-// are now imported from prediction.js
-
-
 /**
- * Quick prediction for a match — thin wrapper around predictMatchPure.
- * Reads DOM settings and delegates to the pure function.
+ * Look up prediction from precomputed data (fast, no model computation).
  */
 function predictMatch(homeName, awayName) {
-  const matches = currentLeagueData?.matches || [];
-  if (matches.length === 0) return null;
-
-  const rho = parseFloat(document.getElementById('rho-slider')?.value || -0.13);
-  const threshold = getModelTrustThreshold();
-
-  // Get match odds for blending
-  const odds = currentLeagueData?.odds || [];
-  const allObjects = [...matches, ...(currentLeagueData?.upcoming || [])];
-  const matchObj = allObjects.find(m => m.homeTeam === homeName && m.awayTeam === awayName);
-  let matchOddsMulti = findOdds({ homeTeam: homeName, awayTeam: awayName }, odds);
-  if (!matchOddsMulti && matchObj?.odds) matchOddsMulti = migrateOdds(matchObj.odds);
-
-  return predictMatchPure(homeName, awayName, matches, {
-    rho,
-    modelTrustThreshold: threshold,
-    consensusOdds: matchOddsMulti,
-    halfLife: 60,
-    referenceDate: new Date().toISOString().slice(0, 10),
-    initialEloRatings,
-    matchDate: matchObj?.date || new Date().toISOString().slice(0, 10),
-  });
+  if (!precomputedData?.predictions) return null;
+  const key = `${homeName} vs ${awayName}`;
+  return precomputedData.predictions[key] || null;
 }
 
 function initDateView(data) {
@@ -562,46 +535,12 @@ function renderDateView() {
       todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
-    // No matches today — scroll to first upcoming group
     const firstUpcoming = listEl.querySelector('.match-row.upcoming');
     if (firstUpcoming) {
       const header = firstUpcoming.closest('.match-date-group')?.previousElementSibling;
       if (header) header.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   });
-}
-
-/**
- * Lightweight update — only refresh prediction text in existing match rows.
- * Avoids full DOM rebuild and auto-scroll that renderDateView() does.
- */
-function updatePredictions() {
-  const rows = document.querySelectorAll('.match-row');
-  for (const row of rows) {
-    const home = row.dataset.home;
-    const away = row.dataset.away;
-    const pred = predictMatch(home, away);
-
-    const predEl = row.querySelector('.match-col-pred');
-    if (predEl) {
-      predEl.innerHTML = pred ? `<span class="pred-score">${pred.score}</span>` : '';
-    }
-
-    const onextwEl = row.querySelector('.match-col-1x2');
-    if (onextwEl && pred) {
-      const best = pred.home >= pred.draw && pred.home >= pred.away ? '1'
-        : pred.away >= pred.home && pred.away >= pred.draw ? '2' : 'X';
-      const bestProb = Math.max(pred.home, pred.draw, pred.away);
-      const conf = bestProb >= 0.45 ? 'conf-high' : bestProb >= 0.35 ? 'conf-mid' : 'conf-low';
-      const probsEl = onextwEl.querySelector('.pred-probs');
-      if (probsEl) {
-        probsEl.innerHTML = `
-          <span class="pred-p${best === '1' ? ` pred-best ${conf}` : ''}">${(pred.home * 100).toFixed(0)}%</span>
-          <span class="pred-p${best === 'X' ? ` pred-best ${conf}` : ''}">${(pred.draw * 100).toFixed(0)}%</span>
-          <span class="pred-p${best === '2' ? ` pred-best ${conf}` : ''}">${(pred.away * 100).toFixed(0)}%</span>`;
-      }
-    }
-  }
 }
 
 function findOdds(match, odds) {
@@ -611,9 +550,7 @@ function findOdds(match, odds) {
     (o.awayTeam.includes(match.awayTeam) || match.awayTeam.includes(o.awayTeam))
   );
   if (!found) return null;
-  // New format: odds array entries have .bookmakers
   if (found.bookmakers) return found.bookmakers;
-  // Old format fallback
   return migrateOdds({ home: found.home, draw: found.draw, away: found.away, overUnder: found.overUnder });
 }
 
@@ -623,12 +560,18 @@ function reanalyzeIfNeeded() {
   clearTimeout(_reanalyzeTimer);
   _reanalyzeTimer = setTimeout(() => {
     analyzeMatch(currentAnalyzedMatch.home, currentAnalyzedMatch.away);
-  }, 150);
+  }, 300);
 }
 
-// ── Auto-calculate on match click ───────────────────────────────────
+/** Re-render analysis from cached API response (for kelly/bankroll/edge changes) */
+function rerenderAnalysis() {
+  if (!lastApiResponse || !lastAnalysisContext) return;
+  renderAnalysisFromApi(lastApiResponse, lastAnalysisContext);
+}
 
-function analyzeMatch(homeName, awayName) {
+// ── Detailed analysis via backend API ────────────────────────────────
+
+async function analyzeMatch(homeName, awayName) {
   currentAnalyzedMatch = { home: homeName, away: awayName };
 
   // Highlight selected match
@@ -640,11 +583,11 @@ function analyzeMatch(homeName, awayName) {
     }
   }
 
-  // Team stats from historical data
-  const matches = currentLeagueData?.matches || [];
-  const leagueAvg = calculateLeagueAvg(matches, { halfLife: 60, referenceDate: new Date().toISOString().slice(0, 10) });
+  // Show loading state
+  document.getElementById('selected-match-title').textContent = `${homeName} vs ${awayName}`;
+  showResults();
 
-  // Odds — resolve for selected bookmaker
+  // Resolve odds locally (odds are not secret)
   const odds = currentLeagueData?.odds || [];
   let matchOddsMulti = findOdds({ homeTeam: homeName, awayTeam: awayName }, odds);
   const allObjects = [...(currentLeagueData?.matches || []), ...(currentLeagueData?.upcoming || [])];
@@ -652,10 +595,8 @@ function analyzeMatch(homeName, awayName) {
   if (!matchOddsMulti && obj?.odds) {
     matchOddsMulti = migrateOdds(obj.odds);
   }
-  const matchDate = obj?.date || new Date().toISOString().slice(0, 10);
 
   let selOdds = matchOddsMulti ? getSelectedOdds(matchOddsMulti) : null;
-  // Fall back to consensus when selected bookmaker has no odds for this match
   if (!selOdds && matchOddsMulti) {
     selOdds = getConsensusOdds(migrateOdds(matchOddsMulti));
   }
@@ -663,62 +604,68 @@ function analyzeMatch(homeName, awayName) {
     ? { home: selOdds.home, draw: selOdds.draw, away: selOdds.away, overUnder: selOdds.overUnder || {} }
     : { home: 0, draw: 0, away: 0, overUnder: {} };
 
-  // Settings
+  // Read model settings from sliders
   const rho = parseFloat(document.getElementById('rho-slider').value);
+  const marketTrust = parseInt(document.getElementById('market-trust-slider').value);
+  const halfLife = 60;
+
+  // Call backend API for prediction
+  try {
+    const res = await fetch(`${API_BASE}/predict`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        league: currentLeagueId,
+        season: currentSeason,
+        homeName,
+        awayName,
+        settings: { rho, marketTrust, halfLife },
+      }),
+    });
+
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    const apiResponse = await res.json();
+
+    // Cache for display-only re-renders
+    lastApiResponse = apiResponse;
+    lastAnalysisContext = { homeName, awayName, matchOddsMulti, oddsData };
+
+    renderAnalysisFromApi(apiResponse, lastAnalysisContext);
+  } catch (err) {
+    console.error('Predict API error:', err);
+    // Fallback: show what we can from precomputed data
+    const pred = predictMatch(homeName, awayName);
+    if (pred) {
+      document.getElementById('score-matrix-container').innerHTML =
+        `<p class="muted">Detailed analysis unavailable — showing precomputed prediction</p>`;
+      renderMatchOutcome(
+        { home: pred.home, draw: pred.draw, away: pred.away },
+        oddsData.home > 0 ? shinProbabilities([oddsData.home, oddsData.draw, oddsData.away]) : [0, 0, 0],
+        homeName, awayName
+      );
+    } else {
+      document.getElementById('score-matrix-container').innerHTML =
+        `<p class="muted">Analysis unavailable — please try again</p>`;
+    }
+  }
+}
+
+/**
+ * Render full analysis from API response + local odds data.
+ * Called after API returns and on display-only setting changes (kelly/bankroll/edge).
+ */
+function renderAnalysisFromApi(apiResponse, context) {
+  const { homeName, awayName, matchOddsMulti, oddsData } = context;
+  const { outcomes, matrix, overUnder } = apiResponse;
+  const odds = oddsData;
+
   const kellyFrac = parseFloat(document.getElementById('kelly-fraction-slider').value);
   const bankroll = parseFloat(document.getElementById('bankroll').value) || 0;
-
-  // Run calculation with blended model
-  calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, oddsData, rho, kellyFrac, bankroll, matchDate);
-}
-
-// ── Calculation (same math, parameterized) ──────────────────────────
-
-function calculateOverUnder(matrix, lines) {
-  const maxGoals = matrix.length;
-  const totalGoalsProbs = [];
-  for (let n = 0; n < maxGoals * 2; n++) {
-    let prob = 0;
-    for (let i = 0; i < maxGoals; i++) {
-      const j = n - i;
-      if (j >= 0 && j < maxGoals) prob += matrix[i][j];
-    }
-    totalGoalsProbs.push(prob);
-  }
-
-  return lines.map(line => {
-    const threshold = Math.ceil(line);
-    let probUnder = 0;
-    for (let n = 0; n < threshold; n++) probUnder += totalGoalsProbs[n] || 0;
-    return { line, probOver: 1 - probUnder, probUnder };
-  });
-}
-
-function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds, rho, kellyFrac, bankroll, matchDate) {
-  document.getElementById('selected-match-title').textContent = `${homeName} vs ${awayName}`;
-
-  const threshold = getModelTrustThreshold();
-  const decayOptions = { halfLife: 60, referenceDate: new Date().toISOString().slice(0, 10) };
-
-  // Blended score matrix (Poisson + Elo)
-  const matrix = buildBlendedMatrix(homeName, awayName, matches, leagueAvg, rho, threshold, decayOptions, initialEloRatings, matchDate);
-  const modelOutcomes = calculateOutcomes(matrix);
-
-  // Blend model outcomes with odds-derived probabilities
-  const outcomes = blendWithOdds(modelOutcomes, matchOddsMulti, matches.length, threshold);
-
-  // Rescale matrix cells to match blended 1X2 ratios for display
-  const homeScale = modelOutcomes.home > 0 ? outcomes.home / modelOutcomes.home : 1;
-  const drawScale = modelOutcomes.draw > 0 ? outcomes.draw / modelOutcomes.draw : 1;
-  const awayScale = modelOutcomes.away > 0 ? outcomes.away / modelOutcomes.away : 1;
-  const displayMatrix = matrix.map((row, i) =>
-    row.map((cell, j) => cell * (i > j ? homeScale : i === j ? drawScale : awayScale))
-  );
 
   const has1x2Odds = odds.home > 0 && odds.draw > 0 && odds.away > 0;
   const bookProbs1x2 = has1x2Odds ? shinProbabilities([odds.home, odds.draw, odds.away]) : [0, 0, 0];
 
-  renderScoreMatrix(displayMatrix, homeName, awayName);
+  renderScoreMatrix(matrix, homeName, awayName);
   renderMatchOutcome(outcomes, bookProbs1x2, homeName, awayName);
 
   // Over/Under
@@ -727,11 +674,11 @@ function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds,
     { line: 2.5, key: '2.5' },
     { line: 3.5, key: '3.5' },
   ];
-  const ouCalc = calculateOverUnder(displayMatrix, ouLines.map(l => l.line));
   const ouResults = [];
 
   for (const { line, key } of ouLines) {
-    const calc = ouCalc.find(c => c.line === line);
+    const calc = overUnder.find(c => c.line === line);
+    if (!calc) continue;
     const ouOdds = odds.overUnder[key];
     const hasOuOdds = ouOdds && ouOdds.over > 0 && ouOdds.under > 0;
     const bookProbs = hasOuOdds ? shinProbabilities([ouOdds.over, ouOdds.under]) : [0, 0];
@@ -763,7 +710,8 @@ function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds,
   }
 
   for (const { line, key } of ouLines) {
-    const calc = ouCalc.find(c => c.line === line);
+    const calc = overUnder.find(c => c.line === line);
+    if (!calc) continue;
     const ouOdds = odds.overUnder[key];
     const hasOuOdds = ouOdds && ouOdds.over > 0 && ouOdds.under > 0;
     if (hasOuOdds) {
@@ -780,7 +728,7 @@ function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds,
     }
   }
 
-  // Build fades — outcomes the bookmaker overvalues (book prob >> model prob)
+  // Build fades
   const fades = allBets
     .filter(b => b.bookProb > 0 && b.edge < -0.03)
     .map(b => ({
@@ -790,7 +738,7 @@ function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds,
     }))
     .sort((a, b) => b.overvaluedBy - a.overvaluedBy);
 
-  // Build cross-bookmaker comparison + best odds per outcome
+  // Build cross-bookmaker comparison + best odds
   const comparison = buildBookmakerComparison(matchOddsMulti);
   const bestOdds = findBestOdds(matchOddsMulti);
   const minEdge = parseInt(document.getElementById('edge-threshold-slider')?.value || '3');
@@ -799,9 +747,7 @@ function calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, odds,
   renderFades(fades);
   renderBookmakerComparison(comparison, homeName, awayName, outcomes, bestOdds);
   renderAllBets(allBets);
-  showResults();
 }
-
 
 function updateLastUpdateDisplay(isoString) {
   const el = document.getElementById('last-update');
@@ -818,35 +764,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupSliders();
   setupHelpModal();
 
-  // Update predictions when model sliders change (lightweight, no DOM rebuild)
+  // Model sliders — only trigger re-analysis of current match (API call)
   for (const id of ['rho-slider', 'market-trust-slider']) {
-    document.getElementById(id).addEventListener('input', () => {
-      if (allDates.length > 0) updatePredictions();
-      reanalyzeIfNeeded();
-    });
+    document.getElementById(id).addEventListener('input', reanalyzeIfNeeded);
   }
 
-  // Previous Season slider — recompute Elo carryover + update predictions
+  // Previous Season slider — only affects detailed analysis
   document.getElementById('prev-season-slider').addEventListener('input', () => {
     const label = document.getElementById('prev-season-value');
     if (label) label.textContent = document.getElementById('prev-season-slider').value + '%';
-    if (Object.keys(rawPrevSeasonElo).length > 0) {
-      initialEloRatings = regressToMean(rawPrevSeasonElo, getPrevSeasonFactor());
-    }
-    if (allDates.length > 0) updatePredictions();
     reanalyzeIfNeeded();
   });
 
-  // Enable recalculate when betting settings change
-  document.getElementById('kelly-fraction-slider').addEventListener('input', reanalyzeIfNeeded);
-  document.getElementById('bankroll').addEventListener('input', reanalyzeIfNeeded);
-  document.getElementById('edge-threshold-slider').addEventListener('input', reanalyzeIfNeeded);
+  // Display settings — re-render from cached API response (no API call)
+  document.getElementById('kelly-fraction-slider').addEventListener('input', rerenderAnalysis);
+  document.getElementById('bankroll').addEventListener('input', rerenderAnalysis);
+  document.getElementById('edge-threshold-slider').addEventListener('input', rerenderAnalysis);
 
   // Close results button
   document.getElementById('close-results').addEventListener('click', () => {
     document.getElementById('results').classList.add('hidden');
     document.querySelectorAll('.match-row').forEach(r => r.classList.remove('selected'));
     currentAnalyzedMatch = null;
+    lastApiResponse = null;
+    lastAnalysisContext = null;
   });
 
   // Bookmaker dropdown

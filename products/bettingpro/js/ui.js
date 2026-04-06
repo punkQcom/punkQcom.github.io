@@ -729,3 +729,129 @@ export function setupHelpModal() {
     if (e.key === 'Escape' && !modal.classList.contains('hidden')) close();
   });
 }
+
+/* === Prediction Tracker Renderer === */
+
+export function renderTracker(trackerData, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const { records, summary } = trackerData;
+
+  if (records.length === 0) {
+    container.innerHTML = '<p class="muted">Not enough matches for prediction tracking (need 10+ finished matches)</p>';
+    return;
+  }
+
+  // Summary cards
+  let html = '<div class="tracker-summary">';
+  html += `<div class="tracker-stat">
+    <div class="tracker-stat-value">${(summary.accuracy1x2 * 100).toFixed(1)}%</div>
+    <div class="tracker-stat-label">1X2 Accuracy (${summary.correct1x2}/${summary.total})</div>
+  </div>`;
+  html += `<div class="tracker-stat">
+    <div class="tracker-stat-value">${(summary.accuracyScore * 100).toFixed(1)}%</div>
+    <div class="tracker-stat-label">Exact Score (${summary.correctScore}/${summary.total})</div>
+  </div>`;
+  html += `<div class="tracker-stat">
+    <div class="tracker-stat-value">${summary.avgBrierScore.toFixed(3)}</div>
+    <div class="tracker-stat-label">Avg Brier Score</div>
+  </div>`;
+  html += '</div>';
+
+  // Last 20 predictions table
+  const recent = records.slice(-20).reverse();
+  html += '<table class="results-table tracker-table">';
+  html += '<thead><tr><th>Date</th><th>Match</th><th>Pred</th><th>Actual</th><th>1X2</th><th>Score</th></tr></thead>';
+  html += '<tbody>';
+
+  for (const r of recent) {
+    const ok1x2 = r.is1x2Correct ? '<span class="value-positive">OK</span>' : '<span class="value-negative">X</span>';
+    const okScore = r.isScoreCorrect ? '<span class="value-positive">OK</span>' : '<span class="value-negative">X</span>';
+    html += `<tr>
+      <td>${r.date}</td>
+      <td>${r.homeTeam} - ${r.awayTeam}</td>
+      <td>${r.predScore}</td>
+      <td>${r.actualScore}</td>
+      <td>${ok1x2}</td>
+      <td>${okScore}</td>
+    </tr>`;
+  }
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+/* === P/L Simulation Renderer === */
+
+export function renderPLSimulation(plData, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const { bets, cumulative, summary } = plData;
+
+  if (bets.length === 0) {
+    container.innerHTML = '<p class="muted">No bets to simulate (need finished matches with odds)</p>';
+    return;
+  }
+
+  // Summary cards
+  const plClass = summary.totalPL >= 0 ? 'value-positive' : 'value-negative';
+  const roiClass = summary.roi >= 0 ? 'value-positive' : 'value-negative';
+
+  let html = '<div class="tracker-summary">';
+  html += `<div class="tracker-stat">
+    <div class="tracker-stat-value ${plClass}">${summary.totalPL >= 0 ? '+' : ''}${summary.totalPL.toFixed(2)}</div>
+    <div class="tracker-stat-label">Total P/L</div>
+  </div>`;
+  html += `<div class="tracker-stat">
+    <div class="tracker-stat-value ${roiClass}">${summary.roi >= 0 ? '+' : ''}${summary.roi.toFixed(1)}%</div>
+    <div class="tracker-stat-label">ROI</div>
+  </div>`;
+  html += `<div class="tracker-stat">
+    <div class="tracker-stat-value">${(summary.winRate * 100).toFixed(1)}%</div>
+    <div class="tracker-stat-label">Win Rate (${summary.wins}/${summary.totalBets})</div>
+  </div>`;
+  html += `<div class="tracker-stat">
+    <div class="tracker-stat-value value-negative">${summary.maxDrawdown.toFixed(2)}</div>
+    <div class="tracker-stat-label">Max Drawdown</div>
+  </div>`;
+  html += '</div>';
+
+  // CSS bar chart for cumulative P/L
+  if (cumulative.length > 1) {
+    const maxAbs = Math.max(...cumulative.map(Math.abs), 1);
+    html += '<div class="pl-chart">';
+    // Sample bars if too many (show max 60 bars)
+    const step = Math.max(1, Math.floor(cumulative.length / 60));
+    for (let i = 0; i < cumulative.length; i += step) {
+      const val = cumulative[i];
+      const heightPct = Math.abs(val) / maxAbs * 100;
+      const cls = val >= 0 ? 'pl-bar-pos' : 'pl-bar-neg';
+      html += `<div class="pl-bar ${cls}" style="height:${Math.max(2, heightPct)}%" title="Bet #${i + 1}: ${val >= 0 ? '+' : ''}${val.toFixed(2)}"></div>`;
+    }
+    html += '</div>';
+  }
+
+  // Last 20 bets table
+  const recent = bets.slice(-20).reverse();
+  html += '<table class="results-table tracker-table">';
+  html += '<thead><tr><th>Date</th><th>Match</th><th>Bet</th><th>Odds</th><th>Stake</th><th>P/L</th></tr></thead>';
+  html += '<tbody>';
+
+  for (const b of recent) {
+    const plCls = b.profit >= 0 ? 'value-positive' : 'value-negative';
+    const sign = b.profit >= 0 ? '+' : '';
+    html += `<tr>
+      <td>${b.date}</td>
+      <td>${b.homeTeam} - ${b.awayTeam}</td>
+      <td>${b.bet}</td>
+      <td>${b.odds.toFixed(2)}</td>
+      <td>${b.stake.toFixed(2)}</td>
+      <td class="${plCls}">${sign}${b.profit.toFixed(2)}</td>
+    </tr>`;
+  }
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
