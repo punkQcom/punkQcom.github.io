@@ -347,7 +347,7 @@ const helpContent = {
 </div>
 
 <div class="help-section">
-  <p><strong>Important:</strong> No model can predict football with certainty. Value betting is a long-term strategy — individual bets can and will lose. Always bet responsibly and only with money you can afford to lose.</p>
+  <p><strong>Important:</strong> No model can predict sports with certainty. Value betting is a long-term strategy — individual bets can and will lose. Always bet responsibly and only with money you can afford to lose.</p>
 </div>
     `,
   },
