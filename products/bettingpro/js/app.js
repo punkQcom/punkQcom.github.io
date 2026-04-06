@@ -2,22 +2,22 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { shinProbabilities } from './shin.js?v=1775460505';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775460505';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775460505';
+import { shinProbabilities } from './shin.js?v=1775462930';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775462930';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775462930';
 import {
   buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-} from './prediction.js?v=1775460505';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775460505';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775460505';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775460505';
+} from './prediction.js?v=1775462930';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775462930';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775462930';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775462930';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775460505';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775460505';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775462930';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775462930';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, setupSliders, setupHelpModal
-} from './ui.js?v=1775460505';
+} from './ui.js?v=1775462930';
 
 // Loaded data state
 let currentMeta = null;
@@ -551,12 +551,9 @@ function findOdds(match, odds) {
   return migrateOdds({ home: found.home, draw: found.draw, away: found.away, overUnder: found.overUnder });
 }
 
-function enableRecalculate() {
-  const btn = document.getElementById('recalculate-btn');
-  if (btn && currentAnalyzedMatch) {
-    btn.disabled = false;
-    const status = document.getElementById('recalc-status');
-    if (status) status.textContent = 'Settings changed — click to update analysis';
+function reanalyzeIfNeeded() {
+  if (currentAnalyzedMatch) {
+    analyzeMatch(currentAnalyzedMatch.home, currentAnalyzedMatch.away);
   }
 }
 
@@ -603,14 +600,6 @@ function analyzeMatch(homeName, awayName) {
 
   // Run calculation with blended model
   calculate(homeName, awayName, matches, leagueAvg, matchOddsMulti, oddsData, rho, kellyFrac, bankroll);
-
-  // Disable recalculate button after auto-calc
-  const recalcBtn = document.getElementById('recalculate-btn');
-  if (recalcBtn) {
-    recalcBtn.disabled = true;
-    const status = document.getElementById('recalc-status');
-    if (status) status.textContent = `Showing: ${homeName} vs ${awayName}`;
-  }
 }
 
 // ── Calculation (same math, parameterized) ──────────────────────────
@@ -746,7 +735,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   for (const id of ['rho-slider', 'market-trust-slider']) {
     document.getElementById(id).addEventListener('input', () => {
       if (allDates.length > 0) renderDateView();
-      enableRecalculate();
+      reanalyzeIfNeeded();
     });
   }
 
@@ -761,19 +750,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const matches = currentLeagueData?.matches || [];
     const eloData = buildEloTable(matches, initialEloRatings);
     renderEloTable(eloData, 'elo-table');
-    enableRecalculate();
+    reanalyzeIfNeeded();
   });
 
   // Enable recalculate when betting settings change
-  document.getElementById('kelly-fraction-slider').addEventListener('input', enableRecalculate);
-  document.getElementById('bankroll').addEventListener('input', enableRecalculate);
-
-  // Recalculate button
-  document.getElementById('recalculate-btn').addEventListener('click', () => {
-    if (currentAnalyzedMatch) {
-      analyzeMatch(currentAnalyzedMatch.home, currentAnalyzedMatch.away);
-    }
-  });
+  document.getElementById('kelly-fraction-slider').addEventListener('input', reanalyzeIfNeeded);
+  document.getElementById('bankroll').addEventListener('input', reanalyzeIfNeeded);
 
   // Close results button
   document.getElementById('close-results').addEventListener('click', () => {
