@@ -2,23 +2,24 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { shinProbabilities } from './shin.js?v=1775474918';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775474918';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775474918';
+import { shinProbabilities } from './shin.js?v=1775475735';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775475735';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775475735';
 import {
   buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-} from './prediction.js?v=1775474918';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775474918';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775474918';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775474918';
+  getConsensusOdds, migrateOdds,
+} from './prediction.js?v=1775475735';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775475735';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775475735';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775475735';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775474918';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775474918';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775475735';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775475735';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal
-} from './ui.js?v=1775474918';
+} from './ui.js?v=1775475735';
 
 // Loaded data state
 let currentMeta = null;
@@ -56,15 +57,6 @@ let currentAnalyzedMatch = null;
 
 // ── Multi-bookmaker utilities ────────────────────────────────────────
 
-/** Migrate old flat odds { home, draw, away } to multi-bookmaker { veikkaus: {...} } */
-function migrateOdds(odds) {
-  if (!odds) return null;
-  if (odds.home !== undefined && typeof odds.home === 'number') {
-    return { veikkaus: { home: odds.home, draw: odds.draw, away: odds.away, overUnder: odds.overUnder || {} } };
-  }
-  return odds;
-}
-
 /** Get odds for the currently selected bookmaker */
 function getSelectedOdds(oddsObj) {
   if (!oddsObj) return null;
@@ -72,39 +64,6 @@ function getSelectedOdds(oddsObj) {
   if (!migrated) return null;
   if (selectedBookmaker === 'consensus') return getConsensusOdds(migrated);
   return migrated[selectedBookmaker] || null;
-}
-
-/** Average implied probabilities across bookmakers, convert back to odds */
-function getConsensusOdds(oddsObj) {
-  const entries = Object.values(oddsObj);
-  if (entries.length === 0) return null;
-
-  // Average implied probabilities (1/odds), then convert back to decimal odds
-  function avgOdds(values) {
-    const valid = values.filter(o => o > 0);
-    if (valid.length === 0) return 0;
-    const avgProb = valid.reduce((s, o) => s + 1 / o, 0) / valid.length;
-    return avgProb > 0 ? 1 / avgProb : 0;
-  }
-
-  const result = {
-    home: avgOdds(entries.map(b => b.home || 0)),
-    draw: avgOdds(entries.map(b => b.draw || 0)),
-    away: avgOdds(entries.map(b => b.away || 0)),
-    overUnder: {},
-  };
-  // Average over/under lines
-  const allLines = new Set();
-  for (const e of entries) for (const line of Object.keys(e.overUnder || {})) allLines.add(line);
-  for (const line of allLines) {
-    const withLine = entries.filter(e => e.overUnder?.[line]);
-    if (withLine.length === 0) continue;
-    result.overUnder[line] = {
-      over: avgOdds(withLine.map(e => e.overUnder[line].over)),
-      under: avgOdds(withLine.map(e => e.overUnder[line].under)),
-    };
-  }
-  return result;
 }
 
 /** Find which bookmaker offers the best (highest) odds per outcome */
