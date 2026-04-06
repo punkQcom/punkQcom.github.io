@@ -19,7 +19,7 @@ export function renderMargin(odds1x2) {
   el.textContent = `Bookmaker margin: ${margin}%`;
 }
 
-export function renderScoreMatrix(matrix, homeName, awayName) {
+export function renderScoreMatrix(matrix, homeName, awayName, predictedScore) {
   const container = document.getElementById('score-matrix');
   const maxGoals = matrix.length;
 
@@ -35,8 +35,15 @@ export function renderScoreMatrix(matrix, homeName, awayName) {
     }
   }
 
-  document.getElementById('most-likely-score').textContent =
-    `Most likely: ${homeName} ${maxI} - ${maxJ} ${awayName} (${(maxProb * 100).toFixed(1)}%)`;
+  const el = document.getElementById('most-likely-score');
+  const mostLikely = `${maxI}-${maxJ}`;
+  if (predictedScore && predictedScore !== mostLikely) {
+    el.innerHTML =
+      `Prediction: ${homeName} <strong>${predictedScore}</strong> ${awayName} &nbsp;·&nbsp; Most likely scoreline: ${maxI} - ${maxJ} (${(maxProb * 100).toFixed(1)}%)`;
+  } else {
+    el.textContent =
+      `Most likely: ${homeName} ${maxI} - ${maxJ} ${awayName} (${(maxProb * 100).toFixed(1)}%)`;
+  }
 
   // Away team name spanning the top
   let html = '<table class="score-matrix">';
@@ -571,8 +578,11 @@ const helpContent = {
 <ul>
   <li>Home team goals are on the vertical axis (left), away team goals on the horizontal axis (top)</li>
   <li>Brighter/higher cells indicate more likely scorelines</li>
-  <li>The most likely score is shown above the matrix</li>
+  <li>The highlighted cell is the single most probable scoreline</li>
 </ul>
+<p><strong>Why the prediction and most likely scoreline can differ:</strong></p>
+<p>The predicted score (shown in the match list) is the most likely scoreline <em>within the predicted outcome</em>. For example, if the model predicts an away win (43%), the predicted score will be the most likely away-win scoreline (e.g. 1-2 at 11.2%) — even if a draw scoreline like 1-1 (12.9%) is the single most probable score overall.</p>
+<p>This is because draws split their probability across fewer scorelines (0-0, 1-1, 2-2...), making individual draw scores appear high. But when you add up <em>all</em> away-win scorelines (0-1, 0-2, 1-2, 1-3...), the total away-win probability can be much higher than the total draw probability. The prediction reflects this overall picture.</p>
     `,
   },
   'match-outcome': {

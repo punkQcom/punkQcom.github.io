@@ -3,17 +3,17 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775490287';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775490287';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775490287';
+import { shinProbabilities } from './shin.js?v=1775490936';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775490936';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775490936';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775490287';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775490936';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation
-} from './ui.js?v=1775490287';
+} from './ui.js?v=1775490936';
 
 // Loaded data state
 let currentMeta = null;
@@ -687,7 +687,7 @@ async function analyzeMatch(homeName, awayName) {
  */
 function renderAnalysisFromApi(apiResponse, context) {
   const { homeName, awayName, matchOddsMulti, oddsData } = context;
-  const { outcomes, matrix, overUnder } = apiResponse;
+  const { score, outcomes, matrix, overUnder } = apiResponse;
   const odds = oddsData;
 
   const kellyFrac = parseFloat(document.getElementById('kelly-fraction-slider').value);
@@ -696,7 +696,7 @@ function renderAnalysisFromApi(apiResponse, context) {
   const has1x2Odds = odds.home > 0 && odds.draw > 0 && odds.away > 0;
   const bookProbs1x2 = has1x2Odds ? shinProbabilities([odds.home, odds.draw, odds.away]) : [0, 0, 0];
 
-  renderScoreMatrix(matrix, homeName, awayName);
+  renderScoreMatrix(matrix, homeName, awayName, score);
   renderMatchOutcome(outcomes, bookProbs1x2, homeName, awayName);
 
   // Over/Under
