@@ -2,22 +2,22 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { shinProbabilities } from './shin.js?v=1775465361';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775465361';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775465361';
+import { shinProbabilities } from './shin.js?v=1775465528';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775465528';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775465528';
 import {
   buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-} from './prediction.js?v=1775465361';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775465361';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775465361';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775465361';
+} from './prediction.js?v=1775465528';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775465528';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775465528';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775465528';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775465361';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775465361';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775465528';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775465528';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, setupSliders, setupHelpModal
-} from './ui.js?v=1775465361';
+} from './ui.js?v=1775465528';
 
 // Loaded data state
 let currentMeta = null;
