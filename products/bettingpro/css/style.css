@@ -877,6 +877,13 @@ details.card[open] summary h2::before {
   background: rgba(239, 68, 68, 0.15);
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
+.pred-asterisk {
+  color: #fbbf24;
+  font-size: 0.75rem;
+  vertical-align: super;
+  margin-left: 1px;
+  cursor: help;
+}
 
 .pred-probs {
   display: flex;
