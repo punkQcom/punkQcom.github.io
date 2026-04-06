@@ -19,7 +19,7 @@ export function renderMargin(odds1x2) {
   el.textContent = `Bookmaker margin: ${margin}%`;
 }
 
-export function renderScoreMatrix(matrix, homeName, awayName, predictedScore) {
+export function renderScoreMatrix(matrix, homeName, awayName, predictedScore, outcomes) {
   const container = document.getElementById('score-matrix');
   const maxGoals = matrix.length;
 
@@ -37,9 +37,32 @@ export function renderScoreMatrix(matrix, homeName, awayName, predictedScore) {
 
   const el = document.getElementById('most-likely-score');
   const mostLikely = `${maxI}-${maxJ}`;
-  if (predictedScore && predictedScore !== mostLikely) {
+  if (predictedScore && predictedScore !== mostLikely && outcomes) {
+    // Determine the predicted outcome and the most likely scoreline's outcome
+    const [pH, pA] = predictedScore.split('-').map(Number);
+    const predOutcome = pH > pA ? 'home' : pH < pA ? 'away' : 'draw';
+    const mlOutcome = maxI > maxJ ? 'home' : maxI < maxJ ? 'away' : 'draw';
+    const outcomeLabels = {
+      home: `Home Win (${(outcomes.home * 100).toFixed(0)}%)`,
+      draw: `Draw (${(outcomes.draw * 100).toFixed(0)}%)`,
+      away: `Away Win (${(outcomes.away * 100).toFixed(0)}%)`,
+    };
+
+    let explanation;
+    if (predOutcome !== mlOutcome) {
+      // Most common case: e.g. prediction is away win but most likely single score is a draw
+      explanation = `The prediction is the most likely score for the predicted outcome (${outcomeLabels[predOutcome]}). `
+        + `${maxI}-${maxJ} has the highest individual probability, but adding up all ${predOutcome === 'home' ? 'home win' : predOutcome === 'away' ? 'away win' : 'draw'} scorelines gives a higher total. `
+        + `For <strong>1X2 bets</strong>, follow the outcome probabilities below. For <strong>exact score bets</strong>, use the matrix.`;
+    } else {
+      // Same outcome but different scoreline within it
+      explanation = `Both scores belong to the same outcome (${outcomeLabels[predOutcome]}), but ${mostLikely} has the highest individual probability across all scorelines. `
+        + `For <strong>1X2 bets</strong>, follow the outcome probabilities below. For <strong>exact score bets</strong>, use the matrix.`;
+    }
+
     el.innerHTML =
-      `Prediction: ${homeName} <strong>${predictedScore}</strong> ${awayName} &nbsp;·&nbsp; Most likely scoreline: ${maxI} - ${maxJ} (${(maxProb * 100).toFixed(1)}%)`;
+      `Prediction: ${homeName} <strong>${predictedScore}</strong> ${awayName} &nbsp;·&nbsp; Most likely scoreline: ${maxI} - ${maxJ} (${(maxProb * 100).toFixed(1)}%)`
+      + `<br><small class="score-matrix-note">${explanation}</small>`;
   } else {
     el.textContent =
       `Most likely: ${homeName} ${maxI} - ${maxJ} ${awayName} (${(maxProb * 100).toFixed(1)}%)`;
