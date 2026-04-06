@@ -147,7 +147,7 @@ export function renderAllBets(bets) {
       <td>${bet.label}</td>
       <td>${(bet.yourProb * 100).toFixed(1)}%</td>
       <td>${hasBook ? (bet.bookProb * 100).toFixed(1) + '%' : '—'}</td>
-      <td class="${hasBook ? edgeClass : ''}">${hasBook ? edgeSign + (bet.edge * 100).toFixed(1) + '%' : '—'}</td>
+      <td class="${hasBook ? edgeClass : ''}">${hasBook ? edgeSign + (bet.edge * 100).toFixed(1) + '%' : '—'}${hasBook && bet.edge < -0.03 ? ' <span class="overvalued-tag">OV</span>' : ''}</td>
       <td>${hasBook ? (bet.kellyPct * 100).toFixed(1) + '%' : '—'}</td>
       <td>${hasBook ? bet.stake.toFixed(2) : '—'}</td>
     </tr>`;
@@ -155,6 +155,79 @@ export function renderAllBets(bets) {
 
   html += '</tbody>';
   table.innerHTML = html;
+}
+
+export function renderFades(fades) {
+  const table = document.getElementById('fades-table');
+
+  if (fades.length === 0) {
+    table.innerHTML = '<tbody><tr><td colspan="4" style="text-align:center;color:#9ca3af;">No overvalued outcomes found</td></tr></tbody>';
+    return;
+  }
+
+  let html = '<thead><tr><th>Overvalued Outcome</th><th>Book %</th><th>Model %</th><th>Overvalued By</th></tr></thead><tbody>';
+
+  for (const fade of fades) {
+    html += `<tr>
+      <td>${fade.label}</td>
+      <td>${(fade.bookProb * 100).toFixed(1)}%</td>
+      <td>${(fade.yourProb * 100).toFixed(1)}%</td>
+      <td class="value-negative">${(fade.overvaluedBy * 100).toFixed(1)}%</td>
+    </tr>`;
+
+    // Show counter-bets (value bets on opposite outcomes)
+    for (const cb of fade.counterBets) {
+      html += `<tr class="counter-bet-row">
+        <td>&nbsp;&nbsp;&#8627; ${cb.label}</td>
+        <td colspan="2" class="value-positive">Edge +${(cb.edge * 100).toFixed(1)}%</td>
+        <td>Stake ${cb.stake.toFixed(2)}</td>
+      </tr>`;
+    }
+  }
+
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+export function renderBookmakerComparison(rows, homeName, awayName) {
+  const container = document.getElementById('bookmaker-comparison');
+
+  if (rows.length === 0) {
+    container.innerHTML = '<p class="muted" style="text-align:center;">No multi-bookmaker odds available</p>';
+    return;
+  }
+
+  let html = `<table class="results-table"><thead><tr>
+    <th>Bookmaker</th>
+    <th>1 ${homeName}</th>
+    <th>X Draw</th>
+    <th>2 ${awayName}</th>
+  </tr></thead><tbody>`;
+
+  for (const row of rows) {
+    html += `<tr>
+      <td>${formatBookmaker(row.bookmaker)}</td>
+      ${comparisonCell(row.home)}
+      ${comparisonCell(row.draw)}
+      ${comparisonCell(row.away)}
+    </tr>`;
+  }
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function formatBookmaker(key) {
+  return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function comparisonCell(data) {
+  const diffPct = (data.diff * 100).toFixed(1);
+  const sign = data.diff > 0 ? '+' : '';
+  // Positive diff = bookmaker thinks outcome more likely than consensus = worse odds for bettor
+  // Negative diff = bookmaker thinks outcome less likely = better odds for bettor
+  const cls = data.diff < -0.02 ? 'value-positive' : data.diff > 0.02 ? 'value-negative' : '';
+  return `<td class="${cls}">${data.odds.toFixed(2)} <small>(${sign}${diffPct}%)</small></td>`;
 }
 
 export function setupSliders() {
@@ -307,6 +380,38 @@ const helpContent = {
       <div class="help-section">
         <p><strong>Tip:</strong> Set this to your actual dedicated betting bankroll — the amount you've set aside specifically for betting and can afford to lose entirely. Never bet with money you can't afford to lose.</p>
       </div>
+    `,
+  },
+  'fades': {
+    title: 'Fades (Overvalued by Bookmaker)',
+    body: `
+<p><strong>Fades</strong> are outcomes where the bookmaker's implied probability is significantly higher than our model's estimate — the bookmaker is <em>overconfident</em> about that outcome.</p>
+<p>When the book overvalues one outcome, the opposite outcomes are likely undervalued — creating value betting opportunities. Each fade shows the overvalued outcome and suggests counter-bets on the opposite side.</p>
+<p><strong>How to use:</strong></p>
+<ul>
+  <li>Look for outcomes the bookmaker overvalues by 5%+ — these suggest the book has priced that outcome too aggressively</li>
+  <li>The &#8627; counter-bets show where the value lies on the other side</li>
+  <li>Combine with the Bookmaker Comparison to find which bookmaker offers the best counter-bet odds</li>
+</ul>
+<p><strong>Threshold:</strong> Only outcomes overvalued by more than 3% are shown. Small differences are normal noise.</p>
+    `,
+  },
+  'bookmaker-comparison': {
+    title: 'Bookmaker Comparison',
+    body: `
+<p>Compares each bookmaker's implied probabilities against the <strong>consensus</strong> (average across all bookmakers). Helps you find the best bookmaker to place each bet.</p>
+<p><strong>Reading the table:</strong></p>
+<ul>
+  <li>Each cell shows the decimal odds and the deviation from consensus in parentheses</li>
+  <li><span style="color:#4ade80;">Green</span> = bookmaker offers better odds than consensus (lower implied probability = more value for bettors)</li>
+  <li><span style="color:#f87171;">Red</span> = bookmaker offers worse odds than consensus (higher implied probability = less value)</li>
+</ul>
+<p><strong>How to use:</strong></p>
+<ul>
+  <li>If you've found a value bet, scan the column for that outcome — find the bookmaker with the greenest cell (best odds)</li>
+  <li>Large red deviations suggest a bookmaker is overconfident about an outcome — consider fading it</li>
+  <li>Consistent green across a row means that bookmaker is generally offering better odds</li>
+</ul>
     `,
   },
   'elo-ratings': {
