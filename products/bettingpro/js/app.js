@@ -2,22 +2,22 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { shinProbabilities } from './shin.js?v=1775462930';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775462930';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775462930';
+import { shinProbabilities } from './shin.js?v=1775464795';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775464795';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775464795';
 import {
   buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-} from './prediction.js?v=1775462930';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775462930';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775462930';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775462930';
+} from './prediction.js?v=1775464795';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775464795';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775464795';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775464795';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775462930';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775462930';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775464795';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775464795';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, setupSliders, setupHelpModal
-} from './ui.js?v=1775462930';
+} from './ui.js?v=1775464795';
 
 // Loaded data state
 let currentMeta = null;
@@ -551,10 +551,13 @@ function findOdds(match, odds) {
   return migrateOdds({ home: found.home, draw: found.draw, away: found.away, overUnder: found.overUnder });
 }
 
+let _reanalyzeTimer = null;
 function reanalyzeIfNeeded() {
-  if (currentAnalyzedMatch) {
+  if (!currentAnalyzedMatch) return;
+  clearTimeout(_reanalyzeTimer);
+  _reanalyzeTimer = setTimeout(() => {
     analyzeMatch(currentAnalyzedMatch.home, currentAnalyzedMatch.away);
-  }
+  }, 150);
 }
 
 // ── Auto-calculate on match click ───────────────────────────────────
