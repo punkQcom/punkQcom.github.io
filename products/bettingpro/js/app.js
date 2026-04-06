@@ -3,17 +3,17 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775477862';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775477862';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775477862';
+import { shinProbabilities } from './shin.js?v=1775478193';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775478193';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775478193';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775477862';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775478193';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation
-} from './ui.js?v=1775477862';
+} from './ui.js?v=1775478193';
 
 // Loaded data state
 let currentMeta = null;
