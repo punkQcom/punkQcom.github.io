@@ -3,17 +3,17 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775490936';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775490936';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775490936';
+import { shinProbabilities } from './shin.js?v=1775491229';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775491229';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775491229';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775490936';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775491229';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation
-} from './ui.js?v=1775490936';
+} from './ui.js?v=1775491229';
 
 // Loaded data state
 let currentMeta = null;
@@ -460,7 +460,14 @@ function renderDateView() {
           const actualOutcome = m.homeGoals > m.awayGoals ? '1' : m.homeGoals === m.awayGoals ? 'X' : '2';
           predCls += predOutcome === actualOutcome ? ' pred-hit' : ' pred-miss';
         }
-        predContent = `<span class="${predCls}">${pred.score}</span>`;
+        // Check if predicted score is not a draw — the most likely individual scoreline
+        // is almost always a draw (e.g. 1-1), so flag when prediction differs
+        const [pH, pA] = pred.score.split('-').map(Number);
+        const scoreIsDraw = pH === pA;
+        const asterisk = !scoreIsDraw
+          ? '<span class="pred-asterisk" title="The most likely single scoreline is probably a draw — this prediction shows the best score within the predicted outcome (click for details)">*</span>'
+          : '';
+        predContent = `<span class="${predCls}">${pred.score}${asterisk}</span>`;
       }
 
       // 1 X 2 column (probabilities + odds)
