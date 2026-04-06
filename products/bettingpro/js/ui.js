@@ -392,6 +392,31 @@ const helpContent = {
       </div>
     `,
   },
+  'matches': {
+    title: 'Matches',
+    body: `
+<p>The match list shows all matches for the selected season, grouped by date. Each match row has three columns:</p>
+<p><strong>Prediction</strong> — our model's predicted most likely scoreline for the match.</p>
+<p><strong>1 X 2</strong> — predicted probabilities for Home Win (1), Draw (X), and Away Win (2). The most likely outcome is highlighted with a colored border:</p>
+<div style="margin:12px 0;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;padding:2px 8px;border:2px solid #4ade80;border-radius:3px;color:#4ade80;font-weight:700;background:rgba(74,222,128,0.12);">45%+</span>
+    <span>High confidence — our model is fairly sure about this outcome</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;padding:2px 8px;border:2px solid #fb923c;border-radius:3px;color:#fb923c;font-weight:700;background:rgba(251,146,60,0.12);">35–44%</span>
+    <span>Medium confidence — competitive match, outcome less certain</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;padding:2px 8px;border:2px solid #f87171;border-radius:3px;color:#f87171;font-weight:700;background:rgba(248,113,113,0.12);">&lt;35%</span>
+    <span>Low confidence — toss-up or the best outcome is still unlikely</span>
+  </div>
+</div>
+<p>Below the probabilities, the bookmaker's decimal odds are shown (if available). On finished matches, the correct result column is highlighted in green.</p>
+<p><strong>Result</strong> — the final score for finished matches. Click any match to open the full analysis.</p>
+<p><strong>Today's matches</strong> are highlighted in green and auto-scrolled into view on page load.</p>
+    `,
+  },
   'score-matrix': {
     title: 'Score Matrix',
     body: `
