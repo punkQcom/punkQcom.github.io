@@ -3,17 +3,17 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775477151';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775477151';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775477151';
+import { shinProbabilities } from './shin.js?v=1775477862';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775477862';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775477862';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775477151';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775477862';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation
-} from './ui.js?v=1775477151';
+} from './ui.js?v=1775477862';
 
 // Loaded data state
 let currentMeta = null;
@@ -426,10 +426,17 @@ function renderDateView() {
       const pred = predictMatch(m.homeTeam, m.awayTeam);
       const selOdds = getSelectedOdds(m.odds);
 
-      // Prediction column (score only)
+      // Prediction column (score only, with outcome check for finished matches)
       let predContent = '';
       if (pred) {
-        predContent = `<span class="pred-score">${pred.score}</span>`;
+        let predCls = 'pred-score';
+        if (isFinished) {
+          const predOutcome = pred.home >= pred.draw && pred.home >= pred.away ? '1'
+            : pred.away >= pred.home && pred.away >= pred.draw ? '2' : 'X';
+          const actualOutcome = m.homeGoals > m.awayGoals ? '1' : m.homeGoals === m.awayGoals ? 'X' : '2';
+          predCls += predOutcome === actualOutcome ? ' pred-hit' : ' pred-miss';
+        }
+        predContent = `<span class="${predCls}">${pred.score}</span>`;
       }
 
       // 1 X 2 column (probabilities + odds)
