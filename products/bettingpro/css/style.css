@@ -500,82 +500,10 @@ summary .help-tip {
   background: #f8717115;
 }
 
-/* === Update Data Bar === */
-.update-data-bar {
-  border-color: #3b82f6;
-}
-
-.update-controls {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-
-.update-btn {
-  padding: 8px 20px;
-  background: #2563eb;
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.2s;
-}
-
-.update-btn:hover {
-  background: #1d4ed8;
-}
-
-.update-btn:disabled {
-  background: #4a4a6a;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.update-btn-wrapper {
-  display: inline-block;
-  cursor: help;
-}
-
-.update-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  font-size: 0.85rem;
-  color: #60a5fa;
-}
-
-.spinner {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid #3a3a5a;
-  border-top: 2px solid #60a5fa;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 .last-update {
   font-size: 0.75rem;
   color: #6b7280;
   margin-top: 6px;
-}
-
-.auto-fill-status {
-  font-size: 0.8rem;
-  color: #4ade80;
-  margin-top: 8px;
-}
-
-.auto-fill-status.warning {
-  color: #f59e0b;
 }
 
 /* === Responsive === */
@@ -625,15 +553,6 @@ summary .help-tip {
   display: flex;
   flex-direction: column;
   gap: 2px;
-}
-
-.match-date-header {
-  font-size: 0.85rem;
-  color: #94a3b8;
-  padding: 12px 0 4px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .match-row {
@@ -688,19 +607,6 @@ details.card summary h2::before {
 
 details.card[open] summary h2::before {
   content: '\25BE ';
-}
-
-/* Update bar compact layout */
-.update-data-bar .update-controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.update-data-bar .last-update {
-  font-size: 0.85rem;
-  color: #94a3b8;
 }
 
 /* Round headers */
