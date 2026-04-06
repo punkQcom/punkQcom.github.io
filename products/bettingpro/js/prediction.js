@@ -3,11 +3,11 @@
  * All prediction logic extracted from app.js for reuse in tracker, P/L sim, etc.
  */
 
-import { expectedGoals, scoreMatrix } from './poisson.js?v=1775474918';
-import { applyDixonColes } from './dixon-coles.js?v=1775474918';
-import { shinProbabilities } from './shin.js?v=1775474918';
-import { calculateEloRatings, eloToPoisson } from './elo.js?v=1775474918';
-import { calculateTeamAverages, calculateLeagueAvg } from './sources/league-data.js?v=1775474918';
+import { expectedGoals, scoreMatrix } from './poisson.js?v=1775475735';
+import { applyDixonColes } from './dixon-coles.js?v=1775475735';
+import { shinProbabilities } from './shin.js?v=1775475735';
+import { calculateEloRatings, eloToPoisson } from './elo.js?v=1775475735';
+import { calculateTeamAverages, calculateLeagueAvg } from './sources/league-data.js?v=1775475735';
 
 /**
  * Calculate outcomes (home/draw/away probabilities) from a score matrix.
@@ -38,11 +38,24 @@ export function getConsensusOdds(oddsObj) {
     return avgProb > 0 ? 1 / avgProb : 0;
   }
 
-  return {
+  const result = {
     home: avgOdds(entries.map(b => b.home || 0)),
     draw: avgOdds(entries.map(b => b.draw || 0)),
     away: avgOdds(entries.map(b => b.away || 0)),
+    overUnder: {},
   };
+  // Average over/under lines across bookmakers
+  const allLines = new Set();
+  for (const e of entries) for (const line of Object.keys(e.overUnder || {})) allLines.add(line);
+  for (const line of allLines) {
+    const withLine = entries.filter(e => e.overUnder?.[line]);
+    if (withLine.length === 0) continue;
+    result.overUnder[line] = {
+      over: avgOdds(withLine.map(e => e.overUnder[line].over)),
+      under: avgOdds(withLine.map(e => e.overUnder[line].under)),
+    };
+  }
+  return result;
 }
 
 /**
