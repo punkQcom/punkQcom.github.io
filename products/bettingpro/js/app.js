@@ -3,17 +3,17 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775491375';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775491375';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775491375';
+import { shinProbabilities } from './shin.js?v=1775491665';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775491665';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775491665';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775491375';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775491665';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation
-} from './ui.js?v=1775491375';
+} from './ui.js?v=1775491665';
 
 // Loaded data state
 let currentMeta = null;
@@ -466,14 +466,7 @@ function renderDateView() {
             predCls += predOutcome === actualOutcome ? ' pred-hit' : ' pred-miss';
           }
         }
-        // Check if predicted score is not a draw — the most likely individual scoreline
-        // is almost always a draw (e.g. 1-1), so flag when prediction differs
-        const [pH, pA] = pred.score.split('-').map(Number);
-        const scoreIsDraw = pH === pA;
-        const asterisk = !scoreIsDraw
-          ? '<span class="pred-asterisk" title="The most likely single scoreline is probably a draw — this prediction shows the best score within the predicted outcome (click for details)">*</span>'
-          : '';
-        predContent = `<span class="${predCls}">${pred.score}${asterisk}</span>`;
+        predContent = `<span class="${predCls}">${pred.score}</span>`;
       }
 
       // 1 X 2 column (probabilities + odds)
