@@ -157,7 +157,9 @@ input[type="range"] {
   padding: 0;
   line-height: 1;
   transition: background 0.15s, border-color 0.15s;
-  transform: translateY(-1px);
+}
+summary .help-tip {
+  transform: translateY(-3px);
 }
 .help-tip:hover {
   background: #4a4a6a;
