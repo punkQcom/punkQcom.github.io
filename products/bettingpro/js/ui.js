@@ -439,12 +439,15 @@ const helpContent = {
     title: 'Match Outcome',
     body: `
 <p>Shows the predicted probability for each match result: <strong>Home Win (1)</strong>, <strong>Draw (X)</strong>, and <strong>Away Win (2)</strong>.</p>
-<p><strong>Two probability sets:</strong></p>
+<p><strong>Colored bar</strong> = our model's predicted probability (blended Poisson + Elo + market odds).</p>
+<p><strong>Dotted line</strong> = the bookmaker's fair probability (margin removed via Shin's method). This is the bookmaker's true estimate of each outcome's likelihood.</p>
+<p><strong>How to read the gap:</strong></p>
 <ul>
-  <li><strong>Model</strong> (colored bars) — our blended prediction combining Poisson model, Elo ratings, and market odds</li>
-  <li><strong>Book</strong> (if available) — the bookmaker's implied probability after removing their margin using Shin's method</li>
+  <li>Bar extends <strong>past</strong> the dotted line → our model thinks this outcome is <em>more likely</em> than the bookmaker does → potential <strong>value bet</strong></li>
+  <li>Bar stops <strong>before</strong> the dotted line → the bookmaker thinks this outcome is <em>more likely</em> than our model does → bookmaker <strong>overvalues</strong> this outcome (fade candidate)</li>
+  <li>Bar and dotted line <strong>align</strong> → our model and the bookmaker roughly agree</li>
 </ul>
-<p>When the model probability is higher than the book's, that outcome may be a <strong>value bet</strong> — the bookmaker is undervaluing it. When it's lower, the bookmaker is <strong>overvaluing</strong> that outcome.</p>
+<p>The bigger the gap between the bar and the dotted line, the stronger the disagreement — and the bigger the potential edge.</p>
     `,
   },
   'over-under': {
