@@ -293,6 +293,64 @@ export function setupSliders() {
 /* === Help Modal System === */
 
 const helpContent = {
+  'about': {
+    title: 'About BettingPro',
+    body: `
+<p><strong>BettingPro</strong> is a sports betting probability calculator that uses statistical modelling to find value bets — situations where the bookmaker's odds are higher than our model suggests they should be.</p>
+
+<div class="help-section">
+  <p><strong>What the model does:</strong></p>
+  <ul>
+    <li>Predicts the probability of every possible scoreline for each match</li>
+    <li>Compares those probabilities against bookmaker odds to identify edges</li>
+    <li>Calculates optimal bet sizing using the Kelly Criterion</li>
+  </ul>
+</div>
+
+<div class="help-section">
+  <p><strong>Statistical methods used:</strong></p>
+  <ul>
+    <li><strong>Poisson regression</strong> — models expected goals for each team based on attack and defense strengths, estimated from historical match results with time-decay weighting (recent matches count more)</li>
+    <li><strong>Dixon-Coles correction</strong> — adjusts for the known correlation in low-scoring games (0-0, 1-0, 0-1, 1-1 scorelines occur more often than independent Poisson predicts)</li>
+    <li><strong>Elo ratings</strong> — a power ranking system where teams gain/lose points based on match results. Used to estimate relative team strength, especially useful early in the season</li>
+    <li><strong>Bayesian shrinkage</strong> — prevents extreme predictions when data is limited by pulling estimates toward league averages. The model becomes more confident as more matches are played</li>
+    <li><strong>Shin's method</strong> — removes the bookmaker's margin from odds to extract their true implied probabilities. Applied to both 1X2 and Over/Under markets</li>
+    <li><strong>Market blending</strong> — combines the statistical model's predictions with bookmaker-implied probabilities. The blend automatically shifts from market-heavy (early season) to model-heavy (late season) as more data accumulates</li>
+  </ul>
+</div>
+
+<div class="help-section">
+  <p><strong>Data inputs:</strong></p>
+  <ul>
+    <li>Historical match results (scores, dates, venues)</li>
+    <li>Bookmaker odds from multiple sources (Veikkaus, Pinnacle, Bet365, and others)</li>
+    <li>Previous season results for Elo carryover between seasons</li>
+  </ul>
+</div>
+
+<div class="help-section">
+  <p><strong>Key features:</strong></p>
+  <ul>
+    <li><strong>Score matrix</strong> — 7x7 grid of predicted scoreline probabilities</li>
+    <li><strong>Value bets</strong> — outcomes where our model disagrees with the bookmaker in your favor</li>
+    <li><strong>Fades</strong> — outcomes the bookmaker overvalues, with suggested counter-bets</li>
+    <li><strong>Bookmaker comparison</strong> — find the best odds across all available bookmakers</li>
+    <li><strong>Kelly staking</strong> — mathematically optimal bet sizing scaled to your bankroll and risk tolerance</li>
+    <li><strong>Prediction tracker</strong> — walk-forward accuracy evaluation (no future data leakage)</li>
+    <li><strong>P/L simulation</strong> — simulated season returns from following the model's value bets</li>
+  </ul>
+</div>
+
+<div class="help-section">
+  <p><strong>Adjustable settings:</strong></p>
+  <p>All model parameters can be tuned via sliders in the Settings panel. Market Trust and Previous Season auto-adjust based on how many matches have been played. Click the <strong>?</strong> button next to any section or setting for detailed explanations.</p>
+</div>
+
+<div class="help-section">
+  <p><strong>Important:</strong> No model can predict football with certainty. Value betting is a long-term strategy — individual bets can and will lose. Always bet responsibly and only with money you can afford to lose.</p>
+</div>
+    `,
+  },
   'market-trust': {
     title: 'Market Trust',
     body: `
