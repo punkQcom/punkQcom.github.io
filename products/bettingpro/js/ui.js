@@ -309,6 +309,92 @@ const helpContent = {
       </div>
     `,
   },
+  'elo-ratings': {
+    title: 'Elo Ratings',
+    body: `
+      <p><strong>What it is:</strong> A power ranking system that rates every team based on their match results. Teams gain points for wins and lose points for losses, with the amount depending on how surprising the result was.</p>
+      <div class="help-section">
+        <p><strong>How Elo works:</strong></p>
+        <ul>
+          <li>Every team starts at <strong>1500</strong> (or carries over from last season via the Previous Season slider)</li>
+          <li>After each match, the winner gains rating points and the loser loses them</li>
+          <li>Beating a strong team earns more points than beating a weak team</li>
+          <li>An upset (weak team beats strong team) causes a large rating swing</li>
+          <li>Home teams get a <strong>+50 point bonus</strong> in the expected score calculation, reflecting home advantage</li>
+          <li>K-factor is <strong>32</strong> — each match can shift a team's rating by up to 32 points</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Table columns:</strong></p>
+        <ul>
+          <li><strong>Rating</strong> — current Elo score. Higher = stronger team</li>
+          <li><strong>Change</strong> — rating gained or lost in the most recent match</li>
+          <li><strong>Form</strong> — last 5 results as colored dots: green = win, amber = draw, red = loss</li>
+          <li><strong>Played</strong> — total matches played this season</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>How it's used in predictions:</strong> Elo ratings are converted to expected goal rates (Poisson lambdas) and blended with the statistical model. Early in the season, Elo has more influence since the Poisson model has limited data. As more matches are played, the statistical model takes over.</p>
+      </div>
+    `,
+  },
+  'prediction-tracker': {
+    title: 'Prediction Tracker',
+    body: `
+      <p><strong>What it is:</strong> A walk-forward evaluation that measures how accurate the model's predictions have been throughout the season — without cheating by using future data.</p>
+      <div class="help-section">
+        <p><strong>Walk-forward methodology:</strong></p>
+        <ul>
+          <li>Matches are sorted chronologically</li>
+          <li>For each match, the model is trained using <strong>only matches played before it</strong></li>
+          <li>The prediction is then compared to the actual result</li>
+          <li>This prevents "data leakage" — the model never sees the future</li>
+          <li>Predictions start after 10 finished matches (minimum training data)</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Metrics explained:</strong></p>
+        <ul>
+          <li><strong>1X2 Accuracy</strong> — percentage of matches where the predicted outcome (home win / draw / away win) was correct. Typical for football: 35-50%</li>
+          <li><strong>Exact Score</strong> — percentage of matches where the predicted scoreline was exactly right. Typical: 5-15%</li>
+          <li><strong>Brier Score</strong> — measures how well-calibrated the probabilities are. <strong>Lower is better.</strong> 0 = perfect predictions, ~0.67 = random guessing for 3 outcomes. A good model scores 0.40-0.55</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Prediction table:</strong> Shows recent predictions with the predicted outcome and score vs the actual result. A checkmark means the 1X2 outcome was correct.</p>
+      </div>
+    `,
+  },
+  'pl-simulation': {
+    title: 'Season P/L Simulation',
+    body: `
+      <p><strong>What it is:</strong> A simulated betting season that shows what would have happened if you had followed the model's value bets with Kelly staking from the start of the season.</p>
+      <div class="help-section">
+        <p><strong>How it works:</strong></p>
+        <ul>
+          <li>Uses the same <strong>walk-forward</strong> approach as the Prediction Tracker — no future data</li>
+          <li>For each match, the model identifies <strong>value bets</strong> (where model probability > bookmaker fair probability)</li>
+          <li>Stakes are calculated using the <strong>Kelly Criterion</strong>, scaled by the Kelly Fraction setting</li>
+          <li>Only matches with bookmaker odds are included — matches without odds are skipped</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Summary metrics:</strong></p>
+        <ul>
+          <li><strong>Total P/L</strong> — total profit or loss across all bets placed</li>
+          <li><strong>ROI</strong> — return on investment: total P/L / total amount staked &times; 100. Positive = profitable</li>
+          <li><strong>Win Rate</strong> — percentage of bets that won</li>
+          <li><strong>Max Drawdown</strong> — the largest peak-to-trough decline in cumulative P/L. Shows the worst losing streak</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>P/L chart:</strong> Shows cumulative profit/loss over time. Green bars = running profit, red bars = running loss. A steadily rising line suggests a profitable strategy.</p>
+      </div>
+      <div class="help-section">
+        <p><strong>Important:</strong> Past performance does not guarantee future results. This simulation uses consensus odds available at prediction time. Actual results depend on the specific bookmaker odds you get and when you place bets.</p>
+      </div>
+    `,
+  },
 };
 
 export function setupHelpModal() {
