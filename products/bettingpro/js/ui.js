@@ -392,6 +392,87 @@ const helpContent = {
       </div>
     `,
   },
+  'score-matrix': {
+    title: 'Score Matrix',
+    body: `
+<p>A 7x7 grid showing the predicted probability of every possible scoreline from 0-0 to 6-6.</p>
+<p><strong>How it's built:</strong></p>
+<ul>
+  <li>Each cell = <em>P(Home scores i) x P(Away scores j)</em> using Poisson distribution</li>
+  <li>Low-scoring cells (0-0, 1-0, 0-1, 1-1) are adjusted by the <strong>Dixon-Coles correction</strong> to account for defensive correlations</li>
+  <li>The entire matrix is <strong>rescaled</strong> so the 1X2 totals match the blended prediction (model + market odds)</li>
+</ul>
+<p><strong>Reading the matrix:</strong></p>
+<ul>
+  <li>Home team goals are on the vertical axis (left), away team goals on the horizontal axis (top)</li>
+  <li>Brighter/higher cells indicate more likely scorelines</li>
+  <li>The most likely score is shown above the matrix</li>
+</ul>
+    `,
+  },
+  'match-outcome': {
+    title: 'Match Outcome',
+    body: `
+<p>Shows the predicted probability for each match result: <strong>Home Win (1)</strong>, <strong>Draw (X)</strong>, and <strong>Away Win (2)</strong>.</p>
+<p><strong>Two probability sets:</strong></p>
+<ul>
+  <li><strong>Model</strong> (colored bars) — our blended prediction combining Poisson model, Elo ratings, and market odds</li>
+  <li><strong>Book</strong> (if available) — the bookmaker's implied probability after removing their margin using Shin's method</li>
+</ul>
+<p>When the model probability is higher than the book's, that outcome may be a <strong>value bet</strong> — the bookmaker is undervaluing it. When it's lower, the bookmaker is <strong>overvaluing</strong> that outcome.</p>
+    `,
+  },
+  'over-under': {
+    title: 'Over/Under',
+    body: `
+<p>Predicts whether the total goals in the match will be over or under a specific line (1.5, 2.5, 3.5 goals).</p>
+<p><strong>How it works:</strong></p>
+<ul>
+  <li>Probabilities are calculated directly from the score matrix — summing all cells where total goals are above or below the line</li>
+  <li>Bookmaker probabilities use Shin's method to remove margin from Over/Under odds</li>
+  <li>Edge = your probability minus the book's fair probability</li>
+</ul>
+<p><strong>Common lines:</strong></p>
+<ul>
+  <li><strong>Over 2.5</strong> — the most popular O/U line. Typically ~50/50 in most leagues</li>
+  <li><strong>Over 1.5</strong> — very likely (most matches have 2+ goals)</li>
+  <li><strong>Over 3.5</strong> — less likely, but higher odds when it hits</li>
+</ul>
+    `,
+  },
+  'value-bets': {
+    title: 'Value Bets',
+    body: `
+<p>A <strong>value bet</strong> exists when our model's predicted probability for an outcome is higher than the bookmaker's fair probability. This means the odds are in your favor — the bookmaker is offering better odds than they should.</p>
+<p><strong>Columns:</strong></p>
+<ul>
+  <li><strong>Your %</strong> — our model's probability for this outcome</li>
+  <li><strong>Book %</strong> — the bookmaker's fair probability (margin removed via Shin's method)</li>
+  <li><strong>Edge</strong> — the difference (Your % minus Book %). Bigger edge = more value</li>
+  <li><strong>Kelly %</strong> — optimal bet size as % of bankroll (scaled by Kelly Fraction setting)</li>
+  <li><strong>Stake</strong> — suggested bet amount in euros based on your bankroll</li>
+</ul>
+<p><strong>Tips:</strong></p>
+<ul>
+  <li>Edges above 5% are strong value opportunities</li>
+  <li>Use quarter Kelly (25%) to manage risk — full Kelly is too aggressive in practice</li>
+  <li>Value bets still lose sometimes — the edge is a long-term advantage, not a guarantee</li>
+</ul>
+    `,
+  },
+  'all-bets': {
+    title: 'All Bets Overview',
+    body: `
+<p>Shows every possible bet for this match — including both value bets and overvalued outcomes — sorted by edge.</p>
+<p><strong>Reading the table:</strong></p>
+<ul>
+  <li><span style="color:#4ade80;">Green edge</span> — value bet. Our model gives this outcome a higher probability than the bookmaker</li>
+  <li><span style="color:#f87171;">Red edge</span> — overvalued. The bookmaker thinks this is more likely than our model does</li>
+  <li><span style="color:#f87171;background:#f8717130;padding:1px 4px;border-radius:3px;font-size:0.8em;font-weight:700;">OV</span> — Overvalued tag, shown when the bookmaker overvalues by more than 3%</li>
+</ul>
+<p>This is the complete picture — Value Bets and Fades are subsets of this table filtered by positive or negative edge.</p>
+    `,
+  },
   'fades': {
     title: 'Fades (Overvalued by Bookmaker)',
     body: `

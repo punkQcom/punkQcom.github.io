@@ -3,9 +3,9 @@
  * Uses same walk-forward approach as tracker, but tracks Kelly-staked bets.
  */
 
-import { predictMatchPure, migrateOdds, getConsensusOdds } from './prediction.js?v=1775468036';
-import { shinProbabilities } from './shin.js?v=1775468036';
-import { kellyFraction } from './kelly.js?v=1775468036';
+import { predictMatchPure, migrateOdds, getConsensusOdds } from './prediction.js?v=1775469303';
+import { shinProbabilities } from './shin.js?v=1775469303';
+import { kellyFraction } from './kelly.js?v=1775469303';
 
 const MIN_TRAINING_MATCHES = 10;
 
