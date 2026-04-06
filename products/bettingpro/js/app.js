@@ -2,22 +2,22 @@
  * Main controller — selector bar, match list, auto-calculate on click.
  */
 
-import { shinProbabilities } from './shin.js?v=1775465091';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775465091';
-import { calculateLeagueAvg } from './sources/league-data.js?v=1775465091';
+import { shinProbabilities } from './shin.js?v=1775465361';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775465361';
+import { calculateLeagueAvg } from './sources/league-data.js?v=1775465361';
 import {
   buildBlendedMatrix, blendWithOdds, calculateOutcomes, predictMatchPure,
-} from './prediction.js?v=1775465091';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775465091';
-import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775465091';
-import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775465091';
+} from './prediction.js?v=1775465361';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775465361';
+import { generatePredictionTracker, renderTracker } from './tracker.js?v=1775465361';
+import { simulateSeasonPL, renderPLSimulation } from './pl-simulation.js?v=1775465361';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775465091';
-import { calculateEloRatings, regressToMean } from './elo.js?v=1775465091';
+import { loadMeta, loadLeagueData, loadPreviousSeasons } from './data-loader.js?v=1775465361';
+import { calculateEloRatings, regressToMean } from './elo.js?v=1775465361';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, setupSliders, setupHelpModal
-} from './ui.js?v=1775465091';
+} from './ui.js?v=1775465361';
 
 // Loaded data state
 let currentMeta = null;
@@ -538,6 +538,38 @@ function renderDateView() {
   });
 }
 
+/**
+ * Lightweight update — only refresh prediction text in existing match rows.
+ * Avoids full DOM rebuild and auto-scroll that renderDateView() does.
+ */
+function updatePredictions() {
+  const rows = document.querySelectorAll('.match-row');
+  for (const row of rows) {
+    const home = row.dataset.home;
+    const away = row.dataset.away;
+    const pred = predictMatch(home, away);
+
+    const predEl = row.querySelector('.match-col-pred');
+    if (predEl) {
+      predEl.innerHTML = pred ? `<span class="pred-score">${pred.score}</span>` : '';
+    }
+
+    const onextwEl = row.querySelector('.match-col-1x2');
+    if (onextwEl && pred) {
+      const best = pred.home >= pred.draw && pred.home >= pred.away ? '1'
+        : pred.away >= pred.home && pred.away >= pred.draw ? '2' : 'X';
+      // Keep odds row if present, only update prediction probs
+      const probsEl = onextwEl.querySelector('.pred-probs');
+      if (probsEl) {
+        probsEl.innerHTML = `
+          <span class="pred-p${best === '1' ? ' pred-best' : ''}">${(pred.home * 100).toFixed(0)}%</span>
+          <span class="pred-p${best === 'X' ? ' pred-best' : ''}">${(pred.draw * 100).toFixed(0)}%</span>
+          <span class="pred-p${best === '2' ? ' pred-best' : ''}">${(pred.away * 100).toFixed(0)}%</span>`;
+      }
+    }
+  }
+}
+
 function findOdds(match, odds) {
   if (!odds || odds.length === 0) return null;
   const found = odds.find(o =>
@@ -734,25 +766,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupSliders();
   setupHelpModal();
 
-  // Re-render predictions when model sliders change + enable recalculate
+  // Update predictions when model sliders change (lightweight, no DOM rebuild)
   for (const id of ['rho-slider', 'market-trust-slider']) {
     document.getElementById(id).addEventListener('input', () => {
-      if (allDates.length > 0) renderDateView();
+      if (allDates.length > 0) updatePredictions();
       reanalyzeIfNeeded();
     });
   }
 
-  // Previous Season slider — recompute Elo carryover + re-render
+  // Previous Season slider — recompute Elo carryover + update predictions
   document.getElementById('prev-season-slider').addEventListener('input', () => {
     const label = document.getElementById('prev-season-value');
     if (label) label.textContent = document.getElementById('prev-season-slider').value + '%';
     if (Object.keys(rawPrevSeasonElo).length > 0) {
       initialEloRatings = regressToMean(rawPrevSeasonElo, getPrevSeasonFactor());
     }
-    if (allDates.length > 0) renderDateView();
-    const matches = currentLeagueData?.matches || [];
-    const eloData = buildEloTable(matches, initialEloRatings);
-    renderEloTable(eloData, 'elo-table');
+    if (allDates.length > 0) updatePredictions();
     reanalyzeIfNeeded();
   });
 
