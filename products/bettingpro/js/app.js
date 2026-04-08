@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775670434';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775670434';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775670434';
+import { shinProbabilities } from './shin.js?v=1775673766';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775673766';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775673766';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775670434';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775673766';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775670434';
+} from './ui.js?v=1775673766';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -965,10 +965,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     lastAnalysisContext = null;
   });
 
-  // Bookmaker dropdown
+  // Bookmaker dropdown — re-render to show new odds, but preserve scroll
+  // position (user just swapped dropdowns, they didn't navigate dates).
   document.getElementById('bookmaker-select').addEventListener('change', (e) => {
     selectedBookmaker = e.target.value;
-    if (allDates.length > 0) renderDateView();
+    if (allDates.length > 0) renderDateView({ skipAutoScroll: true });
   });
 
   // Sport dropdown
