@@ -1,5 +1,5 @@
 {
-  "lastUpdate": "2026-04-08T13:50:13.871Z",
+  "lastUpdate": "2026-04-08T13:56:27.486Z",
   "leagues": [
     {
       "id": "veikkausliiga",
@@ -27,6 +27,7 @@
           "seasons": [
             "2026"
           ],
+          "maxRounds": 10,
           "theOddsApiSportKey": "soccer_fifa_world_cup"
         },
         {
@@ -41,10 +42,9 @@
             5518
           ],
           "seasons": [
-            "2026",
-            "2022",
-            "2018"
+            "2026"
           ],
+          "maxRounds": 22,
           "theOddsApiSportKey": "soccer_fifa_world_cup_qualifiers"
         },
         {
@@ -56,9 +56,9 @@
           "seasons": [
             "2024-2025",
             "2022-2023",
-            "2020-2021",
-            "2018-2019"
+            "2020-2021"
           ],
+          "maxRounds": 12,
           "theOddsApiSportKey": "soccer_uefa_nations_league"
         },
         {
