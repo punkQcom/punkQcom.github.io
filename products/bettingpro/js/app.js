@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775651060';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775651060';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775651060';
+import { shinProbabilities } from './shin.js?v=1775670434';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775670434';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775670434';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775651060';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775670434';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775651060';
+} from './ui.js?v=1775670434';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -525,7 +525,7 @@ function initDateView(data) {
   renderDateView();
 }
 
-function renderDateView() {
+function renderDateView({ skipAutoScroll = false } = {}) {
   const listEl = document.getElementById('match-list');
   let html = '';
 
@@ -671,41 +671,43 @@ function renderDateView() {
     });
   });
 
-  // Navigation handlers — also close results panel
+  // Navigation handlers — preserve scroll position, just close results panel
   document.getElementById('show-earlier')?.addEventListener('click', () => {
     visibleRange.start = Math.max(0, visibleRange.start - 1);
     document.getElementById('results').classList.add('hidden');
-    renderDateView();
+    renderDateView({ skipAutoScroll: true });
   });
   document.getElementById('show-later')?.addEventListener('click', () => {
     visibleRange.end = Math.min(allDates.length - 1, visibleRange.end + 1);
     document.getElementById('results').classList.add('hidden');
-    renderDateView();
+    renderDateView({ skipAutoScroll: true });
   });
   document.getElementById('hide-earlier')?.addEventListener('click', () => {
     visibleRange.start = defaultDateRange.start;
     document.getElementById('results').classList.add('hidden');
-    renderDateView();
+    renderDateView({ skipAutoScroll: true });
   });
   document.getElementById('hide-later')?.addEventListener('click', () => {
     visibleRange.end = defaultDateRange.end;
     document.getElementById('results').classList.add('hidden');
-    renderDateView();
+    renderDateView({ skipAutoScroll: true });
   });
 
-  // Auto-scroll to today's date or first upcoming group
-  requestAnimationFrame(() => {
-    const todayEl = document.getElementById('today-header');
-    if (todayEl) {
-      todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
-    }
-    const firstUpcoming = listEl.querySelector('.match-row.upcoming');
-    if (firstUpcoming) {
-      const header = firstUpcoming.closest('.match-date-group')?.previousElementSibling;
-      if (header) header.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  });
+  // Auto-scroll to today's date or first upcoming group (initial render only)
+  if (!skipAutoScroll) {
+    requestAnimationFrame(() => {
+      const todayEl = document.getElementById('today-header');
+      if (todayEl) {
+        todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      const firstUpcoming = listEl.querySelector('.match-row.upcoming');
+      if (firstUpcoming) {
+        const header = firstUpcoming.closest('.match-date-group')?.previousElementSibling;
+        if (header) header.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  }
 }
 
 function findOdds(match, odds) {
