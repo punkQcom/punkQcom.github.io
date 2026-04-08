@@ -1,5 +1,5 @@
 {
-  "lastUpdate": "2026-04-08T14:13:32.668Z",
+  "lastUpdate": "2026-04-08T20:20:03.602Z",
   "leagues": [
     {
       "id": "veikkausliiga",
@@ -24,6 +24,9 @@
           "theSportsDbIds": [
             4429
           ],
+          "theSportsDbLeagueNames": [
+            "FIFA_World_Cup"
+          ],
           "seasons": [
             "2026"
           ],
@@ -40,16 +43,147 @@
             5517,
             5518
           ],
+          "theSportsDbLeagueNames": [
+            "World_Cup_Qualifying_AFC",
+            "World_Cup_Qualifying_CAF",
+            "World_Cup_Qualifying_CONMEBOL",
+            "World_Cup_Qualifying_CONCACAF",
+            "World_Cup_Qualifying_OFC",
+            "World_Cup_Qualifying_UEFA"
+          ],
           "seasons": [
             "2026"
           ],
           "theOddsApiSportKey": "soccer_fifa_world_cup_qualifiers"
         },
         {
+          "id": "euro",
+          "label": "UEFA European Championship",
+          "theSportsDbIds": [
+            4502
+          ],
+          "theSportsDbLeagueNames": [
+            "UEFA_European_Championships"
+          ],
+          "seasons": [
+            "2024",
+            "2023"
+          ],
+          "theOddsApiSportKey": "soccer_uefa_european_championship"
+        },
+        {
+          "id": "copa_america",
+          "label": "Copa America",
+          "theSportsDbIds": [
+            4499
+          ],
+          "theSportsDbLeagueNames": [
+            "Copa_America"
+          ],
+          "seasons": [
+            "2024",
+            "2021"
+          ],
+          "theOddsApiSportKey": null
+        },
+        {
+          "id": "afcon",
+          "label": "Africa Cup of Nations",
+          "theSportsDbIds": [
+            4496
+          ],
+          "theSportsDbLeagueNames": [
+            "African_Cup_of_Nations"
+          ],
+          "seasons": [
+            "2025",
+            "2023"
+          ],
+          "theOddsApiSportKey": null
+        },
+        {
+          "id": "afcon_qual",
+          "label": "AFCON Qualifying",
+          "theSportsDbIds": [
+            5520
+          ],
+          "theSportsDbLeagueNames": [
+            "African_Cup_of_Nations_Qualifying"
+          ],
+          "seasons": [
+            "2025",
+            "2023"
+          ],
+          "theOddsApiSportKey": null
+        },
+        {
+          "id": "gold_cup",
+          "label": "CONCACAF Gold Cup",
+          "theSportsDbIds": [
+            4873
+          ],
+          "theSportsDbLeagueNames": [
+            "CONCACAF_Gold_Cup"
+          ],
+          "seasons": [
+            "2025",
+            "2023"
+          ],
+          "theOddsApiSportKey": null
+        },
+        {
+          "id": "gold_cup_qual",
+          "label": "Gold Cup Qualifying",
+          "theSportsDbIds": [
+            5522
+          ],
+          "theSportsDbLeagueNames": [
+            "CONCACAF_Gold_Cup_Qualifying"
+          ],
+          "seasons": [
+            "2025",
+            "2023"
+          ],
+          "theOddsApiSportKey": null
+        },
+        {
+          "id": "asian_cup",
+          "label": "AFC Asian Cup",
+          "theSportsDbIds": [
+            4866
+          ],
+          "theSportsDbLeagueNames": [
+            "AFC_Asian_Cup"
+          ],
+          "seasons": [
+            "2023"
+          ],
+          "theOddsApiSportKey": null
+        },
+        {
+          "id": "asian_cup_qual",
+          "label": "Asian Cup Qualifying",
+          "theSportsDbIds": [
+            5521
+          ],
+          "theSportsDbLeagueNames": [
+            "AFC_Asian_Cup_Qualifying"
+          ],
+          "seasons": [
+            "2026",
+            "2025",
+            "2024"
+          ],
+          "theOddsApiSportKey": null
+        },
+        {
           "id": "nations",
           "label": "UEFA Nations League",
           "theSportsDbIds": [
             4490
+          ],
+          "theSportsDbLeagueNames": [
+            "UEFA_Nations_League"
           ],
           "seasons": [
             "2024-2025",
@@ -59,10 +193,28 @@
           "theOddsApiSportKey": "soccer_uefa_nations_league"
         },
         {
+          "id": "concacaf_nl",
+          "label": "CONCACAF Nations League",
+          "theSportsDbIds": [
+            5280
+          ],
+          "theSportsDbLeagueNames": [
+            "CONCACAF_Nations_League"
+          ],
+          "seasons": [
+            "2024-2025",
+            "2023-2024"
+          ],
+          "theOddsApiSportKey": null
+        },
+        {
           "id": "friendly",
           "label": "Friendlies",
           "theSportsDbIds": [
             4562
+          ],
+          "theSportsDbLeagueNames": [
+            "International_Friendlies"
           ],
           "seasons": [
             "2026",
@@ -71,12 +223,14 @@
             "2023",
             "2022"
           ],
-          "theOddsApiSportKey": "soccer_international_friendlies"
+          "theOddsApiSportKey": null
         }
       ]
     }
   ],
   "previousSeasons": {
-    "mens_international": []
+    "veikkausliiga": [
+      2025
+    ]
   }
 }
