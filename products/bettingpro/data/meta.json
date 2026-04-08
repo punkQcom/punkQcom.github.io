@@ -1,17 +1,51 @@
 {
-  "lastUpdate": "2026-04-08T06:04:09.082Z",
+  "lastUpdate": "2026-04-08T12:09:08.938Z",
   "leagues": [
     {
       "id": "veikkausliiga",
       "name": "Veikkausliiga",
       "sport": "football",
       "country": "Finland",
-      "season": 2026
+      "season": 2026,
+      "isInternational": false,
+      "tournaments": null
+    },
+    {
+      "id": "mens_international",
+      "name": "Men's International",
+      "sport": "football",
+      "country": "International",
+      "season": "current",
+      "isInternational": true,
+      "tournaments": [
+        {
+          "id": "wc26",
+          "label": "World Cup 2026",
+          "theSportsDbId": 4429,
+          "theOddsApiSportKey": "soccer_fifa_world_cup"
+        },
+        {
+          "id": "wc_qual",
+          "label": "WC Qualifiers",
+          "theSportsDbId": 4480,
+          "theOddsApiSportKey": "soccer_fifa_world_cup_qualifiers"
+        },
+        {
+          "id": "nations",
+          "label": "UEFA Nations League",
+          "theSportsDbId": 4807,
+          "theOddsApiSportKey": "soccer_uefa_nations_league"
+        },
+        {
+          "id": "friendly",
+          "label": "Friendlies",
+          "theSportsDbId": 4487,
+          "theOddsApiSportKey": "soccer_international_friendlies"
+        }
+      ]
     }
   ],
   "previousSeasons": {
-    "veikkausliiga": [
-      2025
-    ]
+    "mens_international": []
   }
 }
