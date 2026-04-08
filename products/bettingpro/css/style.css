@@ -988,3 +988,83 @@ details.card[open] summary h2::before {
     display: none;
   }
 }
+
+/* Tournament filter (internationals only) */
+.tournament-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #2a2a2a;
+  background: #0f0f0f;
+}
+
+.tournament-filter button {
+  background: #1a1a1a;
+  color: #ccc;
+  border: 1px solid #333;
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.tournament-filter button:hover {
+  background: #222;
+  border-color: #555;
+}
+
+.tournament-filter button.active {
+  background: #2a5a8a;
+  color: #fff;
+  border-color: #3a7aba;
+}
+
+.tournament-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: 4px;
+  vertical-align: middle;
+  letter-spacing: 0.5px;
+}
+
+.tournament-tag.wc26    { background: #8a6a1a; color: #fff; }
+.tournament-tag.wc_qual { background: #1a4a8a; color: #fff; }
+.tournament-tag.nations { background: #5a2a7a; color: #fff; }
+.tournament-tag.friendly{ background: #555;    color: #ddd; }
+
+.filter-banner {
+  font-size: 11px;
+  color: #888;
+  padding: 4px 8px;
+  background: #1a1a1a;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.elo-toggle {
+  display: block;
+  margin: 10px auto 0;
+  background: #1a1a1a;
+  color: #ccc;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.elo-toggle:hover {
+  background: #222;
+  border-color: #555;
+}
+
+.context-label {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 6px 0 0;
+}

@@ -75,12 +75,38 @@ export function buildEloTable(matches, initialRatings = {}) {
 
 /**
  * Render Elo table into a container element.
+ * @param {Array} eloData - Full table from buildEloTable (pre-sorted, ranked).
+ * @param {string} containerId
+ * @param {Object} [options]
+ * @param {number|null} [options.cap=null]         - Max rows shown before "Show all" toggle.
+ * @param {string[]|null} [options.scopeTeamNames=null] - Restrict to these teams (re-ranks 1..N).
+ * @param {boolean} [options.showAll=false]        - Toggle state for cap expansion.
  */
-export function renderEloTable(eloData, containerId) {
+export function renderEloTable(eloData, containerId, options = {}) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  if (eloData.length === 0) {
+  const { cap = null, scopeTeamNames = null, showAll = false } = options;
+
+  let entries = eloData;
+
+  // Scope to a subset of teams (e.g. a single tournament's participants) and re-rank.
+  // When scoping, the filter IS the list — no cap is applied on top.
+  const isScoped = !!scopeTeamNames;
+  if (isScoped) {
+    const set = new Set(scopeTeamNames);
+    entries = entries.filter(e => set.has(e.team)).map((e, i) => ({ ...e, rank: i + 1 }));
+  }
+
+  const total = entries.length;
+
+  // Cap only applies to the unscoped "All" view. Scoped views always show everything.
+  const capApplies = cap && !isScoped;
+  if (capApplies && !showAll && entries.length > cap) {
+    entries = entries.slice(0, cap);
+  }
+
+  if (entries.length === 0) {
     container.innerHTML = '<p class="muted">No match data available</p>';
     return;
   }
@@ -89,7 +115,7 @@ export function renderEloTable(eloData, containerId) {
   html += '<thead><tr><th>#</th><th>Team</th><th>Rating</th><th>Change</th><th>Form</th><th>P</th></tr></thead>';
   html += '<tbody>';
 
-  for (const row of eloData) {
+  for (const row of entries) {
     const changeClass = row.change > 0 ? 'value-positive' : row.change < 0 ? 'value-negative' : '';
     const changeSign = row.change > 0 ? '+' : '';
     const formDots = row.form.map(r => {
@@ -108,5 +134,21 @@ export function renderEloTable(eloData, containerId) {
   }
 
   html += '</tbody></table>';
+
+  // "Show all (N)" / "Show top {cap}" toggle when capping applies (unscoped view only).
+  if (capApplies && total > cap) {
+    html += showAll
+      ? `<button class="elo-toggle" data-action="show-top">Show top ${cap}</button>`
+      : `<button class="elo-toggle" data-action="show-all">Show all (${total})</button>`;
+  }
+
   container.innerHTML = html;
+
+  const toggleBtn = container.querySelector('.elo-toggle');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', (e) => {
+      const nextShowAll = e.target.getAttribute('data-action') === 'show-all';
+      renderEloTable(eloData, containerId, { ...options, showAll: nextShowAll });
+    });
+  }
 }

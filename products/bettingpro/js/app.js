@@ -3,17 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775502266';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775502266';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775502266';
+import { shinProbabilities } from './shin.js?v=1775650531';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775650531';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775650531';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775502266';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775650531';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
-  renderTracker, renderPLSimulation
-} from './ui.js?v=1775502266';
+  renderTracker, renderPLSimulation, renderTournamentFilter,
+  renderMatchContext
+} from './ui.js?v=1775650531';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -27,6 +28,9 @@ let currentMeta = null;
 let currentLeagueData = null; // { matches, upcoming, odds }
 let currentLeagueId = null;
 let currentSeason = null;
+
+// Tournament filter (internationals only; 'all' for regular leagues)
+let currentTournamentFilter = 'all';
 
 // Precomputed predictions from backend
 let precomputedData = null; // { predictions, eloRatings, tracker, plSimulation }
@@ -242,6 +246,8 @@ function regressToMean(ratings, factor = 0.5) {
 
 /**
  * Recompute and render the Elo table based on the Previous Season slider.
+ * For international leagues, cap at top 50 with a Show all toggle and
+ * scope to the active tournament filter when one is set.
  */
 function updateEloTable() {
   const matches = currentLeagueData?.matches || [];
@@ -259,7 +265,22 @@ function updateEloTable() {
   }
 
   const eloData = buildEloTable(matches, initialRatings);
-  renderEloTable(eloData, 'elo-table');
+
+  const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
+  const cap = leagueCfg?.isInternational ? 100 : null;
+
+  let scopeTeamNames = null;
+  if (currentTournamentFilter !== 'all') {
+    const filteredMatches = [
+      ...(currentLeagueData?.matches || []),
+      ...(currentLeagueData?.upcoming || []),
+    ].filter(m => m.tournamentId === currentTournamentFilter);
+    scopeTeamNames = Array.from(new Set(
+      filteredMatches.flatMap(m => [m.homeTeam, m.awayTeam])
+    ));
+  }
+
+  renderEloTable(eloData, 'elo-table', { cap, scopeTeamNames });
 }
 
 async function loadAndShowLeague(leagueId, season) {
@@ -284,41 +305,132 @@ async function loadAndShowLeague(leagueId, season) {
   const matchCount = (currentLeagueData?.matches || []).length;
   updateMarketTrustDefault(matchCount);
   updatePrevSeasonDefault(matchCount);
+
+  // Tournament filter: smart default picks wc26 if any WC26 match is ±30 days,
+  // otherwise 'all'. Hidden entirely for leagues with no tournaments.
+  const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === leagueId);
+  const tournaments = leagueCfg?.tournaments || null;
+  if (tournaments) {
+    const now = Date.now();
+    const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+    const hasActiveWc = [
+      ...(currentLeagueData.matches || []),
+      ...(currentLeagueData.upcoming || []),
+    ].some(m => {
+      if (m.tournamentId !== 'wc26' || !m.date) return false;
+      const d = new Date(m.date).getTime();
+      return Math.abs(d - now) <= thirtyDays;
+    });
+    currentTournamentFilter = hasActiveWc ? 'wc26' : 'all';
+  } else {
+    currentTournamentFilter = 'all';
+  }
+  const onFilterChange = (id) => {
+    currentTournamentFilter = id;
+    renderTournamentFilter(tournaments, currentTournamentFilter, onFilterChange);
+    rerenderForFilter();
+  };
+  renderTournamentFilter(tournaments, currentTournamentFilter, onFilterChange);
+
   initDateView(currentLeagueData);
 
   // Elo ratings table — computed client-side, reactive to Previous Season slider
   updateEloTable();
 
-  // Tracker and P/L — render from precomputed data
-  if (precomputedData?.tracker) {
-    renderTracker(precomputedData.tracker, 'tracker-container');
-  } else {
-    const matches = currentLeagueData?.matches || [];
-    document.getElementById('tracker-container').innerHTML =
-      `<p class="muted">Prediction tracking will be available after the next data update</p>`;
-  }
-
-  if (precomputedData?.plSimulation) {
-    renderPLSimulation(precomputedData.plSimulation, 'pl-container');
-  } else {
-    document.getElementById('pl-container').innerHTML =
-      `<p class="muted">P/L simulation will be available after the next data update</p>`;
-  }
+  // Tracker and P/L — render from precomputed data (with filter awareness)
+  renderTrackerFiltered();
+  renderPLSimulationFiltered();
 }
 
 // ── Date-based match list ────────────────────────────────────────────
 
+// ── Tournament filter helpers ────────────────────────────────────────
+
+/** Return matches whose tournamentId matches the active filter (or all). */
+function filterByTournament(matches) {
+  if (currentTournamentFilter === 'all') return matches;
+  return (matches || []).filter(m => m.tournamentId === currentTournamentFilter);
+}
+
+/** Short label used for tournament tags on match rows. */
+function tournamentShortLabel(id) {
+  return {
+    wc26: 'WC26',
+    wc_qual: 'QUAL',
+    nations: 'NAT',
+    friendly: 'FRI',
+  }[id] || id;
+}
+
+/** Active tournament's human label (from league config), or null for 'all'. */
+function activeTournamentLabel() {
+  if (currentTournamentFilter === 'all') return null;
+  const cfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
+  const t = cfg?.tournaments?.find(t => t.id === currentTournamentFilter);
+  return t?.label || currentTournamentFilter;
+}
+
+/** Re-render everything that depends on the tournament filter. */
+function rerenderForFilter() {
+  initDateView(currentLeagueData);
+  renderTrackerFiltered();
+  renderPLSimulationFiltered();
+  updateEloTable();
+}
+
+/** Render tracker with optional tournament filter applied to records. */
+function renderTrackerFiltered() {
+  const el = document.getElementById('tracker-container');
+  if (!el) return;
+  if (!precomputedData?.tracker) {
+    el.innerHTML = `<p class="muted">Prediction tracking will be available after the next data update</p>`;
+    return;
+  }
+  const tracker = precomputedData.tracker;
+  let data = tracker;
+  if (currentTournamentFilter !== 'all') {
+    const records = (tracker.records || []).filter(r => r.tournamentId === currentTournamentFilter);
+    data = { ...tracker, records };
+  }
+  const banner = currentTournamentFilter !== 'all'
+    ? `<div class="filter-banner">Showing: ${esc(activeTournamentLabel())} only</div>`
+    : '';
+  renderTracker(data, 'tracker-container');
+  if (banner) el.insertAdjacentHTML('afterbegin', banner);
+}
+
+/** Render P/L simulation with optional tournament filter applied to bets. */
+function renderPLSimulationFiltered() {
+  const el = document.getElementById('pl-container');
+  if (!el) return;
+  if (!precomputedData?.plSimulation) {
+    el.innerHTML = `<p class="muted">P/L simulation will be available after the next data update</p>`;
+    return;
+  }
+  const pl = precomputedData.plSimulation;
+  let data = pl;
+  if (currentTournamentFilter !== 'all') {
+    const bets = (pl.bets || []).filter(b => b.tournamentId === currentTournamentFilter);
+    data = { ...pl, bets };
+  }
+  const banner = currentTournamentFilter !== 'all'
+    ? `<div class="filter-banner">Showing: ${esc(activeTournamentLabel())} only</div>`
+    : '';
+  renderPLSimulation(data, 'pl-container');
+  if (banner) el.insertAdjacentHTML('afterbegin', banner);
+}
+
 function buildDateGroups(matches, upcoming, odds) {
   const groups = {};
 
-  for (const m of matches) {
+  for (const m of filterByTournament(matches)) {
     const d = m.date || 'unknown';
     if (!groups[d]) groups[d] = [];
     const migrated = migrateOdds(m.odds) || null;
     groups[d].push({ ...m, odds: migrated, status: 'finished' });
   }
 
-  for (const m of upcoming) {
+  for (const m of filterByTournament(upcoming)) {
     const d = m.date || 'unknown';
     if (!groups[d]) groups[d] = [];
     const matchOdds = findOdds(m, odds) || migrateOdds(m.odds) || null;
@@ -507,8 +619,13 @@ function renderDateView() {
       const homeBadge = homeStreak ? ` <span class="streak-badge streak-${homeStreak.type}">${homeStreak.type}${homeStreak.count}</span>` : '';
       const awayBadge = awayStreak ? ` <span class="streak-badge streak-${awayStreak.type}">${awayStreak.type}${awayStreak.count}</span>` : '';
 
+      // Tournament tag (internationals only — regular leagues have no tournamentId)
+      const tagHtml = m.tournamentId
+        ? ` <span class="tournament-tag ${esc(m.tournamentId)}">${esc(tournamentShortLabel(m.tournamentId))}</span>`
+        : '';
+
       html += `<div class="match-row${isFinished ? ' finished' : ' upcoming'}" data-home="${esc(m.homeTeam)}" data-away="${esc(m.awayTeam)}" tabindex="0" role="button">
-        <span class="match-teams">${esc(m.homeTeam)}${homeBadge} vs ${esc(m.awayTeam)}${awayBadge}</span>
+        <span class="match-teams">${esc(m.homeTeam)}${homeBadge} vs ${esc(m.awayTeam)}${awayBadge}${tagHtml}</span>
         <span class="match-result-group">
           <span class="match-col-pred">${predContent}</span>
           <span class="match-col-1x2">${onextwContent}</span>
@@ -633,6 +750,13 @@ async function analyzeMatch(homeName, awayName) {
 
   // Show loading state
   document.getElementById('selected-match-title').textContent = `${homeName} vs ${awayName}`;
+
+  // Render context label (tournament + neutral venue) above the score matrix.
+  const matchObj = [...(currentLeagueData?.matches || []), ...(currentLeagueData?.upcoming || [])]
+    .find(m => m.homeTeam === homeName && m.awayTeam === awayName);
+  const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
+  renderMatchContext(matchObj, leagueCfg?.tournaments || null);
+
   showResults();
 
   // Resolve odds locally (odds are not secret)

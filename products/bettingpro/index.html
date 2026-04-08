@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>BettingPro — Sports Betting Calculator</title>
-  <link rel="stylesheet" href="css/style.css?v=1775502266">
+  <link rel="stylesheet" href="css/style.css?v=1775650531">
 </head>
 <body>
   <div class="container">
@@ -28,6 +28,7 @@
         </label>
         <label>League
           <select id="league-select"></select>
+          <button type="button" class="help-tip" data-help="league_mens_international">?</button>
         </label>
         <label class="season-label">Season
           <select id="season-select"></select>
@@ -39,6 +40,9 @@
         </label>
       </div>
     </section>
+
+    <!-- Tournament Filter (internationals only) -->
+    <div id="tournament-filter" class="tournament-filter" hidden></div>
 
     <!-- Match List -->
     <section class="card">
@@ -59,6 +63,7 @@
             <button id="close-results" class="close-btn" title="Close" aria-label="Close analysis panel">&times;</button>
           </div>
         </div>
+        <p id="match-context" class="context-label" hidden></p>
       </section>
 
       <!-- Score Matrix -->
@@ -178,6 +183,6 @@
 
   </div>
 
-  <script type="module" src="js/app.js?v=1775502266"></script>
+  <script type="module" src="js/app.js?v=1775650531"></script>
 </body>
 </html>

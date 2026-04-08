@@ -15,6 +15,64 @@ export function showResults() {
   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+/**
+ * Render tournament filter pills for international leagues.
+ * Hidden (empty) for regular leagues that have no tournaments.
+ * @param {Array<{id:string,label:string}>} tournaments
+ * @param {string} activeId  — 'all' or a tournament id
+ * @param {(id:string)=>void} onChange
+ */
+export function renderTournamentFilter(tournaments, activeId, onChange) {
+  const container = document.getElementById('tournament-filter');
+  if (!container) return;
+
+  if (!tournaments || tournaments.length === 0) {
+    container.hidden = true;
+    container.innerHTML = '';
+    return;
+  }
+  container.hidden = false;
+
+  const buttons = [
+    { id: 'all', label: 'All' },
+    ...tournaments.map(t => ({ id: t.id, label: t.label })),
+  ];
+
+  const pillsHtml = buttons
+    .map(b => `<button data-tournament="${esc(b.id)}" class="${b.id === activeId ? 'active' : ''}">${esc(b.label)}</button>`)
+    .join('');
+  const helpHtml = `<button type="button" class="help-tip" data-help="tournament_filter">?</button>`;
+  container.innerHTML = pillsHtml + helpHtml;
+
+  container.querySelectorAll('button[data-tournament]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-tournament');
+      onChange(id);
+    });
+  });
+}
+
+/**
+ * Render a single-line context label above the score matrix for the
+ * detailed analysis panel. Hidden when the match has no tournamentId
+ * (e.g. Veikkausliiga).
+ * @param {Object} match
+ * @param {Array<{id:string,label:string}>|null} tournaments
+ */
+export function renderMatchContext(match, tournaments) {
+  const el = document.getElementById('match-context');
+  if (!el) return;
+  if (!match?.tournamentId) {
+    el.hidden = true;
+    el.innerHTML = '';
+    return;
+  }
+  const label = tournaments?.find(t => t.id === match.tournamentId)?.label || match.tournamentId;
+  const venueLabel = match.neutralVenue ? ' · Neutral venue' : '';
+  el.hidden = false;
+  el.innerHTML = `${esc(label)}${esc(venueLabel)} <button type="button" class="help-tip" data-help="${match.neutralVenue ? 'neutral_venue' : 'league_mens_international'}">?</button>`;
+}
+
 export function renderScoreMatrix(matrix, homeName, awayName, predictedScore, outcomes) {
   const container = document.getElementById('score-matrix');
   const maxGoals = matrix.length;
@@ -1223,6 +1281,46 @@ const helpContent = {
       </div>
     `,
   },
+
+  'tournament_filter': {
+    title: 'Tournament Filter',
+    body: `
+      <p><strong>Tournament filter:</strong> Limits the match list, tracker, and P&amp;L to one competition. "All" is the default and recommended when you want the whole picture, since Elo updates use every international match regardless of filter.</p>
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Turnaussuodatin:</strong> Rajaa ottelulistan, seurannan ja voitto/tappio-näkymän yhteen kilpailuun. "All" on oletus ja suositeltu vaihtoehto: Elo-luvut päivittyvät joka tapauksessa kaikista maaotteluista.</p>
+    `,
+  },
+
+  'fifa_prior': {
+    title: 'FIFA-based Prior',
+    body: `
+      <p><strong>FIFA-based prior:</strong> For men's international football, team strength is seeded from FIFA rankings. Top-ranked teams start with higher expected goals for and lower expected goals against. This balances the problem of teams that only play a handful of matches per year.</p>
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>FIFA-perusteinen lähtöoletus:</strong> Miesten maajoukkueiden kohdalla joukkueen voima ennustetaan FIFA-ranking-sijoituksen perusteella. Korkealla olevat joukkueet alkavat suuremmalla odotusmaalimäärällä, huonommin sijoittuneet pienemmällä. Tämä auttaa sellaisten joukkueiden kanssa, jotka pelaavat vain muutaman ottelun vuodessa.</p>
+    `,
+  },
+
+  'neutral_venue': {
+    title: 'Neutral Venue',
+    body: `
+      <p><strong>Neutral venue:</strong> At tournaments like the World Cup, most matches are played at neutral stadiums. When a match is marked as neutral, the usual home-advantage bonus (+50 Elo, +10% expected goals) is turned off.</p>
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Neutraali kenttä:</strong> Arvoturnauksissa (esim. MM-kisat) suurin osa otteluista pelataan neutraalilla stadionilla. Kun ottelu on merkitty neutraaliksi, tavallinen kotijoukkueen etu (+50 Elo, +10 % odotusmaalit) ei vaikuta.</p>
+    `,
+  },
+
+  'league_mens_international': {
+    title: "Men's International League",
+    body: `
+      <p><strong>Men's International:</strong> Combines friendlies, WC qualifiers, UEFA Nations League, and the World Cup into one league so national teams share Elo ratings across all competitions. The model uses a longer time-decay (365 days instead of 60) because international matches are rarer.</p>
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Miesten maaottelut:</strong> Sisältää ystävyysottelut, MM-karsinnat, UEFA Nations Leaguen ja MM-kisat samassa liigassa, jotta maajoukkueet jakavat Elo-lukunsa kaikkien kilpailujen kesken. Malli käyttää pidempää aikapainotusta (365 päivää 60:n sijaan), koska maaottelut ovat harvinaisempia.</p>
+    `,
+  },
 };
 
 export function setupHelpModal() {
@@ -1244,14 +1342,20 @@ export function setupHelpModal() {
     modal.classList.add('hidden');
   }
 
+  // Event delegation so dynamically-rendered help tips (e.g. inside the
+  // tournament filter) work without re-running setupHelpModal.
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.help-tip[data-help]');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    open(btn.dataset.help);
+  });
+
+  // Accessibility labels for tips present at load time.
   document.querySelectorAll('.help-tip[data-help]').forEach(btn => {
     const content = helpContent[btn.dataset.help];
     if (content) btn.setAttribute('aria-label', `Help: ${content.title}`);
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      open(btn.dataset.help);
-    });
   });
 
   closeBtn.addEventListener('click', close);
