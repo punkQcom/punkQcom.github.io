@@ -1370,6 +1370,20 @@ const helpContent = {
     `,
   },
 
+  'league_veikkausliiga': {
+    title: 'Veikkausliiga',
+    body: `
+      <p><strong>Veikkausliiga</strong> is the top division of Finnish football. 12 teams play 22 rounds (132 matches per season).</p>
+      <p><strong>Odds:</strong> Veikkaus odds plus ~15 international bookmakers via The Odds API, updated twice daily. The <strong>Consensus</strong> view averages implied probabilities across all available bookmakers.</p>
+      <p><strong>Data sources:</strong> Match fixtures and results from TheSportsDB, enriched with shot stats from veikkausliiga.com for the xG model.</p>
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Veikkausliiga</strong> on Suomen jalkapallon pääsarja. 12 joukkuetta pelaa 22 kierrosta (132 ottelua kaudessa).</p>
+      <p><strong>Kertoimet:</strong> Veikkauksen kertoimet sekä noin 15 kansainvälistä vedonvälittäjää The Odds API:n kautta, päivitetään kahdesti päivässä. <strong>Konsensus</strong>-näkymä laskee keskiarvon kaikkien vedonvälittäjien todennäköisyyksistä.</p>
+      <p><strong>Datalähteet:</strong> Ottelut ja tulokset TheSportsDB:stä, laukaisutilastot veikkausliiga.comista xG-mallia varten.</p>
+    `,
+  },
+
   'league_mens_international': {
     title: "Men's International League",
     body: `
