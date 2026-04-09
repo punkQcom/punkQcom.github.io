@@ -295,7 +295,7 @@ export function renderFades(fades) {
   table.innerHTML = html;
 }
 
-export function renderBookmakerComparison(rows, homeName, awayName, modelOutcomes, bestOdds = {}, benchmarkSource = 'consensus') {
+export function renderBookmakerComparison(rows, homeName, awayName, modelOutcomes, bestOdds = {}, benchmarkSource = 'consensus', previousOddsMulti = null) {
   const container = document.getElementById('bookmaker-comparison');
 
   if (rows.length === 0) {
@@ -325,11 +325,12 @@ export function renderBookmakerComparison(rows, homeName, awayName, modelOutcome
   }
 
   for (const row of rows) {
+    const prev = previousOddsMulti?.[row.bookmaker];
     html += `<tr>
       <td>${formatBookmaker(row.bookmaker)}</td>
-      ${comparisonCell(row.home, bestOdds.home?.book === row.bookmaker, isPinnacle)}
-      ${comparisonCell(row.draw, bestOdds.draw?.book === row.bookmaker, isPinnacle)}
-      ${comparisonCell(row.away, bestOdds.away?.book === row.bookmaker, isPinnacle)}
+      ${comparisonCell(row.home, bestOdds.home?.book === row.bookmaker, isPinnacle, prev?.home)}
+      ${comparisonCell(row.draw, bestOdds.draw?.book === row.bookmaker, isPinnacle, prev?.draw)}
+      ${comparisonCell(row.away, bestOdds.away?.book === row.bookmaker, isPinnacle, prev?.away)}
     </tr>`;
   }
 
@@ -341,7 +342,7 @@ function formatBookmaker(key) {
   return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
-function comparisonCell(data, isBest = false, isPinnacleBenchmark = false) {
+function comparisonCell(data, isBest = false, isPinnacleBenchmark = false, prevOddsValue = null) {
   const diffPct = (data.diff * 100).toFixed(1);
   const sign = data.diff > 0 ? '+' : '';
   // Positive diff = bookmaker thinks outcome more likely than benchmark = worse odds for bettor
@@ -350,7 +351,13 @@ function comparisonCell(data, isBest = false, isPinnacleBenchmark = false) {
   const bestTag = isBest ? ' <span class="best-odds-badge">BEST</span>' : '';
   const sharpTag = (isPinnacleBenchmark && data.diff < -0.03)
     ? ' <span class="sharp-value-badge">SHARP VALUE</span>' : '';
-  return `<td><span class="comp-cell ${cls}">${data.odds.toFixed(2)}</span> <small>(${sign}${diffPct}%)</small>${bestTag}${sharpTag}</td>`;
+  let arrow = '';
+  if (prevOddsValue != null && data.odds !== prevOddsValue) {
+    arrow = data.odds > prevOddsValue
+      ? '<span class="odds-up">\u25B2</span>'
+      : '<span class="odds-down">\u25BC</span>';
+  }
+  return `<td><span class="comp-cell ${cls}">${data.odds.toFixed(2)}${arrow}</span> <small>(${sign}${diffPct}%)</small>${bestTag}${sharpTag}</td>`;
 }
 
 export function setupSliders() {
