@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775771772';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775771772';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775771772';
+import { shinProbabilities } from './shin.js?v=1775772358';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775772358';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775772358';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775771772';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775772358';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775771772';
+} from './ui.js?v=1775772358';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -110,10 +110,10 @@ function getSelectedOdds(oddsObj) {
 /** Small arrow indicating odds movement: green up = better for bettor, red down = worse */
 function oddsArrow(current, previous) {
   if (previous == null || current === previous) return '';
-  const title = `was ${previous.toFixed(2)}`;
+  const prev = previous.toFixed(2);
   return current > previous
-    ? `<span class="odds-up" title="${title}">\u25B2</span>`
-    : `<span class="odds-down" title="${title}">\u25BC</span>`;
+    ? `<span class="odds-up" data-prev="${prev}">\u25B2</span>`
+    : `<span class="odds-down" data-prev="${prev}">\u25BC</span>`;
 }
 
 /** Consensus using only bookmakers present in both snapshots (avoids noise from new bookmakers) */

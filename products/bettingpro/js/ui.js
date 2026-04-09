@@ -353,10 +353,10 @@ function comparisonCell(data, isBest = false, isPinnacleBenchmark = false, prevO
     ? ' <span class="sharp-value-badge">SHARP VALUE</span>' : '';
   let arrow = '';
   if (prevOddsValue != null && Math.abs(data.odds - prevOddsValue) >= 0.03) {
-    const title = `was ${prevOddsValue.toFixed(2)}`;
+    const prev = prevOddsValue.toFixed(2);
     arrow = data.odds > prevOddsValue
-      ? `<span class="odds-up" title="${title}">\u25B2</span>`
-      : `<span class="odds-down" title="${title}">\u25BC</span>`;
+      ? `<span class="odds-up" data-prev="${prev}">\u25B2</span>`
+      : `<span class="odds-down" data-prev="${prev}">\u25BC</span>`;
   }
   return `<td><span class="comp-cell ${cls}">${data.odds.toFixed(2)}${arrow}</span> <small>(${sign}${diffPct}%)</small>${bestTag}${sharpTag}</td>`;
 }
