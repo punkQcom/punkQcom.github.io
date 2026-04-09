@@ -850,7 +850,7 @@ const helpContent = {
   </div>
 </div>
 <p>Arrows reflect changes across all bookmakers. Switch the bookmaker dropdown to see movement for each bookmaker individually.</p>
-<p><strong>&#x26A1; ODDS MOVING badge</strong> appears when the consensus (average across all bookmakers) implied probability has shifted by more than 3% on any outcome. This signals significant market movement — bookmakers are reacting to new information (team news, injuries, sharp money).</p>
+<p><strong>&#x26A1; ODDS MOVING badge</strong> appears when the consensus (average across all bookmakers) implied probability has shifted by more than 3% on any outcome, OR when any single bookmaker has moved more than 5%. A single bookmaker moving alone can be an early signal — sharp books like Pinnacle often move first before others follow.</p>
 <div style="margin:12px 0;">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
     <span style="display:inline-block;font-size:0.6rem;font-weight:700;padding:1px 5px;border-radius:3px;color:#fbbf24;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);">&#x26A1; ODDS MOVING</span>
@@ -922,7 +922,7 @@ const helpContent = {
   </div>
 </div>
 <p>Nuolet toimivat kaikilla vedonvälittäjillä. Vaihda vedonvälittäjää pudotusvalikosta nähdäksesi kunkin välittäjän muutokset.</p>
-<p><strong>&#x26A1; ODDS MOVING -merkintä</strong> ilmestyy kun konsensuksen (kaikkien vedonvälittäjien keskiarvo) todennäköisyys on muuttunut yli 3% jollakin lopputuloksella. Tämä viittaa merkittävään markkinaliikkeeseen — vedonvälittäjät reagoivat uuteen tietoon (kokoonpanouutiset, loukkaantumiset, ammattilaisraha).</p>
+<p><strong>&#x26A1; ODDS MOVING -merkintä</strong> ilmestyy kun konsensuksen (kaikkien vedonvälittäjien keskiarvo) todennäköisyys on muuttunut yli 3% jollakin lopputuloksella, TAI kun yksittäinen vedonvälittäjä on liikkunut yli 5%. Yksittäisen välittäjän liike voi olla varhainen signaali — terävät kirjat kuten Pinnacle liikkuvat usein ensin ennen muita.</p>
 <div style="margin:12px 0;">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
     <span style="display:inline-block;font-size:0.6rem;font-weight:700;padding:1px 5px;border-radius:3px;color:#fbbf24;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);">&#x26A1; ODDS MOVING</span>
