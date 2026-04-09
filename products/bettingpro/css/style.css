@@ -779,17 +779,33 @@ details.card[open] summary h2::before {
 }
 
 /* Odds movement arrows */
-.odds-up {
-  color: #4ade80;
+.odds-up, .odds-down {
   font-size: 0.55rem;
   margin-left: 2px;
   vertical-align: middle;
+  position: relative;
+  cursor: default;
 }
-.odds-down {
-  color: #f87171;
-  font-size: 0.55rem;
-  margin-left: 2px;
-  vertical-align: middle;
+.odds-up { color: #4ade80; }
+.odds-down { color: #f87171; }
+.odds-up::after, .odds-down::after {
+  content: attr(data-prev);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e1e3a;
+  color: #ccc;
+  font-size: 0.7rem;
+  padding: 2px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.odds-up:hover::after, .odds-down:hover::after {
+  opacity: 1;
 }
 
 /* Steam / significant odds movement badge */
