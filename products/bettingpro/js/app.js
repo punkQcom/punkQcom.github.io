@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775763620';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775763620';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775763620';
+import { shinProbabilities } from './shin.js?v=1775764080';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775764080';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775764080';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775763620';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775764080';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775763620';
+} from './ui.js?v=1775764080';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -462,7 +462,11 @@ function buildDateGroups(matches, upcoming, odds) {
     const d = m.date || 'unknown';
     if (d < cutoff) continue; // skip stale upcoming entries with past dates
     if (!groups[d]) groups[d] = [];
-    const matchOdds = findOdds(m, odds) || migrateOdds(m.odds) || null;
+    let matchOdds = findOdds(m, odds) || null;
+    if (m.odds) {
+      const embedded = migrateOdds(m.odds);
+      matchOdds = matchOdds ? { ...matchOdds, ...embedded } : embedded;
+    }
     const prevOdds = m.previousOdds ? migrateOdds(m.previousOdds) : null;
     groups[d].push({ ...m, status: 'upcoming', odds: matchOdds, previousOdds: prevOdds });
   }
