@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775765537';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775765537';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775765537';
+import { shinProbabilities } from './shin.js?v=1775766158';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775766158';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775766158';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775765537';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775766158';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775765537';
+} from './ui.js?v=1775766158';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -115,32 +115,57 @@ function oddsArrow(current, previous) {
     : '<span class="odds-down">\u25BC</span>';
 }
 
-/** Detect significant odds movement across bookmakers.
- *  Returns { summary } if any outcome's consensus shifted >3%, else null. */
+/** Detect significant odds movement.
+ *  Triggers on consensus shift >3% OR any single bookmaker shift >5%.
+ *  Returns { summary } or null. */
 function detectOddsMovement(currentOdds, previousOdds) {
   if (!currentOdds || !previousOdds) return null;
+  const labels = { home: '1', draw: 'X', away: '2' };
+  const fmtBook = k => k.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+  // 1) Consensus shift >3%
   const curr = getConsensusOdds(currentOdds);
   const prev = getConsensusOdds(previousOdds);
-  if (!curr?.home || !prev?.home) return null;
+  let consensusHit = false;
+  const parts = [];
+  if (curr?.home && prev?.home) {
+    const shifts = ['home', 'draw', 'away'].map(k => ({
+      outcome: k, probShift: (1 / curr[k]) - (1 / prev[k]),
+      oldOdds: prev[k], newOdds: curr[k],
+    }));
+    const biggest = shifts.reduce((a, b) => Math.abs(b.probShift) > Math.abs(a.probShift) ? b : a);
+    if (Math.abs(biggest.probShift) >= 0.03) {
+      consensusHit = true;
+      for (const s of shifts.filter(s => Math.abs(s.probShift) >= 0.01)) {
+        const arrow = s.newOdds > s.oldOdds ? '\u2191' : '\u2193';
+        parts.push(`${labels[s.outcome]}: ${s.oldOdds.toFixed(2)} ${arrow} ${s.newOdds.toFixed(2)}`);
+      }
+    }
+  }
 
-  const labels = { home: '1', draw: 'X', away: '2' };
-  const shifts = ['home', 'draw', 'away'].map(k => ({
-    outcome: k,
-    probShift: (1 / curr[k]) - (1 / prev[k]),
-    oldOdds: prev[k],
-    newOdds: curr[k],
-  }));
-  const biggest = shifts.reduce((a, b) => Math.abs(b.probShift) > Math.abs(a.probShift) ? b : a);
-  if (Math.abs(biggest.probShift) < 0.03) return null;
+  // 2) Single bookmaker shift >5%
+  const bookParts = [];
+  for (const book of Object.keys(currentOdds)) {
+    const c = currentOdds[book];
+    const p = previousOdds[book];
+    if (!c?.home || !p?.home) continue;
+    for (const k of ['home', 'draw', 'away']) {
+      if (!c[k] || !p[k]) continue;
+      const shift = Math.abs((1 / c[k]) - (1 / p[k]));
+      if (shift >= 0.05) {
+        const arrow = c[k] > p[k] ? '\u2191' : '\u2193';
+        bookParts.push(`${fmtBook(book)} ${labels[k]}: ${p[k].toFixed(2)} ${arrow} ${c[k].toFixed(2)}`);
+      }
+    }
+  }
 
-  // Build tooltip summary of all notable shifts
-  const parts = shifts
-    .filter(s => Math.abs(s.probShift) >= 0.01)
-    .map(s => {
-      const arrow = s.newOdds > s.oldOdds ? '\u2191' : '\u2193';
-      return `${labels[s.outcome]}: ${s.oldOdds.toFixed(2)} ${arrow} ${s.newOdds.toFixed(2)}`;
-    });
-  return { summary: parts.join(' | ') };
+  if (!consensusHit && bookParts.length === 0) return null;
+
+  const summary = consensusHit && bookParts.length > 0
+    ? parts.join(' | ') + ' \u2502 ' + bookParts.join(', ')
+    : consensusHit ? parts.join(' | ')
+    : bookParts.join(', ');
+  return { summary };
 }
 
 /** Find which bookmaker offers the best (highest) odds per outcome */
