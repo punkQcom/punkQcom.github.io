@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775764080';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775764080';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775764080';
+import { shinProbabilities } from './shin.js?v=1775764171';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775764171';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775764171';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775764080';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775764171';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775764080';
+} from './ui.js?v=1775764171';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -462,11 +462,7 @@ function buildDateGroups(matches, upcoming, odds) {
     const d = m.date || 'unknown';
     if (d < cutoff) continue; // skip stale upcoming entries with past dates
     if (!groups[d]) groups[d] = [];
-    let matchOdds = findOdds(m, odds) || null;
-    if (m.odds) {
-      const embedded = migrateOdds(m.odds);
-      matchOdds = matchOdds ? { ...matchOdds, ...embedded } : embedded;
-    }
+    const matchOdds = resolveMatchOdds(m, odds);
     const prevOdds = m.previousOdds ? migrateOdds(m.previousOdds) : null;
     groups[d].push({ ...m, status: 'upcoming', odds: matchOdds, previousOdds: prevOdds });
   }
@@ -756,6 +752,17 @@ function findOdds(match, odds) {
   return migrateOdds({ home: found.home, draw: found.draw, away: found.away, overUnder: found.overUnder });
 }
 
+/** Resolve all bookmaker odds for a match, merging odds-file + embedded data.
+ *  Single source of truth — use this instead of calling findOdds/migrateOdds separately. */
+function resolveMatchOdds(matchObj, oddsArray) {
+  let merged = findOdds(matchObj, oddsArray) || null;
+  if (matchObj?.odds) {
+    const embedded = migrateOdds(matchObj.odds);
+    merged = merged ? { ...merged, ...embedded } : embedded;
+  }
+  return merged;
+}
+
 let _reanalyzeTimer = null;
 function reanalyzeIfNeeded() {
   if (!currentAnalyzedMatch) return;
@@ -798,14 +805,9 @@ async function analyzeMatch(homeName, awayName) {
 
   // Resolve odds locally (odds are not secret)
   const odds = currentLeagueData?.odds || [];
-  let matchOddsMulti = findOdds({ homeTeam: homeName, awayTeam: awayName }, odds);
   const allObjects = [...(currentLeagueData?.matches || []), ...(currentLeagueData?.upcoming || [])];
   const obj = allObjects.find(m => m.homeTeam === homeName && m.awayTeam === awayName);
-  if (obj?.odds) {
-    const embedded = migrateOdds(obj.odds);
-    // Merge: embedded odds include Veikkaus + The Odds API (fully merged by backend)
-    matchOddsMulti = matchOddsMulti ? { ...matchOddsMulti, ...embedded } : embedded;
-  }
+  const matchOddsMulti = resolveMatchOdds(obj || { homeTeam: homeName, awayTeam: awayName }, odds);
 
   let selOdds = matchOddsMulti ? getSelectedOdds(matchOddsMulti) : null;
   if (!selOdds && matchOddsMulti) {
