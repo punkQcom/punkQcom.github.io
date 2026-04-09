@@ -838,6 +838,25 @@ const helpContent = {
 <p>Long winning streaks can signal regression risk — even dominant teams eventually lose. When a streaking team has very short bookmaker odds, consider the Fades section for counter-bets.</p>
 <p><strong>Under the hood:</strong> Predictions use a blended model incorporating goal averages, <strong>xG from shots</strong> (expected goals based on shot volume), <strong>Elo ratings</strong>, and bookmaker odds. The model also accounts for <strong>rest days</strong> — teams with shorter rest between matches get a slight penalty, while well-rested teams get a small boost.</p>
 <p><strong>Result</strong> — the final score for finished matches. Click any match to open the full analysis.</p>
+<p><strong>Odds movement arrows</strong> appear next to odds values on upcoming matches when the odds have changed since the last update:</p>
+<div style="margin:12px 0;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="color:#4ade80;font-size:0.75rem;">&#x25B2;</span>
+    <span>Green up arrow — odds increased (better payout for bettors)</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="color:#f87171;font-size:0.75rem;">&#x25BC;</span>
+    <span>Red down arrow — odds decreased (worse payout for bettors)</span>
+  </div>
+</div>
+<p>Arrows reflect changes across all bookmakers. Switch the bookmaker dropdown to see movement for each bookmaker individually.</p>
+<p><strong>&#x26A1; ODDS MOVING badge</strong> appears when the consensus (average across all bookmakers) implied probability has shifted by more than 3% on any outcome. This signals significant market movement — bookmakers are reacting to new information (team news, injuries, sharp money).</p>
+<div style="margin:12px 0;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;font-size:0.6rem;font-weight:700;padding:1px 5px;border-radius:3px;color:#fbbf24;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);">&#x26A1; ODDS MOVING</span>
+    <span>Hover to see which outcomes shifted and by how much</span>
+  </div>
+</div>
 <p><strong>Today's matches</strong> are highlighted in green and auto-scrolled into view on page load.</p>
 
 <hr>
@@ -891,6 +910,25 @@ const helpContent = {
 </div>
 <p>Pitkät voittoputket voivat ennakoida regressiota — dominoivatkin joukkueet häviävät lopulta. Kun putkijoukkueella on hyvin matalat kertoimet, harkitse Fadet-osiota vastavedoille.</p>
 <p><strong>Tulos</strong> — lopputulos pelatuille otteluille. Klikkaa mitä tahansa ottelua avataksesi täyden analyysin.</p>
+<p><strong>Kerroinmuutokset</strong> näkyvät nuolina kertoimien vieressä tulevissa otteluissa, kun kertoimet ovat muuttuneet edellisen päivityksen jälkeen:</p>
+<div style="margin:12px 0;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="color:#4ade80;font-size:0.75rem;">&#x25B2;</span>
+    <span>Vihreä ylänuoli — kerroin noussut (parempi tuotto vedonlyöjälle)</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="color:#f87171;font-size:0.75rem;">&#x25BC;</span>
+    <span>Punainen alanuoli — kerroin laskenut (huonompi tuotto vedonlyöjälle)</span>
+  </div>
+</div>
+<p>Nuolet toimivat kaikilla vedonvälittäjillä. Vaihda vedonvälittäjää pudotusvalikosta nähdäksesi kunkin välittäjän muutokset.</p>
+<p><strong>&#x26A1; ODDS MOVING -merkintä</strong> ilmestyy kun konsensuksen (kaikkien vedonvälittäjien keskiarvo) todennäköisyys on muuttunut yli 3% jollakin lopputuloksella. Tämä viittaa merkittävään markkinaliikkeeseen — vedonvälittäjät reagoivat uuteen tietoon (kokoonpanouutiset, loukkaantumiset, ammattilaisraha).</p>
+<div style="margin:12px 0;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+    <span style="display:inline-block;font-size:0.6rem;font-weight:700;padding:1px 5px;border-radius:3px;color:#fbbf24;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);">&#x26A1; ODDS MOVING</span>
+    <span>Vie hiiri päälle nähdäksesi mitkä lopputulokset muuttuivat ja kuinka paljon</span>
+  </div>
+</div>
 <p><strong>Päivän ottelut</strong> korostetaan vihreällä ja näytetään automaattisesti sivun latautuessa.</p>
     `,
   },
@@ -1104,6 +1142,7 @@ const helpContent = {
   <li><span style="color:#f87171;">Red border</span> = bookmaker offers worse odds than Pinnacle (higher implied probability = less value)</li>
   <li><span style="display:inline-block;font-size:0.65rem;font-weight:700;padding:1px 4px;border-radius:3px;color:#4ade80;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);">BEST</span> = highest odds across all bookmakers for that outcome</li>
   <li><span style="display:inline-block;font-size:0.65rem;font-weight:700;padding:1px 4px;border-radius:3px;color:#f59e0b;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);">SHARP VALUE</span> = odds are &gt;3% better than Pinnacle — a potential mispriced line worth betting</li>
+  <li><span style="color:#4ade80;font-size:0.65rem;">&#x25B2;</span> / <span style="color:#f87171;font-size:0.65rem;">&#x25BC;</span> = odds moved up (green) or down (red) since last update</li>
 </ul>
 <p><strong>How to use:</strong></p>
 <ul>
@@ -1123,6 +1162,7 @@ const helpContent = {
   <li><span style="color:#f87171;">Punainen reunus</span> = vedonvälittäjä tarjoaa huonommat kertoimet kuin Pinnacle (vähemmän arvoa)</li>
   <li><span style="display:inline-block;font-size:0.65rem;font-weight:700;padding:1px 4px;border-radius:3px;color:#4ade80;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);">BEST</span> = korkeimmat kertoimet kyseiselle lopputulokselle</li>
   <li><span style="display:inline-block;font-size:0.65rem;font-weight:700;padding:1px 4px;border-radius:3px;color:#f59e0b;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);">SHARP VALUE</span> = kertoimet yli 3% paremmat kuin Pinnacle — mahdollinen väärinhinnoittelu</li>
+  <li><span style="color:#4ade80;font-size:0.65rem;">&#x25B2;</span> / <span style="color:#f87171;font-size:0.65rem;">&#x25BC;</span> = kerroin noussut (vihreä) tai laskenut (punainen) edellisestä päivityksestä</li>
 </ul>
 <p><strong>Miten käyttää:</strong></p>
 <ul>
