@@ -487,6 +487,26 @@ summary .help-tip {
   vertical-align: middle;
 }
 
+.sharp-value-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.benchmark-label {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  margin: 0 0 8px 0;
+}
+
 .best-odds-info {
   display: block;
   font-size: 0.75rem;

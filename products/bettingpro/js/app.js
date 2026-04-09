@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775758580';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775758580';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775758580';
+import { shinProbabilities } from './shin.js?v=1775760869';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775760869';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775760869';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775758580';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775760869';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775758580';
+} from './ui.js?v=1775760869';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -119,12 +119,20 @@ function findBestOdds(matchOddsMulti) {
   return best;
 }
 
-/** Compare each bookmaker's implied probs against consensus to find outliers */
+/** Compare each bookmaker's implied probs against Pinnacle (sharp benchmark).
+ *  Falls back to consensus when Pinnacle odds are unavailable. */
 function buildBookmakerComparison(matchOddsMulti) {
-  if (!matchOddsMulti || Object.keys(matchOddsMulti).length < 2) return [];
-  const consensus = getConsensusOdds(matchOddsMulti);
-  if (!consensus || !consensus.home || !consensus.draw || !consensus.away) return [];
-  const consensusProbs = shinProbabilities([consensus.home, consensus.draw, consensus.away]);
+  if (!matchOddsMulti || Object.keys(matchOddsMulti).length < 2) return { rows: [], benchmarkSource: 'consensus' };
+
+  // Pinnacle = sharpest odds; fall back to consensus
+  const pin = matchOddsMulti.pinnacle;
+  const benchmark = (pin?.home && pin?.draw && pin?.away)
+    ? pin
+    : getConsensusOdds(matchOddsMulti);
+  if (!benchmark?.home || !benchmark?.draw || !benchmark?.away) return { rows: [], benchmarkSource: 'consensus' };
+
+  const benchmarkProbs = shinProbabilities([benchmark.home, benchmark.draw, benchmark.away]);
+  const benchmarkSource = (pin === benchmark) ? 'pinnacle' : 'consensus';
 
   const rows = [];
   for (const [bookmaker, odds] of Object.entries(matchOddsMulti)) {
@@ -132,13 +140,13 @@ function buildBookmakerComparison(matchOddsMulti) {
     const probs = shinProbabilities([odds.home, odds.draw, odds.away]);
     rows.push({
       bookmaker,
-      home: { odds: odds.home, prob: probs[0], diff: probs[0] - consensusProbs[0] },
-      draw: { odds: odds.draw, prob: probs[1], diff: probs[1] - consensusProbs[1] },
-      away: { odds: odds.away, prob: probs[2], diff: probs[2] - consensusProbs[2] },
+      home: { odds: odds.home, prob: probs[0], diff: probs[0] - benchmarkProbs[0] },
+      draw: { odds: odds.draw, prob: probs[1], diff: probs[1] - benchmarkProbs[1] },
+      away: { odds: odds.away, prob: probs[2], diff: probs[2] - benchmarkProbs[2] },
     });
   }
   rows.sort((a, b) => a.bookmaker.localeCompare(b.bookmaker));
-  return rows;
+  return { rows, benchmarkSource };
 }
 
 /** Extract all unique bookmaker keys from loaded data */
@@ -926,13 +934,13 @@ function renderAnalysisFromApi(apiResponse, context) {
     .sort((a, b) => b.overvaluedBy - a.overvaluedBy);
 
   // Build cross-bookmaker comparison + best odds
-  const comparison = buildBookmakerComparison(matchOddsMulti);
+  const { rows: comparison, benchmarkSource } = buildBookmakerComparison(matchOddsMulti);
   const bestOdds = findBestOdds(matchOddsMulti);
   const minEdge = parseInt(document.getElementById('edge-threshold-slider')?.value || '3');
 
   renderValueBets(allBets, minEdge, bestOdds);
   renderFades(fades);
-  renderBookmakerComparison(comparison, homeName, awayName, outcomes, bestOdds);
+  renderBookmakerComparison(comparison, homeName, awayName, outcomes, bestOdds, benchmarkSource);
   renderAllBets(allBets);
 }
 
