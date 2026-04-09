@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775770268';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775770268';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775770268';
+import { shinProbabilities } from './shin.js?v=1775771592';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775771592';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775771592';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775770268';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775771592';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775770268';
+} from './ui.js?v=1775771592';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -107,13 +107,25 @@ function getSelectedOdds(oddsObj) {
   return migrated[selectedBookmaker] || null;
 }
 
-/** Small arrow indicating odds movement: green up = better for bettor, red down = worse.
- *  Threshold avoids noise from bookmaker count changes shifting the consensus average. */
+/** Small arrow indicating odds movement: green up = better for bettor, red down = worse */
 function oddsArrow(current, previous) {
-  if (previous == null || Math.abs(current - previous) < 0.03) return '';
+  if (previous == null || current === previous) return '';
+  const title = `was ${previous.toFixed(2)}`;
   return current > previous
-    ? '<span class="odds-up">\u25B2</span>'
-    : '<span class="odds-down">\u25BC</span>';
+    ? `<span class="odds-up" title="${title}">\u25B2</span>`
+    : `<span class="odds-down" title="${title}">\u25BC</span>`;
+}
+
+/** Consensus using only bookmakers present in both snapshots (avoids noise from new bookmakers) */
+function getMatchedConsensusOdds(currentObj, previousObj) {
+  if (!currentObj || !previousObj) return { current: null, previous: null };
+  const curMig = migrateOdds(currentObj);
+  const prevMig = migrateOdds(previousObj);
+  if (!curMig || !prevMig) return { current: getConsensusOdds(curMig || {}), previous: null };
+  const shared = Object.keys(curMig).filter(k => k in prevMig);
+  if (shared.length === 0) return { current: getConsensusOdds(curMig), previous: null };
+  const pick = (obj, keys) => Object.fromEntries(keys.map(k => [k, obj[k]]));
+  return { current: getConsensusOdds(pick(curMig, shared)), previous: getConsensusOdds(pick(prevMig, shared)) };
 }
 
 /** Detect significant odds movement.
@@ -687,7 +699,15 @@ function renderDateView({ skipAutoScroll = false } = {}) {
       }
       if (selOdds && selOdds.home && selOdds.draw && selOdds.away) {
         const result = isFinished ? (m.homeGoals > m.awayGoals ? '1' : m.homeGoals === m.awayGoals ? 'X' : '2') : '';
-        const prevSelOdds = !isFinished ? getSelectedOdds(m.previousOdds) : null;
+        let prevSelOdds = null;
+        if (!isFinished && m.previousOdds) {
+          if (selectedBookmaker === 'consensus') {
+            const matched = getMatchedConsensusOdds(m.odds, m.previousOdds);
+            prevSelOdds = matched.previous;
+          } else {
+            prevSelOdds = getSelectedOdds(m.previousOdds);
+          }
+        }
         onextwContent += `<span class="match-odds-row">
           <span class="odds-cell${result === '1' ? ' correct' : ''}">${selOdds.home.toFixed(2)}${oddsArrow(selOdds.home, prevSelOdds?.home)}</span>
           <span class="odds-cell${result === 'X' ? ' correct' : ''}">${selOdds.draw.toFixed(2)}${oddsArrow(selOdds.draw, prevSelOdds?.draw)}</span>
