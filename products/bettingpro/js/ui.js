@@ -295,7 +295,7 @@ export function renderFades(fades) {
   table.innerHTML = html;
 }
 
-export function renderBookmakerComparison(rows, homeName, awayName, modelOutcomes, bestOdds = {}) {
+export function renderBookmakerComparison(rows, homeName, awayName, modelOutcomes, bestOdds = {}, benchmarkSource = 'consensus') {
   const container = document.getElementById('bookmaker-comparison');
 
   if (rows.length === 0) {
@@ -303,7 +303,11 @@ export function renderBookmakerComparison(rows, homeName, awayName, modelOutcome
     return;
   }
 
-  let html = `<table class="results-table"><thead><tr>
+  const isPinnacle = benchmarkSource === 'pinnacle';
+  const benchLabel = isPinnacle ? 'Pinnacle (sharp)' : 'Consensus (avg)';
+
+  let html = `<p class="benchmark-label">Compared against: <strong>${benchLabel}</strong></p>`;
+  html += `<table class="results-table"><thead><tr>
     <th>Bookmaker</th>
     <th>1 ${homeName}</th>
     <th>X Draw</th>
@@ -323,9 +327,9 @@ export function renderBookmakerComparison(rows, homeName, awayName, modelOutcome
   for (const row of rows) {
     html += `<tr>
       <td>${formatBookmaker(row.bookmaker)}</td>
-      ${comparisonCell(row.home, bestOdds.home?.book === row.bookmaker)}
-      ${comparisonCell(row.draw, bestOdds.draw?.book === row.bookmaker)}
-      ${comparisonCell(row.away, bestOdds.away?.book === row.bookmaker)}
+      ${comparisonCell(row.home, bestOdds.home?.book === row.bookmaker, isPinnacle)}
+      ${comparisonCell(row.draw, bestOdds.draw?.book === row.bookmaker, isPinnacle)}
+      ${comparisonCell(row.away, bestOdds.away?.book === row.bookmaker, isPinnacle)}
     </tr>`;
   }
 
@@ -337,14 +341,16 @@ function formatBookmaker(key) {
   return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
-function comparisonCell(data, isBest = false) {
+function comparisonCell(data, isBest = false, isPinnacleBenchmark = false) {
   const diffPct = (data.diff * 100).toFixed(1);
   const sign = data.diff > 0 ? '+' : '';
-  // Positive diff = bookmaker thinks outcome more likely than consensus = worse odds for bettor
+  // Positive diff = bookmaker thinks outcome more likely than benchmark = worse odds for bettor
   // Negative diff = bookmaker thinks outcome less likely = better odds for bettor
   const cls = data.diff < -0.02 ? 'comp-value' : data.diff > 0.02 ? 'comp-overvalued' : '';
   const bestTag = isBest ? ' <span class="best-odds-badge">BEST</span>' : '';
-  return `<td><span class="comp-cell ${cls}">${data.odds.toFixed(2)}</span> <small>(${sign}${diffPct}%)</small>${bestTag}</td>`;
+  const sharpTag = (isPinnacleBenchmark && data.diff < -0.03)
+    ? ' <span class="sharp-value-badge">SHARP VALUE</span>' : '';
+  return `<td><span class="comp-cell ${cls}">${data.odds.toFixed(2)}</span> <small>(${sign}${diffPct}%)</small>${bestTag}${sharpTag}</td>`;
 }
 
 export function setupSliders() {
@@ -1082,35 +1088,39 @@ const helpContent = {
   'bookmaker-comparison': {
     title: 'Bookmaker Comparison',
     body: `
-<p>Compares each bookmaker's implied probabilities against the <strong>consensus</strong> (average across all bookmakers). Helps you find the best bookmaker to place each bet.</p>
+<p>Compares each bookmaker's implied probabilities against <strong>Pinnacle</strong> (the sharpest bookmaker with the lowest margins). When Pinnacle odds are unavailable, falls back to consensus (average). The "Compared against" label shows which benchmark is active.</p>
+<p><strong>Why Pinnacle?</strong> Pinnacle accepts large bets from professional syndicates and doesn't limit winners, so their odds are closest to the true probabilities. When another bookmaker offers significantly better odds than Pinnacle, it's likely a mispriced line.</p>
 <p><strong>Reading the table:</strong></p>
 <ul>
-  <li>Each cell shows the decimal odds and the deviation from consensus in parentheses</li>
-  <li><span style="color:#4ade80;">Green border</span> = bookmaker offers better odds than consensus (lower implied probability = more value for bettors)</li>
-  <li><span style="color:#f87171;">Red border</span> = bookmaker offers worse odds than consensus (higher implied probability = less value)</li>
-  <li><span style="display:inline-block;font-size:0.65rem;font-weight:700;padding:1px 4px;border-radius:3px;color:#4ade80;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);">BEST</span> = this bookmaker has the absolute highest odds for that outcome across all bookmakers</li>
+  <li>Each cell shows the decimal odds and the deviation from the benchmark in parentheses</li>
+  <li><span style="color:#4ade80;">Green border</span> = bookmaker offers better odds than Pinnacle (lower implied probability = more value for bettors)</li>
+  <li><span style="color:#f87171;">Red border</span> = bookmaker offers worse odds than Pinnacle (higher implied probability = less value)</li>
+  <li><span style="display:inline-block;font-size:0.65rem;font-weight:700;padding:1px 4px;border-radius:3px;color:#4ade80;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);">BEST</span> = highest odds across all bookmakers for that outcome</li>
+  <li><span style="display:inline-block;font-size:0.65rem;font-weight:700;padding:1px 4px;border-radius:3px;color:#f59e0b;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);">SHARP VALUE</span> = odds are &gt;3% better than Pinnacle — a potential mispriced line worth betting</li>
 </ul>
 <p><strong>How to use:</strong></p>
 <ul>
-  <li>Look for the <strong>BEST</strong> badge — always bet at the bookmaker with the highest odds for your chosen outcome</li>
-  <li>If you've found a value bet, scan the column for that outcome — the BEST badge tells you where to place it</li>
+  <li>Look for <strong>SHARP VALUE</strong> badges — these are the strongest signals of a mispriced line</li>
+  <li>The <strong>BEST</strong> badge shows which bookmaker to place your bet with</li>
   <li>Large red deviations suggest a bookmaker is overconfident about an outcome — consider fading it</li>
 </ul>
 
 <hr>
 <p><strong>Suomeksi:</strong></p>
-<p>Vertaa jokaisen vedonvälittäjän todennäköisyyksiä <strong>konsensukseen</strong> (kaikkien vedonvälittäjien keskiarvo). Auttaa löytämään parhaan vedonvälittäjän jokaiselle vedolle.</p>
+<p>Vertaa jokaisen vedonvälittäjän todennäköisyyksiä <strong>Pinnacleen</strong> (terävimpien kertoimien vedonvälittäjä, alhaisimmat marginaalit). Jos Pinnaclen kertoimia ei ole saatavilla, käytetään konsensusta (kaikkien keskiarvo).</p>
+<p><strong>Miksi Pinnacle?</strong> Pinnacle hyväksyy suuret panokset ammattilaisilta eikä rajoita voittajia, joten heidän kertoimensa ovat lähimpänä todellisia todennäköisyyksiä. Kun toinen vedonvälittäjä tarjoaa selvästi parempia kertoimia kuin Pinnacle, kyseessä on todennäköisesti väärinhinnoiteltu linja.</p>
 <p><strong>Taulukon lukeminen:</strong></p>
 <ul>
-  <li>Jokainen solu näyttää desimaalikertoimet ja poikkeaman konsensuksesta suluissa</li>
-  <li><span style="color:#4ade80;">Vihreä reunus</span> = vedonvälittäjä tarjoaa paremmat kertoimet kuin konsensus (enemmän arvoa vedonlyöjälle)</li>
-  <li><span style="color:#f87171;">Punainen reunus</span> = vedonvälittäjä tarjoaa huonommat kertoimet kuin konsensus (vähemmän arvoa)</li>
-  <li><span style="display:inline-block;font-size:0.65rem;font-weight:700;padding:1px 4px;border-radius:3px;color:#4ade80;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);">BEST</span> = tällä vedonvälittäjällä on korkeimmat kertoimet kyseiselle lopputulokselle</li>
+  <li>Jokainen solu näyttää desimaalikertoimet ja poikkeaman vertailukohteesta suluissa</li>
+  <li><span style="color:#4ade80;">Vihreä reunus</span> = vedonvälittäjä tarjoaa paremmat kertoimet kuin Pinnacle (enemmän arvoa vedonlyöjälle)</li>
+  <li><span style="color:#f87171;">Punainen reunus</span> = vedonvälittäjä tarjoaa huonommat kertoimet kuin Pinnacle (vähemmän arvoa)</li>
+  <li><span style="display:inline-block;font-size:0.65rem;font-weight:700;padding:1px 4px;border-radius:3px;color:#4ade80;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);">BEST</span> = korkeimmat kertoimet kyseiselle lopputulokselle</li>
+  <li><span style="display:inline-block;font-size:0.65rem;font-weight:700;padding:1px 4px;border-radius:3px;color:#f59e0b;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);">SHARP VALUE</span> = kertoimet yli 3% paremmat kuin Pinnacle — mahdollinen väärinhinnoittelu</li>
 </ul>
 <p><strong>Miten käyttää:</strong></p>
 <ul>
-  <li>Etsi <strong>BEST</strong>-merkintää — lyö aina vedonvälittäjällä, jolla on korkeimmat kertoimet valitsemallesi lopputulokselle</li>
-  <li>Jos olet löytänyt arvovedon, selaa kyseisen lopputuloksen saraketta — BEST-merkintä kertoo minne lyödä</li>
+  <li>Etsi <strong>SHARP VALUE</strong> -merkkejä — nämä ovat vahvimmat signaalit väärinhinnoittelusta</li>
+  <li><strong>BEST</strong>-merkintä kertoo minkä vedonvälittäjän kautta lyödä vetoa</li>
   <li>Suuret punaiset poikkeamat viittaavat liian itsevarmoihin kertoimiin — harkitse fadea</li>
 </ul>
     `,
