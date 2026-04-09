@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775766158';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775766158';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775766158';
+import { shinProbabilities } from './shin.js?v=1775769071';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775769071';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775769071';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775766158';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775769071';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775766158';
+} from './ui.js?v=1775769071';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -577,7 +577,7 @@ function formatDate(dateStr) {
   const isSameDay = (a, b) => a.toDateString() === b.toDateString();
 
   let label = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-  if (isSameDay(d, today)) label = 'Today ��� ' + label;
+  if (isSameDay(d, today)) label = 'Today — ' + label;
   else if (isSameDay(d, yesterday)) label = 'Yesterday — ' + label;
   else if (isSameDay(d, tomorrow)) label = 'Tomorrow — ' + label;
   return label;
