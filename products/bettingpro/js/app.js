@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775764171';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775764171';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775764171';
+import { shinProbabilities } from './shin.js?v=1775764843';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775764843';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775764843';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775764171';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775764843';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775764171';
+} from './ui.js?v=1775764843';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -113,6 +113,34 @@ function oddsArrow(current, previous) {
   return current > previous
     ? '<span class="odds-up">\u25B2</span>'
     : '<span class="odds-down">\u25BC</span>';
+}
+
+/** Detect significant odds movement across bookmakers.
+ *  Returns { summary } if any outcome's consensus shifted >3%, else null. */
+function detectOddsMovement(currentOdds, previousOdds) {
+  if (!currentOdds || !previousOdds) return null;
+  const curr = getConsensusOdds(currentOdds);
+  const prev = getConsensusOdds(previousOdds);
+  if (!curr?.home || !prev?.home) return null;
+
+  const labels = { home: '1', draw: 'X', away: '2' };
+  const shifts = ['home', 'draw', 'away'].map(k => ({
+    outcome: k,
+    probShift: (1 / curr[k]) - (1 / prev[k]),
+    oldOdds: prev[k],
+    newOdds: curr[k],
+  }));
+  const biggest = shifts.reduce((a, b) => Math.abs(b.probShift) > Math.abs(a.probShift) ? b : a);
+  if (Math.abs(biggest.probShift) < 0.03) return null;
+
+  // Build tooltip summary of all notable shifts
+  const parts = shifts
+    .filter(s => Math.abs(s.probShift) >= 0.01)
+    .map(s => {
+      const arrow = s.newOdds > s.oldOdds ? '\u2191' : '\u2193';
+      return `${labels[s.outcome]}: ${s.oldOdds.toFixed(2)} ${arrow} ${s.newOdds.toFixed(2)}`;
+    });
+  return { summary: parts.join(' | ') };
 }
 
 /** Find which bookmaker offers the best (highest) odds per outcome */
@@ -655,8 +683,14 @@ function renderDateView({ skipAutoScroll = false } = {}) {
         ? ` <span class="tournament-tag ${esc(m.tournamentId)}">${esc(tournamentShortLabel(m.tournamentId))}</span>`
         : '';
 
+      // Significant odds movement badge
+      const steam = !isFinished ? detectOddsMovement(m.odds, m.previousOdds) : null;
+      const steamBadge = steam
+        ? ` <span class="steam-badge" title="${esc(steam.summary)}">\u26A1 ODDS MOVING</span>`
+        : '';
+
       html += `<div class="match-row${isFinished ? ' finished' : ' upcoming'}" data-home="${esc(m.homeTeam)}" data-away="${esc(m.awayTeam)}" tabindex="0" role="button">
-        <span class="match-teams">${esc(m.homeTeam)}${homeBadge} vs ${esc(m.awayTeam)}${awayBadge}${tagHtml}</span>
+        <span class="match-teams">${esc(m.homeTeam)}${homeBadge} vs ${esc(m.awayTeam)}${awayBadge}${tagHtml}${steamBadge}</span>
         <span class="match-result-group">
           <span class="match-col-pred">${predContent}</span>
           <span class="match-col-1x2">${onextwContent}</span>
