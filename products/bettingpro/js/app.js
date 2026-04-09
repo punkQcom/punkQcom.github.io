@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775761555';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775761555';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775761555';
+import { shinProbabilities } from './shin.js?v=1775763620';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775763620';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775763620';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775761555';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775763620';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775761555';
+} from './ui.js?v=1775763620';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -105,6 +105,14 @@ function getSelectedOdds(oddsObj) {
   if (!migrated) return null;
   if (selectedBookmaker === 'consensus') return getConsensusOdds(migrated);
   return migrated[selectedBookmaker] || null;
+}
+
+/** Small arrow indicating odds movement: green up = better for bettor, red down = worse */
+function oddsArrow(current, previous) {
+  if (previous == null || current === previous) return '';
+  return current > previous
+    ? '<span class="odds-up">\u25B2</span>'
+    : '<span class="odds-down">\u25BC</span>';
 }
 
 /** Find which bookmaker offers the best (highest) odds per outcome */
@@ -455,7 +463,8 @@ function buildDateGroups(matches, upcoming, odds) {
     if (d < cutoff) continue; // skip stale upcoming entries with past dates
     if (!groups[d]) groups[d] = [];
     const matchOdds = findOdds(m, odds) || migrateOdds(m.odds) || null;
-    groups[d].push({ ...m, status: 'upcoming', odds: matchOdds });
+    const prevOdds = m.previousOdds ? migrateOdds(m.previousOdds) : null;
+    groups[d].push({ ...m, status: 'upcoming', odds: matchOdds, previousOdds: prevOdds });
   }
 
   return groups;
@@ -622,10 +631,11 @@ function renderDateView({ skipAutoScroll = false } = {}) {
       }
       if (selOdds && selOdds.home && selOdds.draw && selOdds.away) {
         const result = isFinished ? (m.homeGoals > m.awayGoals ? '1' : m.homeGoals === m.awayGoals ? 'X' : '2') : '';
+        const prevSelOdds = !isFinished ? getSelectedOdds(m.previousOdds) : null;
         onextwContent += `<span class="match-odds-row">
-          <span class="odds-cell${result === '1' ? ' correct' : ''}">${selOdds.home.toFixed(2)}</span>
-          <span class="odds-cell${result === 'X' ? ' correct' : ''}">${selOdds.draw.toFixed(2)}</span>
-          <span class="odds-cell${result === '2' ? ' correct' : ''}">${selOdds.away.toFixed(2)}</span>
+          <span class="odds-cell${result === '1' ? ' correct' : ''}">${selOdds.home.toFixed(2)}${oddsArrow(selOdds.home, prevSelOdds?.home)}</span>
+          <span class="odds-cell${result === 'X' ? ' correct' : ''}">${selOdds.draw.toFixed(2)}${oddsArrow(selOdds.draw, prevSelOdds?.draw)}</span>
+          <span class="odds-cell${result === '2' ? ' correct' : ''}">${selOdds.away.toFixed(2)}${oddsArrow(selOdds.away, prevSelOdds?.away)}</span>
         </span>`;
       }
 
@@ -825,7 +835,8 @@ async function analyzeMatch(homeName, awayName) {
 
     // Cache for display-only re-renders
     lastApiResponse = apiResponse;
-    lastAnalysisContext = { homeName, awayName, matchOddsMulti, oddsData };
+    const prevOddsMulti = obj?.previousOdds ? migrateOdds(obj.previousOdds) : null;
+    lastAnalysisContext = { homeName, awayName, matchOddsMulti, oddsData, prevOddsMulti };
 
     renderAnalysisFromApi(apiResponse, lastAnalysisContext);
   } catch (err) {
@@ -852,7 +863,7 @@ async function analyzeMatch(homeName, awayName) {
  * Called after API returns and on display-only setting changes (kelly/bankroll/edge).
  */
 function renderAnalysisFromApi(apiResponse, context) {
-  const { homeName, awayName, matchOddsMulti, oddsData } = context;
+  const { homeName, awayName, matchOddsMulti, oddsData, prevOddsMulti } = context;
   const { score, outcomes, matrix, overUnder } = apiResponse;
   const odds = oddsData;
 
@@ -942,7 +953,7 @@ function renderAnalysisFromApi(apiResponse, context) {
 
   renderValueBets(allBets, minEdge, bestOdds);
   renderFades(fades);
-  renderBookmakerComparison(comparison, homeName, awayName, outcomes, bestOdds, benchmarkSource);
+  renderBookmakerComparison(comparison, homeName, awayName, outcomes, bestOdds, benchmarkSource, prevOddsMulti);
   renderAllBets(allBets);
 }
 

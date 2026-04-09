@@ -778,6 +778,20 @@ details.card[open] summary h2::before {
   color: #4ade80;
 }
 
+/* Odds movement arrows */
+.odds-up {
+  color: #4ade80;
+  font-size: 0.55rem;
+  margin-left: 2px;
+  vertical-align: middle;
+}
+.odds-down {
+  color: #f87171;
+  font-size: 0.55rem;
+  margin-left: 2px;
+  vertical-align: middle;
+}
+
 /* Round navigation buttons */
 .round-nav-btn {
   display: block;
