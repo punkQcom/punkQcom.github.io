@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775772358';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775772358';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775772358';
+import { shinProbabilities } from './shin.js?v=1775773058';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775773058';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775773058';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775772358';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775773058';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775772358';
+} from './ui.js?v=1775773058';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -701,19 +701,21 @@ function renderDateView({ skipAutoScroll = false } = {}) {
       }
       if (selOdds && selOdds.home && selOdds.draw && selOdds.away) {
         const result = isFinished ? (m.homeGoals > m.awayGoals ? '1' : m.homeGoals === m.awayGoals ? 'X' : '2') : '';
-        let prevSelOdds = null;
+        let arrowCur = null, arrowPrev = null;
         if (!isFinished && m.previousOdds) {
           if (selectedBookmaker === 'consensus') {
             const matched = getMatchedConsensusOdds(m.odds, m.previousOdds);
-            prevSelOdds = matched.previous;
+            arrowCur = matched.current;
+            arrowPrev = matched.previous;
           } else {
-            prevSelOdds = getSelectedOdds(m.previousOdds);
+            arrowCur = selOdds;
+            arrowPrev = getSelectedOdds(m.previousOdds);
           }
         }
         onextwContent += `<span class="match-odds-row">
-          <span class="odds-cell${result === '1' ? ' correct' : ''}">${selOdds.home.toFixed(2)}${oddsArrow(selOdds.home, prevSelOdds?.home)}</span>
-          <span class="odds-cell${result === 'X' ? ' correct' : ''}">${selOdds.draw.toFixed(2)}${oddsArrow(selOdds.draw, prevSelOdds?.draw)}</span>
-          <span class="odds-cell${result === '2' ? ' correct' : ''}">${selOdds.away.toFixed(2)}${oddsArrow(selOdds.away, prevSelOdds?.away)}</span>
+          <span class="odds-cell${result === '1' ? ' correct' : ''}">${selOdds.home.toFixed(2)}${oddsArrow(arrowCur?.home, arrowPrev?.home)}</span>
+          <span class="odds-cell${result === 'X' ? ' correct' : ''}">${selOdds.draw.toFixed(2)}${oddsArrow(arrowCur?.draw, arrowPrev?.draw)}</span>
+          <span class="odds-cell${result === '2' ? ' correct' : ''}">${selOdds.away.toFixed(2)}${oddsArrow(arrowCur?.away, arrowPrev?.away)}</span>
         </span>`;
       }
 
