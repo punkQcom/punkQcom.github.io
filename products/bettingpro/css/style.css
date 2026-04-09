@@ -1050,10 +1050,26 @@ details.card[open] summary h2::before {
   letter-spacing: 0.5px;
 }
 
-.tournament-tag.wc26    { background: #8a6a1a; color: #fff; }
-.tournament-tag.wc_qual { background: #1a4a8a; color: #fff; }
-.tournament-tag.nations { background: #5a2a7a; color: #fff; }
-.tournament-tag.friendly{ background: #555;    color: #ddd; }
+/* FIFA */
+.tournament-tag.wc26         { background: #8a6a1a; color: #fff; }
+.tournament-tag.wc_qual      { background: #1a4a8a; color: #fff; }
+/* UEFA */
+.tournament-tag.euro         { background: #2a5a9a; color: #fff; }
+.tournament-tag.nations      { background: #5a2a7a; color: #fff; }
+/* CONMEBOL */
+.tournament-tag.copa_america { background: #1a6a3a; color: #fff; }
+/* CAF */
+.tournament-tag.afcon        { background: #8a5a1a; color: #fff; }
+.tournament-tag.afcon_qual   { background: #6a4a1a; color: #fff; }
+/* CONCACAF */
+.tournament-tag.gold_cup     { background: #1a6a5a; color: #fff; }
+.tournament-tag.gold_cup_qual{ background: #1a5a4a; color: #fff; }
+.tournament-tag.concacaf_nl  { background: #2a5a6a; color: #fff; }
+/* AFC */
+.tournament-tag.asian_cup    { background: #7a2a2a; color: #fff; }
+.tournament-tag.asian_cup_qual{ background: #5a2a2a; color: #fff; }
+/* Other */
+.tournament-tag.friendly     { background: #555;    color: #ddd; }
 
 .filter-banner {
   font-size: 11px;
