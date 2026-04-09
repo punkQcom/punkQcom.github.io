@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775764843';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775764843';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775764843';
+import { shinProbabilities } from './shin.js?v=1775765533';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775765533';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775765533';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775764843';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775765533';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775764843';
+} from './ui.js?v=1775765533';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -492,7 +492,8 @@ function buildDateGroups(matches, upcoming, odds) {
     if (!groups[d]) groups[d] = [];
     const matchOdds = resolveMatchOdds(m, odds);
     const prevOdds = m.previousOdds ? migrateOdds(m.previousOdds) : null;
-    groups[d].push({ ...m, status: 'upcoming', odds: matchOdds, previousOdds: prevOdds });
+    const initOdds = m.initialOdds ? migrateOdds(m.initialOdds) : null;
+    groups[d].push({ ...m, status: 'upcoming', odds: matchOdds, previousOdds: prevOdds, initialOdds: initOdds });
   }
 
   return groups;
@@ -684,7 +685,7 @@ function renderDateView({ skipAutoScroll = false } = {}) {
         : '';
 
       // Significant odds movement badge
-      const steam = !isFinished ? detectOddsMovement(m.odds, m.previousOdds) : null;
+      const steam = !isFinished ? detectOddsMovement(m.odds, m.initialOdds || m.previousOdds) : null;
       const steamBadge = steam
         ? ` <span class="steam-badge" title="${esc(steam.summary)}">\u26A1 ODDS MOVING</span>`
         : '';
