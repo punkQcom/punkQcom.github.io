@@ -1031,6 +1031,7 @@ details.card[open] summary h2::before {
 /* === Today Highlight === */
 .match-round-header.today-group {
   border-bottom-color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
 }
 
 .match-round-header.today-group > .round-title {

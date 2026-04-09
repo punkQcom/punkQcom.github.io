@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775769200';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775769200';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775769200';
+import { shinProbabilities } from './shin.js?v=1775769673';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775769673';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775769673';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775769200';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775769673';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775769200';
+} from './ui.js?v=1775769673';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -502,7 +502,7 @@ function buildDateGroups(matches, upcoming, odds) {
   const groups = {};
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  const cutoff = yesterday.toISOString().slice(0, 10);
+  const cutoff = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
 
   for (const m of filterByTournament(matches)) {
     const d = m.date || 'unknown';
@@ -625,7 +625,8 @@ function renderDateView({ skipAutoScroll = false } = {}) {
     html += '<button class="round-nav-btn hide-nav-btn" id="hide-earlier">Hide earlier dates</button>';
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
   for (let i = visibleRange.start; i <= visibleRange.end && i < allDates.length; i++) {
     const date = allDates[i];
