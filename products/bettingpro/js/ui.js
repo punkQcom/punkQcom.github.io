@@ -352,7 +352,7 @@ function comparisonCell(data, isBest = false, isPinnacleBenchmark = false, prevO
   const sharpTag = (isPinnacleBenchmark && data.diff < -0.03)
     ? ' <span class="sharp-value-badge">SHARP VALUE</span>' : '';
   let arrow = '';
-  if (prevOddsValue != null && data.odds !== prevOddsValue) {
+  if (prevOddsValue != null && Math.abs(data.odds - prevOddsValue) >= 0.03) {
     arrow = data.odds > prevOddsValue
       ? '<span class="odds-up">\u25B2</span>'
       : '<span class="odds-down">\u25BC</span>';
