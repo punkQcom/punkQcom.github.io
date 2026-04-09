@@ -1,5 +1,5 @@
 {
-  "lastUpdate": "2026-04-09T20:10:03.350Z",
+  "lastUpdate": "2026-04-09T20:12:41.937Z",
   "leagues": [
     {
       "id": "veikkausliiga",
@@ -229,8 +229,6 @@
     }
   ],
   "previousSeasons": {
-    "veikkausliiga": [
-      2025
-    ]
+    "mens_international": []
   }
 }
