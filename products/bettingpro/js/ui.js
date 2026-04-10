@@ -408,6 +408,51 @@ export function setupSliders() {
       edgeValue.textContent = edgeSlider.value + '%';
     });
   }
+
+  setupFloatingPanel();
+}
+
+function setupFloatingPanel() {
+  const panel = document.getElementById('slider-panel');
+  const body = document.getElementById('slider-panel-body');
+  const toggle = document.getElementById('slider-panel-toggle');
+  if (!panel || !body || !toggle) return;
+
+  // Collapse / expand
+  const header = panel.querySelector('.slider-panel-header');
+  header.addEventListener('click', () => {
+    body.classList.toggle('collapsed');
+    toggle.innerHTML = body.classList.contains('collapsed') ? '&#9660;' : '&#9650;';
+  });
+
+  // 2-way sync pairs: [floatingId, settingsId, formatFn]
+  const pairs = [
+    ['fp-market-trust-slider', 'market-trust-slider', v => v + '%'],
+    ['fp-rho-slider', 'rho-slider', v => parseFloat(v).toFixed(2)],
+    ['fp-form-boost-slider', 'form-boost-slider', v => v + '%'],
+  ];
+
+  for (const [fpId, settId, fmt] of pairs) {
+    const fp = document.getElementById(fpId);
+    const sett = document.getElementById(settId);
+    const fpLabel = document.getElementById(fpId.replace('-slider', '-value'));
+    const settLabel = document.getElementById(settId.replace('-slider', '-value'));
+    if (!fp || !sett) continue;
+
+    // Floating → Settings
+    fp.addEventListener('input', () => {
+      sett.value = fp.value;
+      if (fpLabel) fpLabel.textContent = fmt(fp.value);
+      if (settLabel) settLabel.textContent = fmt(fp.value);
+      sett.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+
+    // Settings → Floating
+    sett.addEventListener('input', () => {
+      fp.value = sett.value;
+      if (fpLabel) fpLabel.textContent = fmt(sett.value);
+    });
+  }
 }
 
 /* === Help Modal System === */

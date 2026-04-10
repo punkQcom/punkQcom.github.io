@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>BettingPro — Sports Betting Calculator</title>
-  <link rel="stylesheet" href="css/style.css?v=1775850429">
+  <link rel="stylesheet" href="css/style.css?v=1775856666">
 </head>
 <body>
   <div class="container">
@@ -56,6 +56,30 @@
 
     <!-- Results (hidden until match clicked) -->
     <div id="results" class="results hidden">
+
+      <!-- Floating Model Sliders -->
+      <div id="slider-panel" class="slider-panel">
+        <div class="slider-panel-header">
+          <span class="slider-panel-title">Model</span>
+          <button id="slider-panel-toggle" class="slider-panel-toggle" aria-label="Collapse model sliders">&#9650;</button>
+        </div>
+        <div id="slider-panel-body" class="slider-panel-body">
+          <div class="slider-panel-grid">
+            <div class="slider-panel-item">
+              <label>Market Trust: <span id="fp-market-trust-value">--</span></label>
+              <input type="range" id="fp-market-trust-slider" min="0" max="100" step="1" value="50">
+            </div>
+            <div class="slider-panel-item">
+              <label>Low-Score Corr: <span id="fp-rho-value">-0.13</span></label>
+              <input type="range" id="fp-rho-slider" min="-0.30" max="0" step="0.01" value="-0.13">
+            </div>
+            <div class="slider-panel-item">
+              <label>Form Boost: <span id="fp-form-boost-value">3%</span></label>
+              <input type="range" id="fp-form-boost-slider" min="0" max="5" step="1" value="3">
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Selected Match Info -->
       <section class="card">
@@ -191,6 +215,6 @@
 
   </div>
 
-  <script type="module" src="js/app.js?v=1775850429"></script>
+  <script type="module" src="js/app.js?v=1775856666"></script>
 </body>
 </html>

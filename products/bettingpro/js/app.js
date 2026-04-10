@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775850429';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775850429';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775850429';
+import { shinProbabilities } from './shin.js?v=1775856666';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775856666';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775856666';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775850429';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775856666';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775850429';
+} from './ui.js?v=1775856666';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -306,6 +306,10 @@ function updateMarketTrustDefault(matchCount) {
   const pct = Math.max(10, Math.min(85, Math.round(80 - matchCount * 0.45)));
   slider.value = pct;
   if (label) label.textContent = pct + '%';
+  const fp = document.getElementById('fp-market-trust-slider');
+  const fpLabel = document.getElementById('fp-market-trust-value');
+  if (fp) fp.value = pct;
+  if (fpLabel) fpLabel.textContent = pct + '%';
 }
 
 /**

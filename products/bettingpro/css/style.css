@@ -526,6 +526,76 @@ summary .help-tip {
   margin-top: 6px;
 }
 
+/* === Floating Model Sliders === */
+.slider-panel {
+  position: sticky;
+  top: 12px;
+  z-index: 50;
+  background: #1a1a2e;
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  padding: 0;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.slider-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.slider-panel-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #60a5fa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.slider-panel-toggle {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 0.7rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.slider-panel-toggle:hover {
+  color: #e0e0e0;
+}
+
+.slider-panel-body {
+  padding: 0 14px 12px;
+}
+
+.slider-panel-body.collapsed {
+  display: none;
+}
+
+.slider-panel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.slider-panel-item label {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-bottom: 2px;
+  white-space: nowrap;
+}
+
+.slider-panel-item input[type="range"] {
+  margin-top: 2px;
+}
+
 /* === Responsive === */
 @media (max-width: 600px) {
   .teams-grid {
@@ -547,6 +617,21 @@ summary .help-tip {
   .match-result-group,
   .col-headers {
     grid-template-columns: 45px 120px 45px;
+  }
+
+  .slider-panel {
+    position: fixed;
+    bottom: 0;
+    top: auto;
+    left: 0;
+    right: 0;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 0;
+    z-index: 100;
+  }
+
+  #results {
+    padding-bottom: 100px;
   }
 }
 
