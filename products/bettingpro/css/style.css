@@ -581,7 +581,7 @@ summary .help-tip {
 
 .slider-panel-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 12px;
 }
 
@@ -630,8 +630,12 @@ summary .help-tip {
     z-index: 100;
   }
 
+  .slider-panel-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
   #results {
-    padding-bottom: 100px;
+    padding-bottom: 140px;
   }
 }
 
