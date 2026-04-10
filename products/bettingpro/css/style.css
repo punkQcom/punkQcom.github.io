@@ -783,13 +783,15 @@ details.card[open] summary h2::before {
   font-size: 0.55rem;
   margin-left: 2px;
   vertical-align: middle;
-  position: relative;
-  cursor: default;
 }
 .odds-up { color: #4ade80; }
 .odds-down { color: #f87171; }
-.odds-up::after, .odds-down::after {
-  content: attr(data-prev);
+
+/* Tooltip on the odds cell (not the tiny arrow) */
+.odds-cell, .comp-cell { position: relative; }
+.odds-cell[data-prev]::after,
+.comp-cell[data-prev]::after {
+  content: 'was ' attr(data-prev);
   position: absolute;
   bottom: 100%;
   left: 50%;
@@ -802,9 +804,10 @@ details.card[open] summary h2::before {
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.1s;
+  z-index: 10;
 }
-.odds-up:hover::after, .odds-down:hover::after {
+.odds-cell[data-prev]:hover::after,
+.comp-cell[data-prev]:hover::after {
   opacity: 1;
 }
 

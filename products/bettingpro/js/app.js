@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775803815';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775803815';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775803815';
+import { shinProbabilities } from './shin.js?v=1775804943';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775804943';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775804943';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775803815';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775804943';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775803815';
+} from './ui.js?v=1775804943';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -107,13 +107,15 @@ function getSelectedOdds(oddsObj) {
   return migrated[selectedBookmaker] || null;
 }
 
-/** Small arrow indicating odds movement: green up = better for bettor, red down = worse */
+/** Small arrow indicating odds movement: green up = better for bettor, red down = worse.
+ *  Returns { arrow, prev } where prev is the previous value for the tooltip. */
 function oddsArrow(current, previous) {
-  if (previous == null || current === previous) return '';
+  if (previous == null || current === previous) return { arrow: '', prev: null };
   const prev = previous.toFixed(2);
-  return current > previous
-    ? `<span class="odds-up" data-prev="${prev}">\u25B2</span>`
-    : `<span class="odds-down" data-prev="${prev}">\u25BC</span>`;
+  const arrow = current > previous
+    ? '<span class="odds-up">\u25B2</span>'
+    : '<span class="odds-down">\u25BC</span>';
+  return { arrow, prev };
 }
 
 /** Consensus using only bookmakers present in both snapshots (avoids noise from new bookmakers) */
@@ -712,10 +714,13 @@ function renderDateView({ skipAutoScroll = false } = {}) {
             arrowPrev = getSelectedOdds(m.previousOdds);
           }
         }
+        const ha = oddsArrow(arrowCur?.home, arrowPrev?.home);
+        const da = oddsArrow(arrowCur?.draw, arrowPrev?.draw);
+        const aa = oddsArrow(arrowCur?.away, arrowPrev?.away);
         onextwContent += `<span class="match-odds-row">
-          <span class="odds-cell${result === '1' ? ' correct' : ''}">${selOdds.home.toFixed(2)}${oddsArrow(arrowCur?.home, arrowPrev?.home)}</span>
-          <span class="odds-cell${result === 'X' ? ' correct' : ''}">${selOdds.draw.toFixed(2)}${oddsArrow(arrowCur?.draw, arrowPrev?.draw)}</span>
-          <span class="odds-cell${result === '2' ? ' correct' : ''}">${selOdds.away.toFixed(2)}${oddsArrow(arrowCur?.away, arrowPrev?.away)}</span>
+          <span class="odds-cell${result === '1' ? ' correct' : ''}"${ha.prev ? ` data-prev="${ha.prev}"` : ''}>${selOdds.home.toFixed(2)}${ha.arrow}</span>
+          <span class="odds-cell${result === 'X' ? ' correct' : ''}"${da.prev ? ` data-prev="${da.prev}"` : ''}>${selOdds.draw.toFixed(2)}${da.arrow}</span>
+          <span class="odds-cell${result === '2' ? ' correct' : ''}"${aa.prev ? ` data-prev="${aa.prev}"` : ''}>${selOdds.away.toFixed(2)}${aa.arrow}</span>
         </span>`;
       }
 

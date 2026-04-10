@@ -351,14 +351,15 @@ function comparisonCell(data, isBest = false, isPinnacleBenchmark = false, prevO
   const bestTag = isBest ? ' <span class="best-odds-badge">BEST</span>' : '';
   const sharpTag = (isPinnacleBenchmark && data.diff < -0.03)
     ? ' <span class="sharp-value-badge">SHARP VALUE</span>' : '';
-  let arrow = '';
+  let arrow = '', prevAttr = '';
   if (prevOddsValue != null && Math.abs(data.odds - prevOddsValue) >= 0.03) {
     const prev = prevOddsValue.toFixed(2);
+    prevAttr = ` data-prev="${prev}"`;
     arrow = data.odds > prevOddsValue
-      ? `<span class="odds-up" data-prev="${prev}">\u25B2</span>`
-      : `<span class="odds-down" data-prev="${prev}">\u25BC</span>`;
+      ? '<span class="odds-up">\u25B2</span>'
+      : '<span class="odds-down">\u25BC</span>';
   }
-  return `<td><span class="comp-cell ${cls}">${data.odds.toFixed(2)}${arrow}</span> <small>(${sign}${diffPct}%)</small>${bestTag}${sharpTag}</td>`;
+  return `<td><span class="comp-cell ${cls}"${prevAttr}>${data.odds.toFixed(2)}${arrow}</span> <small>(${sign}${diffPct}%)</small>${bestTag}${sharpTag}</td>`;
 }
 
 export function setupSliders() {
