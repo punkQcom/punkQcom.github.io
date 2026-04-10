@@ -1392,10 +1392,10 @@ const helpContent = {
   'league_mens_international': {
     title: "Men's International League",
     body: `
-      <p><strong>Men's International:</strong> Combines friendlies, WC qualifiers, UEFA Nations League, and the World Cup into one league so national teams share Elo ratings across all competitions. The model uses a longer time-decay (365 days instead of 60) because international matches are rarer.</p>
+      <p><strong>Men's International:</strong> Combines friendlies, WC qualifiers, UEFA Nations League, and the World Cup into one league so national teams share Elo ratings across all competitions. The model uses a longer time-decay (730 days instead of 60) because international matches are rarer.</p>
       <hr>
       <p><strong>Suomeksi:</strong></p>
-      <p><strong>Miesten maaottelut:</strong> Sisältää ystävyysottelut, MM-karsinnat, UEFA Nations Leaguen ja MM-kisat samassa liigassa, jotta maajoukkueet jakavat Elo-lukunsa kaikkien kilpailujen kesken. Malli käyttää pidempää aikapainotusta (365 päivää 60:n sijaan), koska maaottelut ovat harvinaisempia.</p>
+      <p><strong>Miesten maaottelut:</strong> Sisältää ystävyysottelut, MM-karsinnat, UEFA Nations Leaguen ja MM-kisat samassa liigassa, jotta maajoukkueet jakavat Elo-lukunsa kaikkien kilpailujen kesken. Malli käyttää pidempää aikapainotusta (730 päivää 60:n sijaan), koska maaottelut ovat harvinaisempia.</p>
     `,
   },
 };
