@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775804943';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775804943';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775804943';
+import { shinProbabilities } from './shin.js?v=1775805394';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775805394';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775805394';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775804943';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775805394';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775804943';
+} from './ui.js?v=1775805394';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -108,10 +108,13 @@ function getSelectedOdds(oddsObj) {
 }
 
 /** Small arrow indicating odds movement: green up = better for bettor, red down = worse.
- *  Returns { arrow, prev } where prev is the previous value for the tooltip. */
-function oddsArrow(current, previous) {
+ *  Returns { arrow, prev } where prev is the tooltip text (includes opening odds when different). */
+function oddsArrow(current, previous, initial) {
   if (previous == null || current === previous) return { arrow: '', prev: null };
-  const prev = previous.toFixed(2);
+  let prev = 'was ' + previous.toFixed(2);
+  if (initial != null && initial.toFixed(2) !== previous.toFixed(2)) {
+    prev += ' (opened ' + initial.toFixed(2) + ')';
+  }
   const arrow = current > previous
     ? '<span class="odds-up">\u25B2</span>'
     : '<span class="odds-down">\u25BC</span>';
@@ -703,20 +706,25 @@ function renderDateView({ skipAutoScroll = false } = {}) {
       }
       if (selOdds && selOdds.home && selOdds.draw && selOdds.away) {
         const result = isFinished ? (m.homeGoals > m.awayGoals ? '1' : m.homeGoals === m.awayGoals ? 'X' : '2') : '';
-        let arrowCur = null, arrowPrev = null;
+        let arrowCur = null, arrowPrev = null, arrowInit = null;
         if (!isFinished && m.previousOdds) {
           if (selectedBookmaker === 'consensus') {
             const matched = getMatchedConsensusOdds(m.odds, m.previousOdds);
             arrowCur = matched.current;
             arrowPrev = matched.previous;
+            if (m.initialOdds) {
+              const matchedInit = getMatchedConsensusOdds(m.odds, m.initialOdds);
+              arrowInit = matchedInit.previous;
+            }
           } else {
             arrowCur = selOdds;
             arrowPrev = getSelectedOdds(m.previousOdds);
+            if (m.initialOdds) arrowInit = getSelectedOdds(m.initialOdds);
           }
         }
-        const ha = oddsArrow(arrowCur?.home, arrowPrev?.home);
-        const da = oddsArrow(arrowCur?.draw, arrowPrev?.draw);
-        const aa = oddsArrow(arrowCur?.away, arrowPrev?.away);
+        const ha = oddsArrow(arrowCur?.home, arrowPrev?.home, arrowInit?.home);
+        const da = oddsArrow(arrowCur?.draw, arrowPrev?.draw, arrowInit?.draw);
+        const aa = oddsArrow(arrowCur?.away, arrowPrev?.away, arrowInit?.away);
         onextwContent += `<span class="match-odds-row">
           <span class="odds-cell${result === '1' ? ' correct' : ''}"${ha.prev ? ` data-prev="${ha.prev}"` : ''}>${selOdds.home.toFixed(2)}${ha.arrow}</span>
           <span class="odds-cell${result === 'X' ? ' correct' : ''}"${da.prev ? ` data-prev="${da.prev}"` : ''}>${selOdds.draw.toFixed(2)}${da.arrow}</span>
@@ -933,7 +941,8 @@ async function analyzeMatch(homeName, awayName) {
     // Cache for display-only re-renders
     lastApiResponse = apiResponse;
     const prevOddsMulti = obj?.previousOdds ? migrateOdds(obj.previousOdds) : null;
-    lastAnalysisContext = { homeName, awayName, matchOddsMulti, oddsData, prevOddsMulti };
+    const initOddsMulti = obj?.initialOdds ? migrateOdds(obj.initialOdds) : null;
+    lastAnalysisContext = { homeName, awayName, matchOddsMulti, oddsData, prevOddsMulti, initOddsMulti };
 
     renderAnalysisFromApi(apiResponse, lastAnalysisContext);
   } catch (err) {
@@ -960,7 +969,7 @@ async function analyzeMatch(homeName, awayName) {
  * Called after API returns and on display-only setting changes (kelly/bankroll/edge).
  */
 function renderAnalysisFromApi(apiResponse, context) {
-  const { homeName, awayName, matchOddsMulti, oddsData, prevOddsMulti } = context;
+  const { homeName, awayName, matchOddsMulti, oddsData, prevOddsMulti, initOddsMulti } = context;
   const { score, outcomes, matrix, overUnder } = apiResponse;
   const odds = oddsData;
 
@@ -1050,7 +1059,7 @@ function renderAnalysisFromApi(apiResponse, context) {
 
   renderValueBets(allBets, minEdge, bestOdds);
   renderFades(fades);
-  renderBookmakerComparison(comparison, homeName, awayName, outcomes, bestOdds, benchmarkSource, prevOddsMulti);
+  renderBookmakerComparison(comparison, homeName, awayName, outcomes, bestOdds, benchmarkSource, prevOddsMulti, initOddsMulti);
   renderAllBets(allBets);
 }
 

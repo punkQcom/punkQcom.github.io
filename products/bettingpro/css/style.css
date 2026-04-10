@@ -791,7 +791,7 @@ details.card[open] summary h2::before {
 .odds-cell, .comp-cell { position: relative; }
 .odds-cell[data-prev]::after,
 .comp-cell[data-prev]::after {
-  content: 'was ' attr(data-prev);
+  content: attr(data-prev);
   position: absolute;
   bottom: 100%;
   left: 50%;
