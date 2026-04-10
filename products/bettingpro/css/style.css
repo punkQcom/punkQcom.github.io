@@ -1064,17 +1064,165 @@ details.card[open] summary h2::before {
 }
 
 @media (max-width: 480px) {
+  /* --- Match rows: stack vertically --- */
+  .match-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .match-teams {
+    font-size: 0.9rem;
+  }
+
   .match-col-pred {
     display: none;
   }
 
-  .match-result-group,
+  /* Hide column headers (no alignment when stacked) */
   .col-headers {
-    grid-template-columns: 0px 110px 45px;
+    display: none;
   }
 
-  .col-headers .col-h:first-child {
-    display: none;
+  /* Switch result group from grid to flex, full width */
+  .match-result-group {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .match-col-1x2 {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .match-col-result {
+    flex-shrink: 0;
+    min-width: 45px;
+  }
+
+  /* --- Selector bar: full-width stack --- */
+  .selector-bar .selector-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .selector-bar .selector-row label,
+  .selector-bar .selector-row label:has(#league-select) {
+    flex: none;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .season-label {
+    flex: none !important;
+    min-width: 0 !important;
+    width: 100%;
+  }
+
+  /* --- Scrollable analysis tables --- */
+  #results .card,
+  details.card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .results-table {
+    min-width: 360px;
+  }
+
+  .results-table th,
+  .results-table td {
+    padding: 6px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  /* --- Score matrix: tighter --- */
+  .score-matrix th,
+  .score-matrix td {
+    font-size: 0.6rem;
+    padding: 2px;
+  }
+
+  /* --- Tournament filter: smaller pills --- */
+  .tournament-filter {
+    gap: 4px;
+    padding: 6px 8px;
+  }
+
+  .tournament-filter button {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+}
+
+/* === Small Phone Polish === */
+@media (max-width: 400px) {
+  .container {
+    padding: 12px;
+  }
+
+  .card {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .card h2 {
+    font-size: 1rem;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+  }
+
+  .match-row {
+    padding: 8px;
+  }
+
+  .match-round-header {
+    padding: 10px 8px 4px;
+  }
+
+  .odds-cell {
+    min-width: 36px;
+    padding: 2px 4px;
+    font-size: 0.75rem;
+  }
+
+  .odds-label {
+    font-size: 0.55rem;
+  }
+
+  .pred-p {
+    min-width: 32px;
+    font-size: 0.7rem;
+    padding: 2px 3px;
+  }
+
+  header h1 {
+    font-size: 1.3rem;
+  }
+
+  .steam-badge {
+    font-size: 0.55rem;
+    padding: 1px 3px;
+    margin-left: 4px;
+  }
+
+  .tournament-tag {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+
+  .streak-badge {
+    font-size: 0.6rem;
+    padding: 1px 3px;
+  }
+
+  .help-modal-body {
+    padding: 12px 14px;
+    font-size: 0.82rem;
   }
 }
 
