@@ -1080,8 +1080,9 @@ details.card[open] summary h2::before {
     font-size: 0.9rem;
   }
 
-  .match-col-pred {
-    display: none;
+  .pred-score {
+    font-size: 0.75rem;
+    padding: 1px 5px;
   }
 
   /* Hide column headers (no alignment when stacked) */
@@ -1096,6 +1097,10 @@ details.card[open] summary h2::before {
     justify-content: space-between;
     align-items: center;
     gap: 8px;
+  }
+
+  .match-col-pred {
+    flex-shrink: 0;
   }
 
   .match-col-1x2 {
