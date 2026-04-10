@@ -295,7 +295,7 @@ export function renderFades(fades) {
   table.innerHTML = html;
 }
 
-export function renderBookmakerComparison(rows, homeName, awayName, modelOutcomes, bestOdds = {}, benchmarkSource = 'consensus', previousOddsMulti = null) {
+export function renderBookmakerComparison(rows, homeName, awayName, modelOutcomes, bestOdds = {}, benchmarkSource = 'consensus', previousOddsMulti = null, initialOddsMulti = null) {
   const container = document.getElementById('bookmaker-comparison');
 
   if (rows.length === 0) {
@@ -326,11 +326,12 @@ export function renderBookmakerComparison(rows, homeName, awayName, modelOutcome
 
   for (const row of rows) {
     const prev = previousOddsMulti?.[row.bookmaker];
+    const init = initialOddsMulti?.[row.bookmaker];
     html += `<tr>
       <td>${formatBookmaker(row.bookmaker)}</td>
-      ${comparisonCell(row.home, bestOdds.home?.book === row.bookmaker, isPinnacle, prev?.home)}
-      ${comparisonCell(row.draw, bestOdds.draw?.book === row.bookmaker, isPinnacle, prev?.draw)}
-      ${comparisonCell(row.away, bestOdds.away?.book === row.bookmaker, isPinnacle, prev?.away)}
+      ${comparisonCell(row.home, bestOdds.home?.book === row.bookmaker, isPinnacle, prev?.home, init?.home)}
+      ${comparisonCell(row.draw, bestOdds.draw?.book === row.bookmaker, isPinnacle, prev?.draw, init?.draw)}
+      ${comparisonCell(row.away, bestOdds.away?.book === row.bookmaker, isPinnacle, prev?.away, init?.away)}
     </tr>`;
   }
 
@@ -342,7 +343,7 @@ function formatBookmaker(key) {
   return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
-function comparisonCell(data, isBest = false, isPinnacleBenchmark = false, prevOddsValue = null) {
+function comparisonCell(data, isBest = false, isPinnacleBenchmark = false, prevOddsValue = null, initOddsValue = null) {
   const diffPct = (data.diff * 100).toFixed(1);
   const sign = data.diff > 0 ? '+' : '';
   // Positive diff = bookmaker thinks outcome more likely than benchmark = worse odds for bettor
@@ -353,8 +354,11 @@ function comparisonCell(data, isBest = false, isPinnacleBenchmark = false, prevO
     ? ' <span class="sharp-value-badge">SHARP VALUE</span>' : '';
   let arrow = '', prevAttr = '';
   if (prevOddsValue != null && Math.abs(data.odds - prevOddsValue) >= 0.03) {
-    const prev = prevOddsValue.toFixed(2);
-    prevAttr = ` data-prev="${prev}"`;
+    let tip = 'was ' + prevOddsValue.toFixed(2);
+    if (initOddsValue != null && initOddsValue.toFixed(2) !== prevOddsValue.toFixed(2)) {
+      tip += ' (opened ' + initOddsValue.toFixed(2) + ')';
+    }
+    prevAttr = ` data-prev="${tip}"`;
     arrow = data.odds > prevOddsValue
       ? '<span class="odds-up">\u25B2</span>'
       : '<span class="odds-down">\u25BC</span>';
