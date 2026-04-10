@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775856666';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775856666';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775856666';
+import { shinProbabilities } from './shin.js?v=1775857200';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775857200';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775857200';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775856666';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775857200';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775856666';
+} from './ui.js?v=1775857200';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -871,7 +871,7 @@ function reanalyzeIfNeeded() {
   if (!currentAnalyzedMatch) return;
   clearTimeout(_reanalyzeTimer);
   _reanalyzeTimer = setTimeout(() => {
-    analyzeMatch(currentAnalyzedMatch.home, currentAnalyzedMatch.away);
+    analyzeMatch(currentAnalyzedMatch.home, currentAnalyzedMatch.away, { scroll: false });
   }, 300);
 }
 
@@ -883,7 +883,7 @@ function rerenderAnalysis() {
 
 // ── Detailed analysis via backend API ────────────────────────────────
 
-async function analyzeMatch(homeName, awayName) {
+async function analyzeMatch(homeName, awayName, { scroll = true } = {}) {
   currentAnalyzedMatch = { home: homeName, away: awayName };
 
   // Highlight selected match
@@ -904,7 +904,7 @@ async function analyzeMatch(homeName, awayName) {
   const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
   renderMatchContext(matchObj, leagueCfg?.tournaments || null);
 
-  showResults();
+  showResults({ scroll });
 
   // Resolve odds locally (odds are not secret)
   const odds = currentLeagueData?.odds || [];
