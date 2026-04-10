@@ -430,6 +430,7 @@ function setupFloatingPanel() {
     ['fp-market-trust-slider', 'market-trust-slider', v => v + '%'],
     ['fp-rho-slider', 'rho-slider', v => parseFloat(v).toFixed(2)],
     ['fp-form-boost-slider', 'form-boost-slider', v => v + '%'],
+    ['fp-prev-season-slider', 'prev-season-slider', v => v + '%'],
   ];
 
   for (const [fpId, settId, fmt] of pairs) {
