@@ -1076,7 +1076,7 @@ details.card[open] summary h2::before {
   }
 
   .match-col-pred {
-    flex-shrink: 0;
+    display: none;
   }
 
   /* Hide column headers (no alignment when stacked) */
