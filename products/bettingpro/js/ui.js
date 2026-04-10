@@ -9,10 +9,10 @@ function esc(str) {
   return d.innerHTML;
 }
 
-export function showResults() {
+export function showResults({ scroll = true } = {}) {
   const el = document.getElementById('results');
   el.classList.remove('hidden');
-  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (scroll) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /**
