@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>BettingPro — Sports Betting Calculator</title>
-  <link rel="stylesheet" href="css/style.css?v=1775809259">
+  <link rel="stylesheet" href="css/style.css?v=1775850429">
 </head>
 <body>
   <div class="container">
@@ -134,6 +134,12 @@
         <input type="range" id="rho-slider" min="-0.30" max="0" step="0.01" value="-0.13">
       </div>
       <div class="setting">
+        <label>Form Boost: <span id="form-boost-value">3%</span>
+          <button type="button" class="help-tip" data-help="form-boost">?</button>
+        </label>
+        <input type="range" id="form-boost-slider" min="0" max="5" step="1" value="3">
+      </div>
+      <div class="setting">
         <label>Kelly Fraction: <span id="kelly-fraction-value">25%</span>
           <button type="button" class="help-tip" data-help="kelly">?</button>
         </label>
@@ -185,6 +191,6 @@
 
   </div>
 
-  <script type="module" src="js/app.js?v=1775809259"></script>
+  <script type="module" src="js/app.js?v=1775850429"></script>
 </body>
 </html>

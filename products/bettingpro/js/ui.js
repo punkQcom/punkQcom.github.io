@@ -393,6 +393,14 @@ export function setupSliders() {
     });
   }
 
+  const formBoostSlider = document.getElementById('form-boost-slider');
+  const formBoostValue = document.getElementById('form-boost-value');
+  if (formBoostSlider) {
+    formBoostSlider.addEventListener('input', () => {
+      formBoostValue.textContent = formBoostSlider.value + '%';
+    });
+  }
+
   const edgeSlider = document.getElementById('edge-threshold-slider');
   const edgeValue = document.getElementById('edge-threshold-value');
   if (edgeSlider) {
@@ -645,6 +653,57 @@ const helpContent = {
       </div>
     `,
   },
+  'form-boost': {
+    title: 'Form Boost',
+    body: `
+      <p><strong>What it does:</strong> Adjusts predicted goal expectancy for teams on hot or cold streaks (3+ consecutive wins or losses).</p>
+      <p><strong>The problem:</strong> Early in the season, Bayesian shrinkage weights priors heavily because there's limited match data. Teams on form streaks (e.g. a promoted team winning their first 3 games) aren't reflected quickly enough in the base model.</p>
+      <div class="help-section">
+        <p><strong>How it works:</strong></p>
+        <ul>
+          <li>Teams on a <strong>3+ win streak</strong> get their attack lambda boosted</li>
+          <li>Teams on a <strong>3+ loss streak</strong> get their attack lambda penalized</li>
+          <li>A single draw breaks any streak — W-W-W-D resets to no boost</li>
+          <li>Draw streaks themselves have no effect</li>
+          <li>Streak count is capped at 3 in the formula (W5 gives the same boost as W3)</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Slider values:</strong></p>
+        <ul>
+          <li><strong>0%:</strong> No form adjustment — pure base model</li>
+          <li><strong>3% (default):</strong> +9% attack boost for W3+ streak, -9% for L3+</li>
+          <li><strong>5% (max):</strong> +15% attack boost for W3+ streak, -15% for L3+</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Formula:</strong> <code>multiplier = 1 ± min(streakCount, 3) × formBoost%</code></p>
+      </div>
+
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Mitä tekee:</strong> Säätää ennustettua maalimäärää joukkueille, joilla on kuuma tai kylmä putki (3+ peräkkäistä voittoa tai tappiota).</p>
+      <p><strong>Ongelma:</strong> Kauden alussa Bayesilainen kutistus painottaa ennakkotietoja voimakkaasti. Putkessa olevat joukkueet eivät näy perusmallissa tarpeeksi nopeasti.</p>
+      <div class="help-section">
+        <p><strong>Miten toimii:</strong></p>
+        <ul>
+          <li>3+ voittoputkessa oleville joukkueille hyökkäys-lambdaa nostetaan</li>
+          <li>3+ tappioputkessa oleville hyökkäys-lambdaa lasketaan</li>
+          <li>Yksikin tasapeli katkaisee putken — W-W-W-D nollaa boostin</li>
+          <li>Tasapeliputki itsessään ei vaikuta</li>
+          <li>Putken pituus rajoitetaan 3:een kaavassa (W5 = sama kuin W3)</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Liukusäätimen arvot:</strong></p>
+        <ul>
+          <li><strong>0%:</strong> Ei viresäätöä</li>
+          <li><strong>3% (oletus):</strong> +9% hyökkäysboosti W3+ putkelle</li>
+          <li><strong>5% (max):</strong> +15% hyökkäysboosti W3+ putkelle</li>
+        </ul>
+      </div>
+    `,
+  },
   'kelly': {
     title: 'Kelly Fraction',
     body: `
@@ -770,6 +829,7 @@ const helpContent = {
   <li><strong>Market Trust</strong> — controls how much weight bookmaker odds get in the blended prediction vs our statistical model. Auto-adjusts based on matches played: high early in the season (limited data), decreasing as more results come in</li>
   <li><strong>Previous Season</strong> — controls how much last season's Elo ratings carry over. Auto-adjusts: starts around 50% and drops to 0% by round 6 as current-season data takes over</li>
   <li><strong>Low-Score Correction (rho)</strong> — Dixon-Coles parameter adjusting for defensive correlations in low-scoring games. Default -0.13 is calibrated for European football leagues</li>
+  <li><strong>Form Boost</strong> — adjusts predictions for teams on 3+ game win or loss streaks. Default 3% per streak game (max effect ±9%). Set to 0% to disable</li>
   <li><strong>Kelly Fraction</strong> — scales down the Kelly criterion bet sizing. Default 25% (quarter Kelly) is the industry standard for conservative bankroll management</li>
   <li><strong>Bankroll</strong> — your total betting budget. Only affects stake amounts in euros, not probabilities or edge calculations</li>
   <li><strong>Min. Edge</strong> — filters Value Bets to only show edges above this threshold. Default 3% removes noise from marginal edges</li>
@@ -784,6 +844,7 @@ const helpContent = {
   <li><strong>Markkinoiden luottamus</strong> — säätää vedonvälittäjän kertoimien painoa yhdistetyssä ennusteessa. Automaattisäätö pelattujen otteluiden mukaan</li>
   <li><strong>Edellinen kausi</strong> — säätää edellisen kauden Elo-luokitusten siirtoa. Laskee automaattisesti 0%:iin kierros 6:een mennessä</li>
   <li><strong>Vähämaalisten korjaus (rho)</strong> — Dixon-Coles-parametri puolustavien korrelaatioiden säätämiseen. Oletus -0.13</li>
+  <li><strong>Vireboosti</strong> — säätää ennusteita joukkueille 3+ pelin voitto- tai tappioputkessa. Oletus 3% per putkipeli (max ±9%). Aseta 0% poistaaksesi käytöstä</li>
   <li><strong>Kelly-murto-osa</strong> — skaalaa Kelly-kriteerin panostusta. Oletus 25% on ammattilaisten standardi</li>
   <li><strong>Pankki</strong> — vedonlyöntibudjettisi. Vaikuttaa vain panosmääriin euroissa</li>
   <li><strong>Min. etu</strong> — suodattaa arvovedot näyttämään vain tämän rajan ylittävät edut. Oletus 3%</li>
