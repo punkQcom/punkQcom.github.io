@@ -806,9 +806,11 @@ details.card[open] summary h2::before {
   opacity: 0;
   z-index: 10;
 }
-.odds-cell[data-prev]:hover::after,
-.comp-cell[data-prev]:hover::after {
-  opacity: 1;
+@media (hover: hover) {
+  .odds-cell[data-prev]:hover::after,
+  .comp-cell[data-prev]:hover::after {
+    opacity: 1;
+  }
 }
 
 /* Steam / significant odds movement badge */
