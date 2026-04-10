@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775857907';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775857907';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775857907';
+import { shinProbabilities } from './shin.js?v=1775862519';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775862519';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775862519';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775857907';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775862519';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775857907';
+} from './ui.js?v=1775862519';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -940,6 +940,10 @@ async function analyzeMatch(homeName, awayName, { scroll = true } = {}) {
   const formBoost = parseInt(document.getElementById('form-boost-slider').value);
   const halfLife = 60;
 
+  // Show loading state on floating panel
+  const sliderPanel = document.getElementById('slider-panel');
+  if (sliderPanel) sliderPanel.classList.add('loading');
+
   // Call backend API for prediction
   try {
     const res = await fetch(`${API_BASE}/predict`, {
@@ -964,6 +968,7 @@ async function analyzeMatch(homeName, awayName, { scroll = true } = {}) {
     lastAnalysisContext = { homeName, awayName, matchOddsMulti, oddsData, prevOddsMulti, initOddsMulti };
 
     renderAnalysisFromApi(apiResponse, lastAnalysisContext);
+    if (sliderPanel) sliderPanel.classList.remove('loading');
   } catch (err) {
     console.error('Predict API error:', err);
     // Fallback: show what we can from precomputed data
@@ -980,6 +985,7 @@ async function analyzeMatch(homeName, awayName, { scroll = true } = {}) {
       document.getElementById('score-matrix').innerHTML =
         `<p class="muted">Analysis unavailable — please try again</p>`;
     }
+    if (sliderPanel) sliderPanel.classList.remove('loading');
   }
 }
 
@@ -1106,6 +1112,36 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('prev-season-slider').addEventListener('input', () => {
     const label = document.getElementById('prev-season-value');
     if (label) label.textContent = document.getElementById('prev-season-slider').value + '%';
+    updateEloTable();
+    reanalyzeIfNeeded();
+  });
+
+  // Reset button — restore all model sliders to auto-calculated defaults
+  document.getElementById('slider-panel-reset')?.addEventListener('click', (e) => {
+    e.stopPropagation(); // Don't trigger header collapse toggle
+    const matchCount = (currentLeagueData?.matches || []).length;
+    updateMarketTrustDefault(matchCount);
+    updatePrevSeasonDefault(matchCount);
+
+    // Reset rho + form-boost to HTML defaults
+    const rhoSlider = document.getElementById('rho-slider');
+    const rhoLabel = document.getElementById('rho-value');
+    const fpRho = document.getElementById('fp-rho-slider');
+    const fpRhoLabel = document.getElementById('fp-rho-value');
+    rhoSlider.value = -0.13;
+    if (rhoLabel) rhoLabel.textContent = '-0.13';
+    if (fpRho) fpRho.value = -0.13;
+    if (fpRhoLabel) fpRhoLabel.textContent = '-0.13';
+
+    const fbSlider = document.getElementById('form-boost-slider');
+    const fbLabel = document.getElementById('form-boost-value');
+    const fpFb = document.getElementById('fp-form-boost-slider');
+    const fpFbLabel = document.getElementById('fp-form-boost-value');
+    fbSlider.value = 3;
+    if (fbLabel) fbLabel.textContent = '3%';
+    if (fpFb) fpFb.value = 3;
+    if (fpFbLabel) fpFbLabel.textContent = '3%';
+
     updateEloTable();
     reanalyzeIfNeeded();
   });

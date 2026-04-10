@@ -418,11 +418,20 @@ function setupFloatingPanel() {
   const toggle = document.getElementById('slider-panel-toggle');
   if (!panel || !body || !toggle) return;
 
+  // Restore collapsed state from localStorage
+  const COLLAPSE_KEY = 'bettingpro_sliderPanelCollapsed';
+  if (localStorage.getItem(COLLAPSE_KEY) === 'true') {
+    body.classList.add('collapsed');
+    toggle.innerHTML = '&#9660;';
+  }
+
   // Collapse / expand
   const header = panel.querySelector('.slider-panel-header');
   header.addEventListener('click', () => {
     body.classList.toggle('collapsed');
-    toggle.innerHTML = body.classList.contains('collapsed') ? '&#9660;' : '&#9650;';
+    const collapsed = body.classList.contains('collapsed');
+    toggle.innerHTML = collapsed ? '&#9660;' : '&#9650;';
+    localStorage.setItem(COLLAPSE_KEY, collapsed);
   });
 
   // 2-way sync pairs: [floatingId, settingsId, formatFn]
