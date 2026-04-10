@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775857200';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775857200';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775857200';
+import { shinProbabilities } from './shin.js?v=1775857254';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775857254';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775857254';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775857200';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775857254';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775857200';
+} from './ui.js?v=1775857254';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -867,12 +867,22 @@ function resolveMatchOdds(matchObj, oddsArray) {
 }
 
 let _reanalyzeTimer = null;
+let _reanalyzeLast = 0;
+const _reanalyzeInterval = 400;
 function reanalyzeIfNeeded() {
   if (!currentAnalyzedMatch) return;
   clearTimeout(_reanalyzeTimer);
-  _reanalyzeTimer = setTimeout(() => {
+  const now = Date.now();
+  const elapsed = now - _reanalyzeLast;
+  if (elapsed >= _reanalyzeInterval) {
+    _reanalyzeLast = now;
     analyzeMatch(currentAnalyzedMatch.home, currentAnalyzedMatch.away, { scroll: false });
-  }, 300);
+  } else {
+    _reanalyzeTimer = setTimeout(() => {
+      _reanalyzeLast = Date.now();
+      analyzeMatch(currentAnalyzedMatch.home, currentAnalyzedMatch.away, { scroll: false });
+    }, _reanalyzeInterval - elapsed);
+  }
 }
 
 /** Re-render analysis from cached API response (for kelly/bankroll/edge changes) */
