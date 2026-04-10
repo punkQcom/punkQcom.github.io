@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775809259';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775809259';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775809259';
+import { shinProbabilities } from './shin.js?v=1775850429';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775850429';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775850429';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775809259';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775850429';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775809259';
+} from './ui.js?v=1775850429';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -919,6 +919,7 @@ async function analyzeMatch(homeName, awayName) {
   // Read model settings from sliders
   const rho = parseFloat(document.getElementById('rho-slider').value);
   const marketTrust = parseInt(document.getElementById('market-trust-slider').value);
+  const formBoost = parseInt(document.getElementById('form-boost-slider').value);
   const halfLife = 60;
 
   // Call backend API for prediction
@@ -931,7 +932,7 @@ async function analyzeMatch(homeName, awayName) {
         season: currentSeason,
         homeName,
         awayName,
-        settings: { rho, marketTrust, halfLife },
+        settings: { rho, marketTrust, halfLife, formBoost },
       }),
     });
 
@@ -1079,7 +1080,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupHelpModal();
 
   // Model sliders — only trigger re-analysis of current match (API call)
-  for (const id of ['rho-slider', 'market-trust-slider']) {
+  for (const id of ['rho-slider', 'market-trust-slider', 'form-boost-slider']) {
     document.getElementById(id).addEventListener('input', reanalyzeIfNeeded);
   }
 
