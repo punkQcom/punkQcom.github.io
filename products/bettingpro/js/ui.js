@@ -167,18 +167,21 @@ export function renderMatchOutcome(outcomes, bookmakerProbs, homeName, awayName)
     { label: `Away (${awayName})`, pct: outcomes.away, bookPct: bookmakerProbs[2], cls: 'away' },
   ];
 
-  container.innerHTML = data.map(d => `
+  container.innerHTML = data.map(d => {
+    const modelOdds = d.pct > 0 ? (1 / d.pct).toFixed(2) : '-';
+    const bookOdds = d.bookPct > 0 ? (1 / d.bookPct).toFixed(2) : '-';
+    return `
     <div class="outcome-row">
       <div class="outcome-label">
         <span>${d.label}</span>
-        <span>${(d.pct * 100).toFixed(1)}% (book: ${(d.bookPct * 100).toFixed(1)}%)</span>
+        <span>${(d.pct * 100).toFixed(1)}% <span class="outcome-odds" title="Model fair odds">${modelOdds}</span> (book: ${(d.bookPct * 100).toFixed(1)}% <span class="outcome-odds book" title="Bookmaker implied odds">${bookOdds}</span>)</span>
       </div>
       <div class="outcome-bar-track">
         <div class="outcome-bar-fill ${d.cls}" style="width:${(d.pct * 100).toFixed(1)}%"></div>
         <div class="outcome-bar-fill bookmaker" style="width:${(d.bookPct * 100).toFixed(1)}%"></div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 export function renderOverUnder(ouResults) {
