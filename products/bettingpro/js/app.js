@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775891965';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775891965';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775891965';
+import { shinProbabilities } from './shin.js?v=1775892280';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775892280';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775892280';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775891965';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775892280';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775891965';
+} from './ui.js?v=1775892280';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -1221,8 +1221,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (res.ok) {
           seasonOnlyData = await res.json();
           renderDateView({ skipAutoScroll: true });
-          if (seasonOnlyData.tracker) renderTracker(seasonOnlyData.tracker, 'tracker-container');
-          if (seasonOnlyData.plSimulation) renderPLSimulation(seasonOnlyData.plSimulation, 'pl-container');
+          // Open and render tracker + simulation sections
+          if (seasonOnlyData.tracker) {
+            const trackerDetails = document.getElementById('tracker-container')?.closest('details');
+            if (trackerDetails) trackerDetails.open = true;
+            renderTracker(seasonOnlyData.tracker, 'tracker-container');
+          }
+          if (seasonOnlyData.plSimulation) {
+            const plDetails = document.getElementById('pl-container')?.closest('details');
+            if (plDetails) plDetails.open = true;
+            renderPLSimulation(seasonOnlyData.plSimulation, 'pl-container');
+          }
+          // Open Elo section too
+          const eloDetails = document.getElementById('elo-table')?.closest('details');
+          if (eloDetails) eloDetails.open = true;
+        } else {
+          console.error('Bulk seasonOnly API error:', res.status);
         }
       } catch (err) {
         console.error('Bulk seasonOnly fetch failed:', err);
