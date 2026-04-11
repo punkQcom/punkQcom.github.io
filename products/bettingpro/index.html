@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>BettingPro — Sports Betting Calculator</title>
-  <link rel="stylesheet" href="css/style.css?v=1775897916">
+  <link rel="stylesheet" href="css/style.css?v=1775901262">
 </head>
 <body>
   <div class="container">
@@ -74,26 +74,26 @@
         <div id="slider-panel-body" class="slider-panel-body">
           <div class="slider-panel-grid">
             <div class="slider-panel-item">
-              <label>Market Trust: <span id="fp-market-trust-value">--</span></label>
+              <label>Market Trust: <span id="fp-market-trust-value">--</span> <button type="button" class="help-tip" data-help="market-trust">?</button></label>
               <input type="range" id="fp-market-trust-slider" min="0" max="100" step="1" value="50">
             </div>
             <div class="slider-panel-item">
-              <label>Low-Score Corr: <span id="fp-rho-value">-0.13</span></label>
+              <label>Low-Score Corr: <span id="fp-rho-value">-0.13</span> <button type="button" class="help-tip" data-help="rho">?</button></label>
               <input type="range" id="fp-rho-slider" min="-0.30" max="0" step="0.01" value="-0.13">
             </div>
             <div class="slider-panel-item">
-              <label>Form Boost: <span id="fp-form-boost-value">3%</span></label>
+              <label>Form Boost: <span id="fp-form-boost-value">3%</span> <button type="button" class="help-tip" data-help="form-boost">?</button></label>
               <input type="range" id="fp-form-boost-slider" min="0" max="5" step="1" value="3">
             </div>
             <div class="slider-panel-item">
-              <label>Prev Season: <span id="fp-prev-season-value">--</span></label>
+              <label>Prev Season: <span id="fp-prev-season-value">--</span> <button type="button" class="help-tip" data-help="prev-season">?</button></label>
               <input type="range" id="fp-prev-season-slider" min="0" max="100" step="1" value="50">
             </div>
           </div>
           <label class="slider-panel-override">
             <input type="checkbox" id="fp-season-only">
             <span class="toggle-switch"></span>
-            <span class="toggle-label">Current Season Only</span>
+            <span class="toggle-label">Current Season Only <button type="button" class="help-tip" data-help="season-only">?</button></span>
           </label>
         </div>
       </div>
@@ -232,6 +232,6 @@
 
   </div>
 
-  <script type="module" src="js/app.js?v=1775897916"></script>
+  <script type="module" src="js/app.js?v=1775901262"></script>
 </body>
 </html>
