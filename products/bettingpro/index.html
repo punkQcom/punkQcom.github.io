@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>BettingPro — Sports Betting Calculator</title>
-  <link rel="stylesheet" href="css/style.css?v=1775903174">
+  <link rel="stylesheet" href="css/style.css?v=1775907473">
 </head>
 <body>
   <div class="container">
@@ -85,6 +85,10 @@
             <div class="slider-panel-item">
               <label>Form Boost: <span id="fp-form-boost-value">3%</span> <button type="button" class="help-tip" data-help="form-boost">?</button></label>
               <input type="range" id="fp-form-boost-slider" min="0" max="5" step="1" value="3">
+            </div>
+            <div class="slider-panel-item">
+              <label>Bayesian Prior: <span id="fp-prior-weight-value">5</span> <button type="button" class="help-tip" data-help="prior-weight">?</button></label>
+              <input type="range" id="fp-prior-weight-slider" min="0" max="15" step="1" value="5">
             </div>
             <div class="slider-panel-item">
               <label>Prev Season: <span id="fp-prev-season-value">--</span> <button type="button" class="help-tip" data-help="prev-season">?</button></label>
@@ -186,6 +190,12 @@
         <input type="range" id="form-boost-slider" min="0" max="5" step="1" value="3">
       </div>
       <div class="setting">
+        <label>Bayesian Prior: <span id="prior-weight-value">5</span>
+          <button type="button" class="help-tip" data-help="prior-weight">?</button>
+        </label>
+        <input type="range" id="prior-weight-slider" min="0" max="15" step="1" value="5">
+      </div>
+      <div class="setting">
         <label>Kelly Fraction: <span id="kelly-fraction-value">25%</span>
           <button type="button" class="help-tip" data-help="kelly">?</button>
         </label>
@@ -237,6 +247,6 @@
 
   </div>
 
-  <script type="module" src="js/app.js?v=1775903174"></script>
+  <script type="module" src="js/app.js?v=1775907473"></script>
 </body>
 </html>
