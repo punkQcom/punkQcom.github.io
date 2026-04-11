@@ -762,6 +762,53 @@ const helpContent = {
       </div>
     `,
   },
+  'season-only': {
+    title: 'Current Season Only',
+    body: `
+      <p><strong>What it does:</strong> Overrides the prediction model to use <em>only</em> current season match data — no bookmaker odds, no previous season Elo carry, and no Bayesian shrinkage toward league averages.</p>
+      <div class="help-section">
+        <p><strong>What changes:</strong></p>
+        <ul>
+          <li><strong>Bookmaker odds ignored:</strong> Model probabilities come 100% from match statistics, not blended with market prices</li>
+          <li><strong>No previous season:</strong> All teams start from Elo 1500 — only current season results matter</li>
+          <li><strong>No Bayesian shrinkage:</strong> Team attack/defense stats are taken at face value, not pulled toward league average</li>
+          <li><strong>Model-implied odds:</strong> Shown in the Match Outcome section as fair odds derived purely from the model</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>When to use it:</strong></p>
+        <ul>
+          <li>A newly promoted team is outperforming bookmaker expectations</li>
+          <li>You want to see what the raw data says without market influence</li>
+          <li>Early season when bookmakers may be slow to adjust</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Caution:</strong> With few matches played, predictions will be volatile. For international leagues with very sparse fixtures, results may be unreliable.</p>
+      </div>
+
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Mitä tekee:</strong> Ohittaa ennustemallin ja käyttää <em>vain</em> kuluvan kauden otteludataa — ei vedonlyöntikertoimia, ei edellisen kauden Elo-siirtoa, eikä Bayesilaista kutistusta.</p>
+      <div class="help-section">
+        <p><strong>Mikä muuttuu:</strong></p>
+        <ul>
+          <li><strong>Kertoimet ohitetaan:</strong> Todennäköisyydet tulevat 100% ottelutilastoista</li>
+          <li><strong>Ei edellistä kautta:</strong> Kaikki joukkueet aloittavat Elo 1500:sta</li>
+          <li><strong>Ei Bayesilaista kutistusta:</strong> Hyökkäys-/puolustustilastot otetaan sellaisenaan</li>
+          <li><strong>Mallin kertoimet:</strong> Näytetään Match Outcome -osiossa</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Milloin käyttää:</strong></p>
+        <ul>
+          <li>Noussut joukkue pelaa odotuksia paremmin</li>
+          <li>Haluat nähdä mitä pelkkä data sanoo ilman markkinoiden vaikutusta</li>
+          <li>Kauden alussa kun vedonlyöjät eivät ole vielä sopeutuneet</li>
+        </ul>
+      </div>
+    `,
+  },
   'kelly': {
     title: 'Kelly Fraction',
     body: `
