@@ -540,9 +540,10 @@ summary .help-tip {
 .slider-panel {
   position: fixed;
   top: 12px;
-  right: 12px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 100;
-  width: 320px;
+  width: min(680px, calc(100vw - 24px));
   background: #1a1a2e;
   border: 1px solid #3b82f6;
   border-radius: 8px;
@@ -604,6 +605,22 @@ summary .help-tip {
 
 .slider-panel-toggle:hover {
   color: #e0e0e0;
+}
+
+.slider-panel-close {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1;
+  transition: color 0.15s;
+  margin-left: 2px;
+}
+
+.slider-panel-close:hover {
+  color: #ef4444;
 }
 
 .slider-panel-body {
@@ -720,6 +737,7 @@ summary .help-tip {
     left: 0;
     right: 0;
     width: auto;
+    transform: none;
     border-radius: 8px 8px 0 0;
     margin-bottom: 0;
     z-index: 100;
