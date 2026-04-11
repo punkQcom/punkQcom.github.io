@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>BettingPro — Sports Betting Calculator</title>
-  <link rel="stylesheet" href="css/style.css?v=1775907473">
+  <link rel="stylesheet" href="css/style.css?v=1775917904">
 </head>
 <body>
   <div class="container">
@@ -94,12 +94,14 @@
               <label>Prev Season: <span id="fp-prev-season-value">--</span> <button type="button" class="help-tip" data-help="prev-season">?</button></label>
               <input type="range" id="fp-prev-season-slider" min="0" max="100" step="1" value="50">
             </div>
+            <div class="slider-panel-item slider-panel-toggle-item">
+              <label class="slider-panel-override">
+                <input type="checkbox" id="fp-season-only">
+                <span class="toggle-switch"></span>
+                <span class="toggle-label">Season Only <button type="button" class="help-tip" data-help="season-only">?</button></span>
+              </label>
+            </div>
           </div>
-          <label class="slider-panel-override">
-            <input type="checkbox" id="fp-season-only">
-            <span class="toggle-switch"></span>
-            <span class="toggle-label">Current Season Only <button type="button" class="help-tip" data-help="season-only">?</button></span>
-          </label>
           <div id="match-depth-row" class="slider-panel-depth" hidden>
             <label>Match Depth: <span id="match-depth-value">All</span> <button type="button" class="help-tip" data-help="match-depth">?</button></label>
             <input type="range" id="match-depth-slider" min="10" max="200" step="10" value="200">
@@ -247,6 +249,6 @@
 
   </div>
 
-  <script type="module" src="js/app.js?v=1775907473"></script>
+  <script type="module" src="js/app.js?v=1775917904"></script>
 </body>
 </html>
