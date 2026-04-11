@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775862519';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775862519';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775862519';
+import { shinProbabilities } from './shin.js?v=1775889690';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775889690';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775889690';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775862519';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775889690';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775862519';
+} from './ui.js?v=1775889690';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -1119,6 +1119,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Reset button — restore all model sliders to auto-calculated defaults
   document.getElementById('slider-panel-reset')?.addEventListener('click', (e) => {
     e.stopPropagation(); // Don't trigger header collapse toggle
+
+    // Turn off Current Season Only if active
+    const seasonOnlyToggle = document.getElementById('fp-season-only');
+    if (seasonOnlyToggle?.checked) {
+      seasonOnlyToggle.checked = false;
+      setSeasonOnlyDisabledState(false);
+    }
+
     const matchCount = (currentLeagueData?.matches || []).length;
     updateMarketTrustDefault(matchCount);
     updatePrevSeasonDefault(matchCount);
@@ -1142,6 +1150,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (fpFb) fpFb.value = 3;
     if (fpFbLabel) fpFbLabel.textContent = '3%';
 
+    updateEloTable();
+    reanalyzeIfNeeded();
+  });
+
+  // Current Season Only toggle — ignore bookmaker odds + previous season
+  function setSliderValue(settId, fpId, value, fmt) {
+    const sett = document.getElementById(settId);
+    const fp = document.getElementById(fpId);
+    const settLabel = document.getElementById(settId.replace('-slider', '-value'));
+    const fpLabel = document.getElementById(fpId.replace('-slider', '-value'));
+    if (sett) sett.value = value;
+    if (fp) fp.value = value;
+    const text = fmt(value);
+    if (settLabel) settLabel.textContent = text;
+    if (fpLabel) fpLabel.textContent = text;
+  }
+
+  function setSeasonOnlyDisabledState(disabled) {
+    // Market Trust item (1st) and Prev Season item (4th)
+    const items = document.querySelectorAll('.slider-panel-item');
+    if (items[0]) items[0].classList.toggle('disabled', disabled);
+    if (items[3]) items[3].classList.toggle('disabled', disabled);
+    // Also disable the settings-section sliders
+    const mt = document.getElementById('market-trust-slider');
+    const ps = document.getElementById('prev-season-slider');
+    if (mt) mt.disabled = disabled;
+    if (ps) ps.disabled = disabled;
+  }
+
+  document.getElementById('fp-season-only')?.addEventListener('change', (e) => {
+    const on = e.target.checked;
+    if (on) {
+      setSliderValue('market-trust-slider', 'fp-market-trust-slider', 0, v => v + '%');
+      setSliderValue('prev-season-slider', 'fp-prev-season-slider', 0, v => v + '%');
+    } else {
+      const matchCount = (currentLeagueData?.matches || []).length;
+      updateMarketTrustDefault(matchCount);
+      updatePrevSeasonDefault(matchCount);
+    }
+    setSeasonOnlyDisabledState(on);
     updateEloTable();
     reanalyzeIfNeeded();
   });
