@@ -809,6 +809,30 @@ const helpContent = {
       </div>
     `,
   },
+  'match-depth': {
+    title: 'Match Depth',
+    body: `
+      <p><strong>What it does:</strong> Controls how many recent matches are used to build team statistics when <em>Current Season Only</em> is active. Only available for international leagues.</p>
+      <div class="help-section">
+        <p><strong>Why it matters:</strong> International fixtures span multiple years and tournaments. Using all history (200+ matches) dilutes recent form. Limiting to the last 30–50 matches focuses on current team quality.</p>
+      </div>
+      <div class="help-section">
+        <p><strong>Settings:</strong></p>
+        <ul>
+          <li><strong>All (200):</strong> Uses every match in the database — maximum data, slower to react to changes</li>
+          <li><strong>50–100:</strong> Good balance — captures recent trends while having enough data for reliable stats</li>
+          <li><strong>10–30:</strong> Very reactive — emphasises the latest form, but volatile with small samples</li>
+        </ul>
+      </div>
+
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Mitä tekee:</strong> Säätää kuinka monta viimeisintä ottelua käytetään joukkuetilastojen laskemiseen kun <em>Vain kuluva kausi</em> on päällä. Käytettävissä vain kansainvälisissä sarjoissa.</p>
+      <div class="help-section">
+        <p><strong>Miksi tällä on väliä:</strong> Kansainväliset ottelut kattavat useita vuosia ja turnauksia. Kaiken historian käyttäminen laimentaa viimeaikaista virettä. Rajaaminen viimeisiin 30–50 otteluun keskittyy nykyiseen joukkueiden tasoon.</p>
+      </div>
+    `,
+  },
   'kelly': {
     title: 'Kelly Fraction',
     body: `

@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>BettingPro — Sports Betting Calculator</title>
-  <link rel="stylesheet" href="css/style.css?v=1775902860">
+  <link rel="stylesheet" href="css/style.css?v=1775903174">
 </head>
 <body>
   <div class="container">
@@ -96,6 +96,10 @@
             <span class="toggle-switch"></span>
             <span class="toggle-label">Current Season Only <button type="button" class="help-tip" data-help="season-only">?</button></span>
           </label>
+          <div id="match-depth-row" class="slider-panel-depth" hidden>
+            <label>Match Depth: <span id="match-depth-value">All</span> <button type="button" class="help-tip" data-help="match-depth">?</button></label>
+            <input type="range" id="match-depth-slider" min="10" max="200" step="10" value="200">
+          </div>
         </div>
       </div>
 
@@ -233,6 +237,6 @@
 
   </div>
 
-  <script type="module" src="js/app.js?v=1775902860"></script>
+  <script type="module" src="js/app.js?v=1775903174"></script>
 </body>
 </html>

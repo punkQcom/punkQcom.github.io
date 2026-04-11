@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775902860';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775902860';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775902860';
+import { shinProbabilities } from './shin.js?v=1775903174';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775903174';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775903174';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775902860';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775903174';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775902860';
+} from './ui.js?v=1775903174';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -994,7 +994,7 @@ async function analyzeMatch(homeName, awayName, { scroll = true } = {}) {
         season: currentSeason,
         homeName,
         awayName,
-        settings: { rho, marketTrust, halfLife, formBoost, seasonOnly },
+        settings: { rho, marketTrust, halfLife, formBoost, seasonOnly, ...(seasonOnly && getMatchDepth() ? { matchDepth: getMatchDepth() } : {}) },
       }),
     });
 
@@ -1228,6 +1228,68 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (ps) ps.disabled = disabled;
   }
 
+  function getMatchDepth() {
+    const slider = document.getElementById('match-depth-slider');
+    const val = slider ? parseInt(slider.value) : 200;
+    return val >= 200 ? null : val; // null = all matches
+  }
+
+  function updateMatchDepthLabel() {
+    const label = document.getElementById('match-depth-value');
+    const depth = getMatchDepth();
+    if (label) label.textContent = depth ? `Last ${depth}` : 'All';
+  }
+
+  function showMatchDepthIfNeeded(on) {
+    const row = document.getElementById('match-depth-row');
+    if (!row) return;
+    const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
+    row.hidden = !(on && leagueCfg?.isInternational);
+  }
+
+  async function fetchSeasonOnlyBulk() {
+    const depth = getMatchDepth();
+    try {
+      const res = await fetch(`${API_BASE}/predict`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          league: currentLeagueId,
+          season: currentSeason,
+          bulk: true,
+          settings: {
+            seasonOnly: true,
+            rho: parseFloat(document.getElementById('rho-slider').value),
+            formBoost: parseInt(document.getElementById('form-boost-slider').value),
+            ...(depth ? { matchDepth: depth } : {}),
+          },
+        }),
+      });
+      if (res.ok) {
+        seasonOnlyData = await res.json();
+        renderDateView({ skipAutoScroll: true });
+        if (seasonOnlyData.tracker) {
+          const trackerDetails = document.getElementById('tracker-container')?.closest('details');
+          if (trackerDetails) trackerDetails.open = true;
+          renderTracker(seasonOnlyData.tracker, 'tracker-container');
+        }
+        if (seasonOnlyData.plSimulation) {
+          const plDetails = document.getElementById('pl-container')?.closest('details');
+          if (plDetails) plDetails.open = true;
+          renderPLSimulation(seasonOnlyData.plSimulation, 'pl-container');
+        }
+        const eloDetails = document.getElementById('elo-table')?.closest('details');
+        if (eloDetails) eloDetails.open = true;
+      } else {
+        console.error('Bulk seasonOnly API error:', res.status);
+      }
+    } catch (err) {
+      console.error('Bulk seasonOnly fetch failed:', err);
+    }
+    updateEloTable();
+    reanalyzeIfNeeded();
+  }
+
   // Shared handler for both season-only toggles
   async function handleSeasonOnlyToggle(on) {
     // Sync both checkboxes
@@ -1235,50 +1297,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const barToggle = document.getElementById('bar-season-only');
     if (fpToggle) fpToggle.checked = on;
     if (barToggle) barToggle.checked = on;
+    showMatchDepthIfNeeded(on);
 
     if (on) {
       setSliderValue('market-trust-slider', 'fp-market-trust-slider', 0, v => v + '%');
       setSliderValue('prev-season-slider', 'fp-prev-season-slider', 0, v => v + '%');
-
-      // Fetch bulk season-only predictions
-      try {
-        const res = await fetch(`${API_BASE}/predict`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            league: currentLeagueId,
-            season: currentSeason,
-            bulk: true,
-            settings: {
-              seasonOnly: true,
-              rho: parseFloat(document.getElementById('rho-slider').value),
-              formBoost: parseInt(document.getElementById('form-boost-slider').value),
-            },
-          }),
-        });
-        if (res.ok) {
-          seasonOnlyData = await res.json();
-          renderDateView({ skipAutoScroll: true });
-          // Open and render tracker + simulation sections
-          if (seasonOnlyData.tracker) {
-            const trackerDetails = document.getElementById('tracker-container')?.closest('details');
-            if (trackerDetails) trackerDetails.open = true;
-            renderTracker(seasonOnlyData.tracker, 'tracker-container');
-          }
-          if (seasonOnlyData.plSimulation) {
-            const plDetails = document.getElementById('pl-container')?.closest('details');
-            if (plDetails) plDetails.open = true;
-            renderPLSimulation(seasonOnlyData.plSimulation, 'pl-container');
-          }
-          // Open Elo section too
-          const eloDetails = document.getElementById('elo-table')?.closest('details');
-          if (eloDetails) eloDetails.open = true;
-        } else {
-          console.error('Bulk seasonOnly API error:', res.status);
-        }
-      } catch (err) {
-        console.error('Bulk seasonOnly fetch failed:', err);
-      }
+      await fetchSeasonOnlyBulk();
     } else {
       seasonOnlyData = null;
       const matchCount = (currentLeagueData?.matches || []).length;
@@ -1290,11 +1314,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderPLSimulationFiltered();
     }
     setSeasonOnlyDisabledState(on);
-    updateEloTable();
-    // Auto-open Elo section so the change is visible
-    const eloDetails = document.getElementById('elo-table')?.closest('details');
-    if (eloDetails) eloDetails.open = true;
-    reanalyzeIfNeeded();
+    if (!on) {
+      updateEloTable();
+      reanalyzeIfNeeded();
+    }
   }
 
   document.getElementById('fp-season-only')?.addEventListener('change', (e) => {
@@ -1302,6 +1325,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   document.getElementById('bar-season-only')?.addEventListener('change', (e) => {
     handleSeasonOnlyToggle(e.target.checked);
+  });
+
+  // Match Depth slider — re-fetch bulk predictions with new depth
+  let depthTimer = null;
+  document.getElementById('match-depth-slider')?.addEventListener('input', () => {
+    updateMatchDepthLabel();
+    clearTimeout(depthTimer);
+    depthTimer = setTimeout(() => {
+      if (document.getElementById('fp-season-only')?.checked) {
+        fetchSeasonOnlyBulk();
+      }
+    }, 400);
   });
 
   // Display settings — re-render from cached API response (no API call)
