@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775890474';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775890474';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775890474';
+import { shinProbabilities } from './shin.js?v=1775890628';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775890628';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775890628';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775890474';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775890628';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775890474';
+} from './ui.js?v=1775890628';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -1130,9 +1130,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     e.stopPropagation(); // Don't trigger header collapse toggle
 
     // Turn off Current Season Only if active
-    const seasonOnlyToggle = document.getElementById('fp-season-only');
-    if (seasonOnlyToggle?.checked) {
-      seasonOnlyToggle.checked = false;
+    const fpToggle = document.getElementById('fp-season-only');
+    const barToggle = document.getElementById('bar-season-only');
+    if (fpToggle?.checked || barToggle?.checked) {
+      if (fpToggle) fpToggle.checked = false;
+      if (barToggle) barToggle.checked = false;
       setSeasonOnlyDisabledState(false);
     }
 
@@ -1188,8 +1190,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (ps) ps.disabled = disabled;
   }
 
-  document.getElementById('fp-season-only')?.addEventListener('change', (e) => {
-    const on = e.target.checked;
+  // Shared handler for both season-only toggles
+  function handleSeasonOnlyToggle(on) {
+    // Sync both checkboxes
+    const fpToggle = document.getElementById('fp-season-only');
+    const barToggle = document.getElementById('bar-season-only');
+    if (fpToggle) fpToggle.checked = on;
+    if (barToggle) barToggle.checked = on;
+
     if (on) {
       setSliderValue('market-trust-slider', 'fp-market-trust-slider', 0, v => v + '%');
       setSliderValue('prev-season-slider', 'fp-prev-season-slider', 0, v => v + '%');
@@ -1204,6 +1212,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     setSeasonOnlyDisabledState(on);
     updateEloTable();
     reanalyzeIfNeeded();
+  }
+
+  document.getElementById('fp-season-only')?.addEventListener('change', (e) => {
+    handleSeasonOnlyToggle(e.target.checked);
+  });
+  document.getElementById('bar-season-only')?.addEventListener('change', (e) => {
+    handleSeasonOnlyToggle(e.target.checked);
   });
 
   // Display settings — re-render from cached API response (no API call)
