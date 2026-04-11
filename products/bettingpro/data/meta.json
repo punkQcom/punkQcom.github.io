@@ -229,6 +229,9 @@
     }
   ],
   "previousSeasons": {
-    "mens_international": []
+    "mens_international": [],
+    "veikkausliiga": [
+      2025
+    ]
   }
 }
