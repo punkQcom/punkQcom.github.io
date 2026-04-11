@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775890628';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775890628';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775890628';
+import { shinProbabilities } from './shin.js?v=1775891390';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775891390';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775891390';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775890628';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775891390';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775890628';
+} from './ui.js?v=1775891390';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -53,6 +53,9 @@ let currentAnalyzedMatch = null;
 // Cached API response for display-only recalculations (kelly/bankroll/edge changes)
 let lastApiResponse = null;
 let lastAnalysisContext = null;
+
+// Cached season-only bulk predictions (when toggle is on)
+let seasonOnlyData = null;
 
 // ── Odds utilities (standard format handling, not model secrets) ─────
 
@@ -616,9 +619,10 @@ function formatDate(dateStr) {
  * Look up prediction from precomputed data (fast, no model computation).
  */
 function predictMatch(homeName, awayName) {
-  if (!precomputedData?.predictions) return null;
+  const source = seasonOnlyData?.predictions || precomputedData?.predictions;
+  if (!source) return null;
   const key = `${homeName} vs ${awayName}`;
-  return precomputedData.predictions[key] || null;
+  return source[key] || null;
 }
 
 function initDateView(data) {
@@ -1191,7 +1195,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Shared handler for both season-only toggles
-  function handleSeasonOnlyToggle(on) {
+  async function handleSeasonOnlyToggle(on) {
     // Sync both checkboxes
     const fpToggle = document.getElementById('fp-season-only');
     const barToggle = document.getElementById('bar-season-only');
@@ -1201,10 +1205,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (on) {
       setSliderValue('market-trust-slider', 'fp-market-trust-slider', 0, v => v + '%');
       setSliderValue('prev-season-slider', 'fp-prev-season-slider', 0, v => v + '%');
+
+      // Fetch bulk season-only predictions
+      try {
+        const res = await fetch(`${API_BASE}/predict`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            league: currentLeagueId,
+            season: currentSeason,
+            bulk: true,
+            settings: { seasonOnly: true },
+          }),
+        });
+        if (res.ok) {
+          seasonOnlyData = await res.json();
+          renderDateView({ skipAutoScroll: true });
+          if (seasonOnlyData.tracker) renderTracker(seasonOnlyData.tracker, 'tracker-container');
+          if (seasonOnlyData.plSimulation) renderPLSimulation(seasonOnlyData.plSimulation, 'pl-container');
+        }
+      } catch (err) {
+        console.error('Bulk seasonOnly fetch failed:', err);
+      }
     } else {
+      seasonOnlyData = null;
       const matchCount = (currentLeagueData?.matches || []).length;
       updateMarketTrustDefault(matchCount);
       updatePrevSeasonDefault(matchCount);
+      renderDateView({ skipAutoScroll: true });
       // Restore precomputed tracker + simulation
       renderTrackerFiltered();
       renderPLSimulationFiltered();
