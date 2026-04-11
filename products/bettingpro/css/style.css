@@ -766,18 +766,20 @@ summary .help-tip {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid #2a2a4a;
+  gap: 4px;
+  flex: 0 !important;
+  min-width: auto !important;
+  align-self: end;
+  padding-bottom: 6px;
 }
 
 .season-only-label {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: #9ca3af;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  white-space: nowrap;
 }
 
 .season-only-toggle {
