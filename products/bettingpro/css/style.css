@@ -653,6 +653,20 @@ summary .help-tip {
   pointer-events: none;
 }
 
+.slider-panel-depth {
+  margin-top: 8px;
+}
+
+.slider-panel-depth label {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.slider-panel-depth input[type="range"] {
+  margin-top: 2px;
+  width: 100%;
+}
+
 .slider-panel-override {
   display: flex;
   align-items: center;
