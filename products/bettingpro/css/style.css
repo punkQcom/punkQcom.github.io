@@ -538,14 +538,15 @@ summary .help-tip {
 
 /* === Floating Model Sliders === */
 .slider-panel {
-  position: sticky;
+  position: fixed;
   top: 12px;
-  z-index: 50;
+  right: 12px;
+  z-index: 100;
+  width: 320px;
   background: #1a1a2e;
   border: 1px solid #3b82f6;
   border-radius: 8px;
   padding: 0;
-  margin-bottom: 16px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   transition: opacity 0.15s;
 }
@@ -718,6 +719,7 @@ summary .help-tip {
     top: auto;
     left: 0;
     right: 0;
+    width: auto;
     border-radius: 8px 8px 0 0;
     margin-bottom: 0;
     z-index: 100;
