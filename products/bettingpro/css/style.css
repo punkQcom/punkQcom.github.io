@@ -671,9 +671,18 @@ summary .help-tip {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 8px;
   cursor: pointer;
   user-select: none;
+}
+
+.slider-panel-toggle-item {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 4px;
+}
+
+.slider-panel-toggle-item .slider-panel-override {
+  margin-top: 0;
 }
 
 .slider-panel-override input[type="checkbox"] {
