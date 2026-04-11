@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775902069';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775902069';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775902069';
+import { shinProbabilities } from './shin.js?v=1775902860';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775902860';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775902860';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775902069';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775902860';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775902069';
+} from './ui.js?v=1775902860';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -361,6 +361,38 @@ function updateEloTable() {
     for (const row of prevTable) prevRatings[row.team] = row.rating;
     // Regress: 0% slider → full regression (factor=1), 100% → no regression (factor=0)
     initialRatings = regressToMean(prevRatings, 1 - sliderPct / 100);
+  }
+
+  // When seasonOnly is active and bulk API returned Elo ratings, use those
+  // as initial ratings so the table reflects the backend's pure-season model
+  // (important for internationals where FIFA seeding is stripped).
+  if (seasonOnly && seasonOnlyData?.eloRatings) {
+    // Backend eloRatings already include match results — render directly
+    const apiElo = seasonOnlyData.eloRatings;
+    const eloData = Object.entries(apiElo)
+      .map(([team, rating]) => {
+        // Find form from matches
+        const teamMatches = matches.filter(m => m.homeTeam === team || m.awayTeam === team);
+        const form = teamMatches.slice(-5).map(m => {
+          const gf = m.homeTeam === team ? m.homeGoals : m.awayGoals;
+          const ga = m.homeTeam === team ? m.awayGoals : m.homeGoals;
+          return gf > ga ? 'W' : gf === ga ? 'D' : 'L';
+        });
+        return { team, rating: Math.round(rating), change: 0, form, played: teamMatches.length };
+      })
+      .sort((a, b) => b.rating - a.rating);
+    eloData.forEach((t, i) => t.rank = i + 1);
+
+    const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
+    const cap = leagueCfg?.isInternational ? 100 : null;
+    let scopeTeamNames = null;
+    if (currentTournamentFilter !== 'all') {
+      const filteredMatches = [...matches, ...(currentLeagueData?.upcoming || [])]
+        .filter(m => m.tournamentId === currentTournamentFilter);
+      scopeTeamNames = Array.from(new Set(filteredMatches.flatMap(m => [m.homeTeam, m.awayTeam])));
+    }
+    renderEloTable(eloData, 'elo-table', { cap, scopeTeamNames });
+    return;
   }
 
   const eloData = buildEloTable(matches, initialRatings);
