@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775892280';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775892280';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775892280';
+import { shinProbabilities } from './shin.js?v=1775896706';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775896706';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775896706';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775892280';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775896706';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775892280';
+} from './ui.js?v=1775896706';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -1253,6 +1253,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     setSeasonOnlyDisabledState(on);
     updateEloTable();
+    // Auto-open Elo section so the change is visible
+    const eloDetails = document.getElementById('elo-table')?.closest('details');
+    if (eloDetails) eloDetails.open = true;
     reanalyzeIfNeeded();
   }
 
