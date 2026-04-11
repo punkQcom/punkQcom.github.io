@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775903174';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775903174';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775903174';
+import { shinProbabilities } from './shin.js?v=1775907473';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775907473';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775907473';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775903174';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775907473';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775903174';
+} from './ui.js?v=1775907473';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -332,6 +332,23 @@ function updatePrevSeasonDefault(matchCount) {
 }
 
 /**
+ * Set Bayesian Prior Weight default based on league type (international vs club).
+ */
+function updatePriorWeightDefault() {
+  const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
+  const defaultPW = leagueCfg?.isInternational ? 8 : 5;
+  const slider = document.getElementById('prior-weight-slider');
+  const label = document.getElementById('prior-weight-value');
+  if (!slider) return;
+  slider.value = defaultPW;
+  if (label) label.textContent = String(defaultPW);
+  const fp = document.getElementById('fp-prior-weight-slider');
+  const fpLabel = document.getElementById('fp-prior-weight-value');
+  if (fp) fp.value = defaultPW;
+  if (fpLabel) fpLabel.textContent = String(defaultPW);
+}
+
+/**
  * Regress Elo ratings toward the mean (1500) between seasons.
  * factor=0 means no regression (keep as-is), factor=1 means reset to 1500.
  */
@@ -438,6 +455,7 @@ async function loadAndShowLeague(leagueId, season) {
   const matchCount = (currentLeagueData?.matches || []).length;
   updateMarketTrustDefault(matchCount);
   updatePrevSeasonDefault(matchCount);
+  updatePriorWeightDefault();
 
   // Tournament filter: smart default picks wc26 if any WC26 match is ±30 days,
   // otherwise 'all'. Hidden entirely for leagues with no tournaments.
@@ -977,6 +995,7 @@ async function analyzeMatch(homeName, awayName, { scroll = true } = {}) {
   const rho = parseFloat(document.getElementById('rho-slider').value);
   const marketTrust = parseInt(document.getElementById('market-trust-slider').value);
   const formBoost = parseInt(document.getElementById('form-boost-slider').value);
+  const priorWeight = parseInt(document.getElementById('prior-weight-slider').value);
   const halfLife = leagueCfg?.isInternational ? 730 : 60;
   const seasonOnly = document.getElementById('fp-season-only')?.checked || false;
 
@@ -994,7 +1013,7 @@ async function analyzeMatch(homeName, awayName, { scroll = true } = {}) {
         season: currentSeason,
         homeName,
         awayName,
-        settings: { rho, marketTrust, halfLife, formBoost, seasonOnly, ...(seasonOnly && getMatchDepth() ? { matchDepth: getMatchDepth() } : {}) },
+        settings: { rho, marketTrust, halfLife, formBoost, priorWeight, seasonOnly, ...(seasonOnly && getMatchDepth() ? { matchDepth: getMatchDepth() } : {}) },
       }),
     });
 
@@ -1151,7 +1170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupHelpModal();
 
   // Model sliders — only trigger re-analysis of current match (API call)
-  for (const id of ['rho-slider', 'market-trust-slider', 'form-boost-slider']) {
+  for (const id of ['rho-slider', 'market-trust-slider', 'form-boost-slider', 'prior-weight-slider']) {
     document.getElementById(id).addEventListener('input', reanalyzeIfNeeded);
   }
 
@@ -1199,6 +1218,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (fpFb) fpFb.value = 3;
     if (fpFbLabel) fpFbLabel.textContent = '3%';
 
+    const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
+    const defaultPW = leagueCfg?.isInternational ? 8 : 5;
+    const pwSlider = document.getElementById('prior-weight-slider');
+    const pwLabel = document.getElementById('prior-weight-value');
+    const fpPw = document.getElementById('fp-prior-weight-slider');
+    const fpPwLabel = document.getElementById('fp-prior-weight-value');
+    if (pwSlider) pwSlider.value = defaultPW;
+    if (pwLabel) pwLabel.textContent = String(defaultPW);
+    if (fpPw) fpPw.value = defaultPW;
+    if (fpPwLabel) fpPwLabel.textContent = String(defaultPW);
+
     updateEloTable();
     reanalyzeIfNeeded();
   });
@@ -1217,14 +1247,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function setSeasonOnlyDisabledState(disabled) {
-    // Market Trust item (1st) and Prev Season item (4th)
+    // Market Trust (0), Bayesian Prior (3), Prev Season (4)
     const items = document.querySelectorAll('.slider-panel-item');
     if (items[0]) items[0].classList.toggle('disabled', disabled);
     if (items[3]) items[3].classList.toggle('disabled', disabled);
+    if (items[4]) items[4].classList.toggle('disabled', disabled);
     // Also disable the settings-section sliders
     const mt = document.getElementById('market-trust-slider');
+    const pw = document.getElementById('prior-weight-slider');
     const ps = document.getElementById('prev-season-slider');
     if (mt) mt.disabled = disabled;
+    if (pw) pw.disabled = disabled;
     if (ps) ps.disabled = disabled;
   }
 
@@ -1302,12 +1335,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (on) {
       setSliderValue('market-trust-slider', 'fp-market-trust-slider', 0, v => v + '%');
       setSliderValue('prev-season-slider', 'fp-prev-season-slider', 0, v => v + '%');
+      setSliderValue('prior-weight-slider', 'fp-prior-weight-slider', 0, v => v);
       await fetchSeasonOnlyBulk();
     } else {
       seasonOnlyData = null;
       const matchCount = (currentLeagueData?.matches || []).length;
       updateMarketTrustDefault(matchCount);
       updatePrevSeasonDefault(matchCount);
+      updatePriorWeightDefault();
       renderDateView({ skipAutoScroll: true });
       // Restore precomputed tracker + simulation
       renderTrackerFiltered();

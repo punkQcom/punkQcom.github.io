@@ -404,6 +404,14 @@ export function setupSliders() {
     });
   }
 
+  const pwSlider = document.getElementById('prior-weight-slider');
+  const pwValue = document.getElementById('prior-weight-value');
+  if (pwSlider) {
+    pwSlider.addEventListener('input', () => {
+      pwValue.textContent = pwSlider.value;
+    });
+  }
+
   const edgeSlider = document.getElementById('edge-threshold-slider');
   const edgeValue = document.getElementById('edge-threshold-value');
   if (edgeSlider) {
@@ -442,6 +450,7 @@ function setupFloatingPanel() {
     ['fp-market-trust-slider', 'market-trust-slider', v => v + '%'],
     ['fp-rho-slider', 'rho-slider', v => parseFloat(v).toFixed(2)],
     ['fp-form-boost-slider', 'form-boost-slider', v => v + '%'],
+    ['fp-prior-weight-slider', 'prior-weight-slider', v => v],
     ['fp-prev-season-slider', 'prev-season-slider', v => v + '%'],
   ];
 
@@ -758,6 +767,64 @@ const helpContent = {
           <li><strong>0%:</strong> Ei viresäätöä</li>
           <li><strong>3% (oletus):</strong> +9% hyökkäysboosti W3+ putkelle</li>
           <li><strong>5% (max):</strong> +15% hyökkäysboosti W3+ putkelle</li>
+        </ul>
+      </div>
+    `,
+  },
+  'prior-weight': {
+    title: 'Bayesian Prior Weight',
+    body: `
+      <p><strong>What it does:</strong> Controls how much team attack/defense estimates are pulled toward the league average when data is limited. Higher values = stronger pull toward average (safer, less extreme); lower values = trust raw data more (riskier, sharper).</p>
+      <div class="help-section">
+        <p><strong>How it works:</strong></p>
+        <ul>
+          <li>Each team's attack and defense strengths are estimated from match results</li>
+          <li>With few matches, raw estimates can be wild — a team that scored 5 in their only game looks elite</li>
+          <li>Bayesian shrinkage blends the raw estimate with the league average, weighted by sample size</li>
+          <li>Formula: <code>effective = (raw × matches + prior × priorWeight) / (matches + priorWeight)</code></li>
+          <li>As more matches are played, the raw data naturally dominates regardless of this setting</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Slider values:</strong></p>
+        <ul>
+          <li><strong>0:</strong> No shrinkage — trust raw data completely (volatile early in season)</li>
+          <li><strong>5 (club default):</strong> Moderate shrinkage — good balance for domestic leagues with ~20-30 matches per team</li>
+          <li><strong>8 (international default):</strong> Stronger shrinkage — compensates for sparse international fixture schedules</li>
+          <li><strong>15 (max):</strong> Heavy shrinkage — predictions stay very close to league average</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>When to adjust:</strong></p>
+        <ul>
+          <li>Increase early in the season to stabilize volatile predictions</li>
+          <li>Decrease late in the season when you have plenty of data</li>
+          <li>Decrease if you see a team whose true strength is clearly different from the league average</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Note:</strong> Automatically set to 0 when "Current Season Only" is active (no shrinkage in that mode).</p>
+      </div>
+
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Mitä tekee:</strong> Säätää kuinka paljon joukkueiden hyökkäys-/puolustusarviot vedetään kohti sarjan keskiarvoa, kun dataa on vähän. Korkeammat arvot = vahvempi veto keskiarvoa kohti (turvallisempi); matalammat arvot = luota raakadataan enemmän (jyrkempi).</p>
+      <div class="help-section">
+        <p><strong>Miten toimii:</strong></p>
+        <ul>
+          <li>Joukkueiden hyökkäys- ja puolustusvahvuudet arvioidaan ottelutuloksista</li>
+          <li>Vähäisellä datalla raaka-arviot voivat olla villejä</li>
+          <li>Bayesilainen kutistus sekoittaa raaka-arvion sarjan keskiarvoon ottelumäärän mukaan</li>
+          <li>Kaava: <code>tehokas = (raaka × ottelut + priori × prioripaino) / (ottelut + prioripaino)</code></li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <p><strong>Liukusäätimen arvot:</strong></p>
+        <ul>
+          <li><strong>0:</strong> Ei kutistusta — luota raakadataan (ailahteleva kauden alussa)</li>
+          <li><strong>5 (seuraoletusarvo):</strong> Kohtuullinen kutistus — hyvä tasapaino kotimaisille sarjoille</li>
+          <li><strong>8 (maajoukkueoletusarvo):</strong> Vahvempi kutistus — kompensoi harvojen maaotteluiden dataa</li>
+          <li><strong>15 (max):</strong> Vahva kutistus — ennusteet pysyvät lähellä sarjan keskiarvoa</li>
         </ul>
       </div>
     `,
