@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1775897498';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775897498';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1775897498';
+import { shinProbabilities } from './shin.js?v=1775897916';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1775897916';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1775897916';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775897498';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1775897916';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext
-} from './ui.js?v=1775897498';
+} from './ui.js?v=1775897916';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -943,7 +943,6 @@ async function analyzeMatch(homeName, awayName, { scroll = true } = {}) {
   const rho = parseFloat(document.getElementById('rho-slider').value);
   const marketTrust = parseInt(document.getElementById('market-trust-slider').value);
   const formBoost = parseInt(document.getElementById('form-boost-slider').value);
-  const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
   const halfLife = leagueCfg?.isInternational ? 730 : 60;
   const seasonOnly = document.getElementById('fp-season-only')?.checked || false;
 
