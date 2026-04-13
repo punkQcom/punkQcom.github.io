@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /products/evolvai/
 
 Sitemap: https://punkq.com/sitemap.xml
