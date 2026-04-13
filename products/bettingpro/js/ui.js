@@ -1734,7 +1734,8 @@ export function renderTracker(trackerData, containerId) {
   html += '<thead><tr><th>Date</th><th>Match</th><th>Pred</th><th>Actual</th><th>1X2</th><th>Score</th></tr></thead>';
   html += '<tbody>';
 
-  for (const r of records) {
+  const sorted = [...records].reverse();
+  for (const r of sorted) {
     const ok1x2 = r.is1x2Correct ? '<span class="value-positive">OK</span>' : '<span class="value-negative">X</span>';
     const okScore = r.isScoreCorrect ? '<span class="value-positive">OK</span>' : '<span class="value-negative">X</span>';
     html += `<tr>
