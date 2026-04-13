@@ -1271,6 +1271,18 @@ details.card[open] summary h2::before {
   margin-top: 4px;
 }
 
+.tracker-scroll {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.tracker-scroll thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #1f2937;
+}
+
 .tracker-table td {
   font-size: 0.8rem;
 }
