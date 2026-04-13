@@ -1,3 +1,3 @@
-:HL["/products/evolvai/_next/static/chunks/0sm-~5-745gal.css","style"]
+:HL["/products/evolvai/_next/static/chunks/0.tt6bxu4a_i1.css","style"]
 :HL["https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"locale","param":{"type":"d","key":"fi","siblings":null},"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"U1CNBiFdrpY1o5RHXQCWf"}
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"locale","param":{"type":"d","key":"fi","siblings":null},"prefetchHints":0,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}}}},"staleTime":300,"buildId":"RMH_pkjIl9i9jCDDqvcje"}
