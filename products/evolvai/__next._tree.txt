@@ -1,2 +1,2 @@
-:HL["/products/evolvai/_next/static/chunks/0.tt6bxu4a_i1.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"w_v3bhAfnTNXix_HVcK0z"}
+:HL["/products/evolvai/_next/static/chunks/0x~wb-hhuiir~.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"Ip_s5lGvBhZnk6XwFR87_"}
