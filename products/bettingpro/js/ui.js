@@ -1708,7 +1708,7 @@ export function renderTracker(trackerData, containerId) {
   const { records, summary } = trackerData;
 
   if (records.length === 0) {
-    container.innerHTML = '<p class="muted">Not enough matches for prediction tracking (need 10+ finished matches)</p>';
+    container.innerHTML = '<p class="muted">No finished matches to track yet</p>';
     return;
   }
 
@@ -1728,13 +1728,13 @@ export function renderTracker(trackerData, containerId) {
   </div>`;
   html += '</div>';
 
-  // Last 20 predictions table
-  const recent = records.slice(-20).reverse();
+  // All predictions table (chronological, scrollable)
+  html += '<div class="tracker-scroll">';
   html += '<table class="results-table tracker-table">';
   html += '<thead><tr><th>Date</th><th>Match</th><th>Pred</th><th>Actual</th><th>1X2</th><th>Score</th></tr></thead>';
   html += '<tbody>';
 
-  for (const r of recent) {
+  for (const r of records) {
     const ok1x2 = r.is1x2Correct ? '<span class="value-positive">OK</span>' : '<span class="value-negative">X</span>';
     const okScore = r.isScoreCorrect ? '<span class="value-positive">OK</span>' : '<span class="value-negative">X</span>';
     html += `<tr>
@@ -1748,6 +1748,7 @@ export function renderTracker(trackerData, containerId) {
   }
 
   html += '</tbody></table>';
+  html += '</div>';
   container.innerHTML = html;
 }
 
