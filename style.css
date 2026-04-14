@@ -69,6 +69,23 @@ a {
     font-weight: 600;
 }
 
+.cta-link {
+    display: inline-block;
+    color: var(--glow);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-decoration: none;
+    padding: 12px 32px;
+    border: 1.5px solid var(--glow);
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s;
+}
+.cta-link:hover {
+    background: var(--glow);
+    color: var(--bg);
+}
+
 h1 {
     font-size: clamp(36px, 6vw, 72px);
     line-height: 1.05;
