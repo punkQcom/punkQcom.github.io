@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="punkQ Products — Q-Coding, Q-Review, Q-Deploy and more. AI-powered tools for modern development teams.">
+  <title>Products — punkQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo" aria-label="punkQ home">
+      <div class="logo-mark" aria-hidden="true">pQ</div>
+      <span>punkQ</span>
+    </a>
+    <ul class="nav-links" role="list">
+      <li><a href="index.html" class="nav-link" data-page="home">Home</a></li>
+      <li><a href="products.html" class="nav-link active" data-page="products">Products</a></li>
+      <li><a href="demo.html" class="nav-link" data-page="demo">Demo</a></li>
+      <li><a href="blog.html" class="nav-link" data-page="blog">Tech Notes</a></li>
+      <li><a href="about.html" class="nav-link" data-page="about">About</a></li>
+      <li><a href="contact.html" class="nav-link" data-page="contact">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark theme">
+        <span class="icon-sun" aria-hidden="true">☀️</span>
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+      </button>
+      <a href="contact.html" class="btn btn-primary btn-sm">Get Started</a>
+    </div>
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="nav-mobile">
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </button>
+  </div>
+</nav>
+<div class="nav-mobile" id="nav-mobile" role="navigation" aria-label="Mobile navigation">
+  <a href="index.html" class="nav-link" data-page="home">Home</a>
+  <a href="products.html" class="nav-link active" data-page="products">Products</a>
+  <a href="demo.html" class="nav-link" data-page="demo">Demo</a>
+  <a href="blog.html" class="nav-link" data-page="blog">Tech Notes</a>
+  <a href="about.html" class="nav-link" data-page="about">About</a>
+  <a href="contact.html" class="nav-link" data-page="contact">Contact</a>
+</div>
+
+<!-- ===== PAGE HEADER ===== -->
+<header class="page-header" id="main-content">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Our products</div>
+      <h1>The <span class="text-gradient">Q-Suite</span></h1>
+      <p>A complete AI-native toolchain for every phase of your development workflow — from first line to live deployment.</p>
+    </div>
+  </div>
+</header>
+
+<div class="section-divider"></div>
+
+<!-- ===== FEATURED PRODUCT: Q-CODING ===== -->
+<section class="section">
+  <div class="container">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:5rem; align-items:center;">
+      <div class="reveal">
+        <div class="section-label">Flagship</div>
+        <div class="tags" style="margin-bottom:1.25rem;">
+          <span class="tag">Core Product</span>
+          <span class="tag blue">Now in Beta</span>
+        </div>
+        <h2 style="margin-bottom:1rem;">Q-Coding</h2>
+        <p class="text-muted" style="margin-bottom:1.5rem; font-size:1.05rem; line-height:1.8;">
+          The AI coding assistant that actually understands your codebase.
+          Multi-agent orchestration, intelligent context windows, and proactive
+          code quality enforcement — all in one.
+        </p>
+        <div style="display:grid; gap:0.85rem; margin-bottom:2rem;">
+          <div style="display:flex; gap:0.75rem; align-items:flex-start;">
+            <span style="color:var(--color-accent); font-size:1rem; margin-top:0.1rem; flex-shrink:0;">✓</span>
+            <div>
+              <div style="font-weight:600; font-size:0.92rem;">Multi-agent task orchestration</div>
+              <div class="text-muted" style="font-size:0.84rem;">Delegate to specialised AI workers (coder, reviewer, QA) in parallel</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:0.75rem; align-items:flex-start;">
+            <span style="color:var(--color-accent); font-size:1rem; margin-top:0.1rem; flex-shrink:0;">✓</span>
+            <div>
+              <div style="font-weight:600; font-size:0.92rem;">Codebase-wide context</div>
+              <div class="text-muted" style="font-size:0.84rem;">Understands imports, architecture patterns, and cross-file dependencies</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:0.75rem; align-items:flex-start;">
+            <span style="color:var(--color-accent); font-size:1rem; margin-top:0.1rem; flex-shrink:0;">✓</span>
+            <div>
+              <div style="font-weight:600; font-size:0.92rem;">Automated test generation</div>
+              <div class="text-muted" style="font-size:0.84rem;">TDD-first suggestions with meaningful test coverage, not vanity metrics</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:0.75rem; align-items:flex-start;">
+            <span style="color:var(--color-accent); font-size:1rem; margin-top:0.1rem; flex-shrink:0;">✓</span>
+            <div>
+              <div style="font-weight:600; font-size:0.92rem;">IDE-agnostic integration</div>
+              <div class="text-muted" style="font-size:0.84rem;">VS Code, JetBrains, Neovim, and CLI — your workflow, your tools</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+          <a href="contact.html" class="btn btn-primary">Join Beta</a>
+          <a href="#" class="btn btn-outline">Read Docs</a>
+        </div>
+      </div>
+
+      <div class="reveal reveal-delay-2">
+        <div class="glass" style="padding:1.5rem; margin-bottom:1rem; glow-accent">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem;">
+            <div style="font-size:0.85rem; font-weight:700;">Agent Activity</div>
+            <div style="display:flex; gap:0.4rem; align-items:center; font-size:0.75rem; color:var(--color-accent);">
+              <div class="dot" style="width:7px; height:7px; background:var(--color-accent); border-radius:50%;"></div>
+              Live
+            </div>
+          </div>
+          <div style="display:grid; gap:0.75rem;">
+            <div class="glass" style="padding:0.85rem; display:flex; align-items:center; gap:0.75rem;">
+              <div style="width:34px; height:34px; border-radius:8px; background:color-mix(in srgb, var(--color-accent) 15%, transparent); display:flex; align-items:center; justify-content:center;">🧠</div>
+              <div style="flex:1;">
+                <div style="font-size:0.82rem; font-weight:600;">CTO Agent</div>
+                <div style="font-size:0.74rem; color:var(--color-text-muted);">Reviewing architecture decisions</div>
+              </div>
+              <div class="tag">Active</div>
+            </div>
+            <div class="glass" style="padding:0.85rem; display:flex; align-items:center; gap:0.75rem;">
+              <div style="width:34px; height:34px; border-radius:8px; background:color-mix(in srgb, var(--color-accent-2) 15%, transparent); display:flex; align-items:center; justify-content:center;">⚡</div>
+              <div style="flex:1;">
+                <div style="font-size:0.82rem; font-weight:600;">Developer Agent</div>
+                <div style="font-size:0.74rem; color:var(--color-text-muted);">Implementing auth middleware</div>
+              </div>
+              <div class="tag blue">Running</div>
+            </div>
+            <div class="glass" style="padding:0.85rem; display:flex; align-items:center; gap:0.75rem;">
+              <div style="width:34px; height:34px; border-radius:8px; background:color-mix(in srgb, var(--color-accent-3) 15%, transparent); display:flex; align-items:center; justify-content:center;">🔍</div>
+              <div style="flex:1;">
+                <div style="font-size:0.82rem; font-weight:600;">QA Agent</div>
+                <div style="font-size:0.74rem; color:var(--color-text-muted);">Writing integration tests</div>
+              </div>
+              <div class="tag yellow">Pending</div>
+            </div>
+          </div>
+        </div>
+        <div class="glass" style="padding:1rem 1.25rem; display:flex; align-items:center; gap:0.75rem;">
+          <span style="font-size:1.2rem;">📊</span>
+          <div style="flex:1;">
+            <div style="font-size:0.8rem; color:var(--color-text-muted);">Task completed in</div>
+            <div style="font-weight:700; font-size:1rem; color:var(--color-accent);">4.2 minutes</div>
+          </div>
+          <div style="font-size:0.75rem; color:var(--color-text-muted);">vs 3h manual estimate</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ===== OTHER PRODUCTS ===== -->
+<section class="section">
+  <div class="container">
+    <div class="reveal" style="text-align:center; margin-bottom:3rem;">
+      <div class="section-label">Also in the Q-Suite</div>
+      <h2>Tools that work <span class="text-gradient">together</span></h2>
+    </div>
+
+    <div class="grid-3">
+      <div class="glass card product-card reveal reveal-delay-1">
+        <div class="product-thumb">🔍</div>
+        <div class="tags" style="margin-bottom:1rem;">
+          <span class="tag blue">Coming Q3 2026</span>
+        </div>
+        <h3>Q-Review</h3>
+        <p style="margin-bottom:1.25rem;">Automated PR reviews that go beyond style checks. Catches logic errors, performance regressions, and security holes before your team has to.</p>
+        <a href="#" class="btn btn-outline btn-sm">Get Notified</a>
+      </div>
+
+      <div class="glass card product-card reveal reveal-delay-2">
+        <div class="product-thumb" style="font-size:2.5rem;">🚀</div>
+        <div class="tags" style="margin-bottom:1rem;">
+          <span class="tag yellow">Coming Q4 2026</span>
+        </div>
+        <h3>Q-Deploy</h3>
+        <p style="margin-bottom:1.25rem;">Zero-config deployment pipelines that understand your code. Rollback in one command, blue/green by default, cost visibility built in.</p>
+        <a href="#" class="btn btn-outline btn-sm">Get Notified</a>
+      </div>
+
+      <div class="glass card product-card reveal reveal-delay-3">
+        <div class="product-thumb" style="font-size:2.5rem;">📡</div>
+        <div class="tags" style="margin-bottom:1rem;">
+          <span class="tag">Early Access</span>
+        </div>
+        <h3>Q-Monitor</h3>
+        <p style="margin-bottom:1.25rem;">AI-powered observability that understands your business logic, not just your infrastructure. Alerts you when something actually matters.</p>
+        <a href="contact.html" class="btn btn-outline btn-sm">Request Access</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ===== TECH STACK ===== -->
+<section class="section">
+  <div class="container">
+    <div class="reveal" style="text-align:center; margin-bottom:3rem;">
+      <div class="section-label">Built on</div>
+      <h2>Best-in-class technology, zero lock-in</h2>
+      <p class="text-muted" style="margin-top:0.75rem; max-width:52ch; margin-inline:auto;">
+        We chose boring, proven tech at the foundation and only introduced novelty where it genuinely matters.
+      </p>
+    </div>
+
+    <div class="grid-4">
+      <div class="glass card reveal reveal-delay-1" style="text-align:center; padding:1.5rem;">
+        <div style="font-size:2rem; margin-bottom:0.75rem;">⚙️</div>
+        <div style="font-weight:700; font-size:0.92rem; margin-bottom:0.3rem;">Rust Core</div>
+        <div class="text-muted" style="font-size:0.8rem;">Memory-safe, zero-cost abstractions for agent runtime</div>
+      </div>
+      <div class="glass card reveal reveal-delay-2" style="text-align:center; padding:1.5rem;">
+        <div style="font-size:2rem; margin-bottom:0.75rem;">🐍</div>
+        <div style="font-weight:700; font-size:0.92rem; margin-bottom:0.3rem;">Python SDK</div>
+        <div class="text-muted" style="font-size:0.8rem;">FastAPI-based API layer, batteries included</div>
+      </div>
+      <div class="glass card reveal reveal-delay-3" style="text-align:center; padding:1.5rem;">
+        <div style="font-size:2rem; margin-bottom:0.75rem;">⚛️</div>
+        <div style="font-weight:700; font-size:0.92rem; margin-bottom:0.3rem;">React UI</div>
+        <div class="text-muted" style="font-size:0.8rem;">Type-safe frontend with TanStack Query</div>
+      </div>
+      <div class="glass card reveal reveal-delay-4" style="text-align:center; padding:1.5rem;">
+        <div style="font-size:2rem; margin-bottom:0.75rem;">🐘</div>
+        <div style="font-weight:700; font-size:0.92rem; margin-bottom:0.3rem;">PostgreSQL</div>
+        <div class="text-muted" style="font-size:0.8rem;">pgvector for embeddings, proven for scale</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="section">
+  <div class="container" style="text-align:center;">
+    <div class="reveal">
+      <h2 style="margin-bottom:1rem;">Start with Q-Coding today</h2>
+      <p class="text-muted" style="max-width:48ch; margin-inline:auto; margin-bottom:2.5rem;">
+        Beta access is free. No credit card needed. Cancel anytime (you won't want to).
+      </p>
+      <a href="contact.html" class="btn btn-primary btn-lg">Join the Beta</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="margin-bottom:0.75rem;">
+          <div class="logo-mark">pQ</div>
+          <span>punkQ</span>
+        </div>
+        <p>AI-powered coding intelligence for teams who ship fast and break nothing.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="products.html">Q-Coding</a>
+        <a href="products.html">Q-Review</a>
+        <a href="products.html">Q-Deploy</a>
+        <a href="products.html">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="about.html">About</a>
+        <a href="about.html">Team</a>
+        <a href="contact.html">Careers</a>
+        <a href="contact.html">Press</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="demo.html">Demo</a>
+        <a href="blog.html">Tech Notes</a>
+        <a href="#">GitHub</a>
+        <a href="#">Status</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 punkQ. All rights reserved.</span>
+      <span>Built with ❤️ by the Q-Coding division</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>

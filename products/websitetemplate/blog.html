@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="punkQ Tech Notes — Engineering insights, AI research, and development deep-dives from the Q-Coding division.">
+  <title>Tech Notes — punkQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo" aria-label="punkQ home">
+      <div class="logo-mark" aria-hidden="true">pQ</div>
+      <span>punkQ</span>
+    </a>
+    <ul class="nav-links" role="list">
+      <li><a href="index.html" class="nav-link" data-page="home">Home</a></li>
+      <li><a href="products.html" class="nav-link" data-page="products">Products</a></li>
+      <li><a href="demo.html" class="nav-link" data-page="demo">Demo</a></li>
+      <li><a href="blog.html" class="nav-link active" data-page="blog">Tech Notes</a></li>
+      <li><a href="about.html" class="nav-link" data-page="about">About</a></li>
+      <li><a href="contact.html" class="nav-link" data-page="contact">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark theme">
+        <span class="icon-sun" aria-hidden="true">☀️</span>
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+      </button>
+      <a href="contact.html" class="btn btn-primary btn-sm">Get Started</a>
+    </div>
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="nav-mobile">
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </button>
+  </div>
+</nav>
+<div class="nav-mobile" id="nav-mobile" role="navigation" aria-label="Mobile navigation">
+  <a href="index.html" class="nav-link" data-page="home">Home</a>
+  <a href="products.html" class="nav-link" data-page="products">Products</a>
+  <a href="demo.html" class="nav-link" data-page="demo">Demo</a>
+  <a href="blog.html" class="nav-link active" data-page="blog">Tech Notes</a>
+  <a href="about.html" class="nav-link" data-page="about">About</a>
+  <a href="contact.html" class="nav-link" data-page="contact">Contact</a>
+</div>
+
+<!-- ===== PAGE HEADER ===== -->
+<header class="page-header" id="main-content">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Engineering Intelligence</div>
+      <h1>Tech Notes</h1>
+      <p>Deep-dives into AI architecture, multi-agent systems, and the engineering decisions behind punkQ. Written by engineers, for engineers.</p>
+    </div>
+  </div>
+</header>
+
+<!-- ===== FEATURED POST ===== -->
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <div class="glass card blog-featured reveal" role="article" aria-label="Featured article">
+      <div class="blog-featured-inner">
+        <div class="blog-featured-content">
+          <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1.25rem; flex-wrap:wrap;">
+            <span class="tag">Featured</span>
+            <span class="tag blue">Architecture</span>
+            <span style="font-size:0.8rem; color:var(--color-text-muted);">April 28, 2026</span>
+          </div>
+          <h2 style="font-size:clamp(1.4rem,3vw,2rem); margin-bottom:1rem;">
+            How We Built Multi-Agent Orchestration for Real-Time Code Review
+          </h2>
+          <p class="text-muted" style="font-size:1rem; line-height:1.8; margin-bottom:1.5rem;">
+            When we set out to build Q-Review, the challenge wasn't the AI — it was coordination. Getting a Coder agent, a Security Reviewer, and a QA Lead to work in parallel without stepping on each other's context required rethinking how we handle shared state in agent pipelines.
+          </p>
+          <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
+            <div class="blog-author">
+              <div class="team-avatar" style="width:36px;height:36px;font-size:1rem;" aria-hidden="true">🧑‍💻</div>
+              <div>
+                <div style="font-size:0.85rem; font-weight:600;">Marko Lahtonen</div>
+                <div style="font-size:0.75rem; color:var(--color-text-muted);">CTO, Q-Coding Division</div>
+              </div>
+            </div>
+            <span style="font-size:0.8rem; color:var(--color-text-muted);">8 min read</span>
+          </div>
+        </div>
+        <div class="blog-featured-visual reveal reveal-delay-2" aria-hidden="true">
+          <div class="glass" style="padding:1.5rem; height:100%; min-height:220px; display:flex; flex-direction:column; gap:1rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--color-accent);animation:pulse 2s infinite;"></div>
+              <span style="font-size:0.75rem; font-family:var(--font-mono); color:var(--color-text-muted);">agent-orchestrator.ts</span>
+            </div>
+            <div class="code-block" style="font-size:0.72rem; line-height:1.7; flex:1;">
+<span class="kw">const</span> pipeline = <span class="kw">new</span> <span class="fn">AgentPipeline</span>();
+<span class="cm">// Parallel execution lanes</span>
+pipeline.<span class="fn">addLane</span>(<span class="str">'security'</span>, SecurityAgent);
+pipeline.<span class="fn">addLane</span>(<span class="str">'quality'</span>, QALeadAgent);
+pipeline.<span class="fn">addLane</span>(<span class="str">'review'</span>, CoderAgent);
+
+<span class="cm">// Shared context bus</span>
+<span class="kw">await</span> pipeline.<span class="fn">run</span>({
+  context: sharedCodeContext,
+  consensus: <span class="str">'majority'</span>
+});
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== BLOG POSTS GRID ===== -->
+<section class="section" style="padding-top:2rem;">
+  <div class="container">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; flex-wrap:wrap; gap:1rem;">
+      <h2 style="font-size:1.5rem;">Latest Articles</h2>
+      <div class="blog-filter" role="tablist" aria-label="Filter articles by category">
+        <button class="filter-btn active" role="tab" aria-selected="true" data-filter="all">All</button>
+        <button class="filter-btn" role="tab" aria-selected="false" data-filter="architecture">Architecture</button>
+        <button class="filter-btn" role="tab" aria-selected="false" data-filter="ai">AI &amp; ML</button>
+        <button class="filter-btn" role="tab" aria-selected="false" data-filter="engineering">Engineering</button>
+      </div>
+    </div>
+
+    <div class="grid-3" id="blog-grid">
+
+      <article class="glass card blog-card reveal reveal-delay-1" data-category="ai">
+        <div class="blog-card-thumb" aria-hidden="true">
+          <span style="font-size:2.5rem;">🧠</span>
+        </div>
+        <div class="tags" style="margin-bottom:0.75rem;">
+          <span class="tag">AI &amp; ML</span>
+        </div>
+        <h3 style="font-size:1.05rem; margin-bottom:0.6rem;">
+          Context Windows Are Not Enough: Why We Built Our Own Memory Layer
+        </h3>
+        <p class="text-muted" style="font-size:0.88rem; line-height:1.7; margin-bottom:1.25rem;">
+          LLM context windows keep growing, but they're not a substitute for structured memory. Here's what we learned building punkQ's persistent agent memory system.
+        </p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.78rem; color:var(--color-text-muted);">Apr 22, 2026 · 6 min</span>
+          <span class="tag blue">New</span>
+        </div>
+      </article>
+
+      <article class="glass card blog-card reveal reveal-delay-2" data-category="architecture">
+        <div class="blog-card-thumb" aria-hidden="true">
+          <span style="font-size:2.5rem;">⚡</span>
+        </div>
+        <div class="tags" style="margin-bottom:0.75rem;">
+          <span class="tag yellow">Architecture</span>
+        </div>
+        <h3 style="font-size:1.05rem; margin-bottom:0.6rem;">
+          Event-Driven Agent Architecture: Lessons from 6 Months in Production
+        </h3>
+        <p class="text-muted" style="font-size:0.88rem; line-height:1.7; margin-bottom:1.25rem;">
+          Moving from a polling-based to event-driven agent loop cut our median response latency by 340ms and simplified the codebase significantly.
+        </p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.78rem; color:var(--color-text-muted);">Apr 15, 2026 · 9 min</span>
+        </div>
+      </article>
+
+      <article class="glass card blog-card reveal reveal-delay-3" data-category="engineering">
+        <div class="blog-card-thumb" aria-hidden="true">
+          <span style="font-size:2.5rem;">🔒</span>
+        </div>
+        <div class="tags" style="margin-bottom:0.75rem;">
+          <span class="tag" style="background:color-mix(in srgb, #10b981 12%, transparent);border-color:color-mix(in srgb, #10b981 25%, transparent);color:#10b981;">Engineering</span>
+        </div>
+        <h3 style="font-size:1.05rem; margin-bottom:0.6rem;">
+          Zero-Trust Secrets Management for AI Agent Pipelines
+        </h3>
+        <p class="text-muted" style="font-size:0.88rem; line-height:1.7; margin-bottom:1.25rem;">
+          Agents that touch code touch secrets. We built a layered approach to ensure no model ever sees a raw credential — even when instructed to look.
+        </p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.78rem; color:var(--color-text-muted);">Apr 8, 2026 · 7 min</span>
+        </div>
+      </article>
+
+      <article class="glass card blog-card reveal reveal-delay-1" data-category="ai">
+        <div class="blog-card-thumb" aria-hidden="true">
+          <span style="font-size:2.5rem;">🔮</span>
+        </div>
+        <div class="tags" style="margin-bottom:0.75rem;">
+          <span class="tag blue">AI &amp; ML</span>
+        </div>
+        <h3 style="font-size:1.05rem; margin-bottom:0.6rem;">
+          Evaluating LLMs for Code Generation: Our Internal Benchmark Suite
+        </h3>
+        <p class="text-muted" style="font-size:0.88rem; line-height:1.7; margin-bottom:1.25rem;">
+          We run our own benchmarks because public leaderboards don't capture the real-world patterns our users hit. Here's our methodology.
+        </p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.78rem; color:var(--color-text-muted);">Mar 30, 2026 · 11 min</span>
+        </div>
+      </article>
+
+      <article class="glass card blog-card reveal reveal-delay-2" data-category="architecture">
+        <div class="blog-card-thumb" aria-hidden="true">
+          <span style="font-size:2.5rem;">🚀</span>
+        </div>
+        <div class="tags" style="margin-bottom:0.75rem;">
+          <span class="tag yellow">Architecture</span>
+        </div>
+        <h3 style="font-size:1.05rem; margin-bottom:0.6rem;">
+          From Monolith to Micro-Agents: Our Incremental Migration Strategy
+        </h3>
+        <p class="text-muted" style="font-size:0.88rem; line-height:1.7; margin-bottom:1.25rem;">
+          We didn't rewrite punkQ from scratch. We carved out the smallest coherent agent boundaries first and migrated under load.
+        </p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.78rem; color:var(--color-text-muted);">Mar 18, 2026 · 8 min</span>
+        </div>
+      </article>
+
+      <article class="glass card blog-card reveal reveal-delay-3" data-category="engineering">
+        <div class="blog-card-thumb" aria-hidden="true">
+          <span style="font-size:2.5rem;">📊</span>
+        </div>
+        <div class="tags" style="margin-bottom:0.75rem;">
+          <span class="tag" style="background:color-mix(in srgb, #10b981 12%, transparent);border-color:color-mix(in srgb, #10b981 25%, transparent);color:#10b981;">Engineering</span>
+        </div>
+        <h3 style="font-size:1.05rem; margin-bottom:0.6rem;">
+          Observability-First: Logging and Tracing Every Agent Decision
+        </h3>
+        <p class="text-muted" style="font-size:0.88rem; line-height:1.7; margin-bottom:1.25rem;">
+          If you can't explain what an agent did and why, you can't debug it. We built structured tracing into punkQ's core from day one.
+        </p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.78rem; color:var(--color-text-muted);">Mar 5, 2026 · 5 min</span>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- Load more -->
+    <div style="text-align:center; margin-top:3rem;" class="reveal">
+      <button class="btn btn-outline btn-lg" aria-label="Load more articles">Load More Articles</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== NEWSLETTER ===== -->
+<section class="section">
+  <div class="container">
+    <div class="glass card reveal" style="text-align:center; padding:3rem 2rem; max-width:600px; margin-inline:auto;">
+      <div style="font-size:2rem; margin-bottom:1rem;" aria-hidden="true">📬</div>
+      <div class="section-label">Stay sharp</div>
+      <h2 style="font-size:1.6rem; margin-bottom:0.75rem;">Engineering Notes in Your Inbox</h2>
+      <p class="text-muted" style="margin-bottom:2rem; font-size:0.95rem; line-height:1.7;">
+        One deep-dive per week. No fluff. Real engineering problems we've solved at punkQ — and how you can too.
+      </p>
+      <form class="newsletter-form" aria-label="Newsletter subscription" novalidate>
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap; justify-content:center;">
+          <label for="newsletter-email" class="sr-only">Email address</label>
+          <input
+            type="email"
+            id="newsletter-email"
+            class="form-input"
+            placeholder="your@email.com"
+            style="max-width:280px; flex:1 1 200px;"
+            required
+            autocomplete="email"
+            aria-required="true"
+          >
+          <button type="submit" class="btn btn-primary" aria-label="Subscribe to newsletter">Subscribe</button>
+        </div>
+        <p style="font-size:0.75rem; color:var(--color-text-muted); margin-top:0.75rem;">
+          No spam. Unsubscribe anytime.
+        </p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="margin-bottom:0.75rem;" aria-hidden="true">
+          <div class="logo-mark">pQ</div>
+          <span>punkQ</span>
+        </div>
+        <p>AI-powered coding intelligence for teams who ship fast and break nothing.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="products.html">Q-Coding</a>
+        <a href="products.html">Q-Review</a>
+        <a href="products.html">Q-Deploy</a>
+        <a href="products.html">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="about.html">About</a>
+        <a href="about.html">Team</a>
+        <a href="contact.html">Careers</a>
+        <a href="contact.html">Press</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="demo.html">Demo</a>
+        <a href="blog.html">Tech Notes</a>
+        <a href="#">GitHub</a>
+        <a href="#">Status</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 punkQ. All rights reserved.</span>
+      <span>Built with ❤️ by the Q-Coding division</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>
