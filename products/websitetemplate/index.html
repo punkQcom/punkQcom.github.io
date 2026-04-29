@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="punkQ — Next-generation AI coding assistance. Built by the Q-Coding division.">
+  <title>punkQ — AI-Powered Code Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo" aria-label="punkQ home">
+      <div class="logo-mark" aria-hidden="true">pQ</div>
+      <span>punkQ</span>
+    </a>
+
+    <ul class="nav-links" role="list">
+      <li><a href="index.html" class="nav-link active" data-page="home">Home</a></li>
+      <li><a href="products.html" class="nav-link" data-page="products">Products</a></li>
+      <li><a href="demo.html" class="nav-link" data-page="demo">Demo</a></li>
+      <li><a href="blog.html" class="nav-link" data-page="blog">Tech Notes</a></li>
+      <li><a href="about.html" class="nav-link" data-page="about">About</a></li>
+      <li><a href="contact.html" class="nav-link" data-page="contact">Contact</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark theme">
+        <span class="icon-sun" aria-hidden="true">☀️</span>
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+      </button>
+      <a href="contact.html" class="btn btn-primary btn-sm">Get Started</a>
+    </div>
+
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="nav-mobile">
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile menu -->
+<div class="nav-mobile" id="nav-mobile" role="navigation" aria-label="Mobile navigation">
+  <a href="index.html" class="nav-link active" data-page="home">Home</a>
+  <a href="products.html" class="nav-link" data-page="products">Products</a>
+  <a href="demo.html" class="nav-link" data-page="demo">Demo</a>
+  <a href="blog.html" class="nav-link" data-page="blog">Tech Notes</a>
+  <a href="about.html" class="nav-link" data-page="about">About</a>
+  <a href="contact.html" class="nav-link" data-page="contact">Contact</a>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="hero" id="main-content">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-text">
+        <div class="hero-badge">
+          <div class="dot"></div>
+          Now in Beta — Join the waitlist
+        </div>
+
+        <h1 class="hero-title">
+          Code Smarter.<br>
+          Ship <span class="text-gradient" id="typed-text" data-words="Faster.|Cleaner.|Better.|Fearlessly.">Faster.</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          punkQ is the AI-native coding environment built for teams who refuse to settle.
+          Intelligent context, real-time collaboration, and zero compromise on quality.
+        </p>
+
+        <div class="hero-cta">
+          <a href="products.html" class="btn btn-primary btn-lg">Explore Products</a>
+          <a href="about.html" class="btn btn-outline btn-lg">Learn More</a>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat-item">
+            <div class="stat-number"><span data-count="12" data-suffix="k+">12k+</span></div>
+            <div class="stat-label">Developers</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number"><span data-count="98" data-suffix="%">98%</span></div>
+            <div class="stat-label">Satisfaction</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number"><span data-count="3" data-suffix="x">3x</span></div>
+            <div class="stat-label">Productivity Boost</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Visual -->
+      <div class="hero-visual reveal reveal-delay-2">
+        <div class="hero-browser glow-accent">
+          <div class="browser-bar">
+            <div class="browser-dots">
+              <div class="browser-dot"></div>
+              <div class="browser-dot"></div>
+              <div class="browser-dot"></div>
+            </div>
+            <div class="browser-url">punkq.com/dashboard</div>
+          </div>
+          <div class="browser-content">
+            <div class="browser-line accent" style="width:65%; height:18px; margin-bottom:0.25rem;"></div>
+            <div class="browser-line wide"></div>
+            <div class="browser-line medium"></div>
+            <div class="browser-code-block">
+              <div class="browser-code-line">
+                <span class="code-keyword">const</span>
+                <span class="code-default"> agent = </span>
+                <span class="code-keyword">new</span>
+                <span class="code-default"> </span>
+                <span class="code-string">PunkQ</span>
+                <span class="code-default">();</span>
+              </div>
+              <div class="browser-code-line">
+                <span class="code-keyword">await</span>
+                <span class="code-default"> agent.</span>
+                <span class="code-string">analyze</span>
+                <span class="code-default">(codebase);</span>
+              </div>
+              <div class="browser-code-line">
+                <span class="code-default">// </span>
+                <span class="code-keyword">→ 47 improvements found</span>
+              </div>
+            </div>
+            <div class="browser-line short" style="margin-top:0.5rem;"></div>
+            <div class="browser-line tiny"></div>
+          </div>
+        </div>
+
+        <div class="hero-badge-float top-right">
+          <div class="badge-icon purple">⚡</div>
+          <div>
+            <div style="font-size:0.72rem; color:var(--color-text-muted);">Speed boost</div>
+            <div style="font-weight:700; font-size:0.9rem; color:var(--color-accent);">+340%</div>
+          </div>
+        </div>
+
+        <div class="hero-badge-float bottom-left">
+          <div class="badge-icon blue">🔮</div>
+          <div>
+            <div style="font-size:0.72rem; color:var(--color-text-muted);">AI accuracy</div>
+            <div style="font-weight:700; font-size:0.9rem; color:var(--color-accent-2);">99.2%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="section" id="features">
+  <div class="container">
+    <div class="reveal" style="text-align:center; margin-bottom:3.5rem;">
+      <div class="section-label">Why punkQ</div>
+      <h2>Everything a modern dev team needs</h2>
+      <p class="text-muted" style="margin-top:0.75rem; max-width:52ch; margin-inline:auto;">
+        We've rethought the coding workflow from the ground up, with AI at the centre — not bolted on.
+      </p>
+    </div>
+
+    <div class="grid-3">
+      <div class="glass card reveal reveal-delay-1">
+        <div class="feature-icon">🧠</div>
+        <h3>Context-Aware AI</h3>
+        <p>punkQ understands your entire codebase, not just the open file. Every suggestion is grounded in your real architecture.</p>
+      </div>
+      <div class="glass card reveal reveal-delay-2">
+        <div class="feature-icon blue">⚡</div>
+        <h3>Real-Time Collaboration</h3>
+        <p>Pair-program with AI and teammates simultaneously. Instant sync, conflict-free merging, and shared context.</p>
+      </div>
+      <div class="glass card reveal reveal-delay-3">
+        <div class="feature-icon yellow">🔒</div>
+        <h3>Security-First</h3>
+        <p>Proactive vulnerability detection as you type. Secrets scanning, dependency audits, and OWASP checks built in.</p>
+      </div>
+      <div class="glass card reveal reveal-delay-1">
+        <div class="feature-icon blue">📊</div>
+        <h3>Code Intelligence</h3>
+        <p>Deep static analysis, complexity scoring, and automated refactoring suggestions — without leaving your IDE.</p>
+      </div>
+      <div class="glass card reveal reveal-delay-2">
+        <div class="feature-icon">🚀</div>
+        <h3>One-Click Deploy</h3>
+        <p>From commit to production in seconds. CI/CD pipelines that actually understand your code, not just run scripts.</p>
+      </div>
+      <div class="glass card reveal reveal-delay-3">
+        <div class="feature-icon yellow">🔧</div>
+        <h3>Multi-Agent Workflows</h3>
+        <p>Delegate to specialised AI agents — coder, reviewer, QA lead, architect. Coordinate complex tasks without micromanaging.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="section">
+  <div class="container">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:5rem; align-items:start;">
+      <div>
+        <div class="reveal">
+          <div class="section-label">How it works</div>
+          <h2 style="margin-bottom:1rem;">From idea to production in a single session</h2>
+          <p class="text-muted" style="margin-bottom:2.5rem; line-height:1.8;">
+            punkQ combines multi-agent orchestration with deep code understanding to accelerate your entire development lifecycle.
+          </p>
+        </div>
+
+        <div class="timeline reveal reveal-delay-1">
+          <div class="timeline-item">
+            <div class="timeline-dot">1</div>
+            <h3 style="font-size:1rem; margin-bottom:0.3rem;">Describe what you want</h3>
+            <p class="text-muted" style="font-size:0.88rem;">Natural language or structured spec — punkQ understands both and builds a concrete implementation plan.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot">2</div>
+            <h3 style="font-size:1rem; margin-bottom:0.3rem;">Agents execute in parallel</h3>
+            <p class="text-muted" style="font-size:0.88rem;">Multiple specialised agents — coder, reviewer, QA — work simultaneously on different aspects of your task.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot">3</div>
+            <h3 style="font-size:1rem; margin-bottom:0.3rem;">Review and iterate</h3>
+            <p class="text-muted" style="font-size:0.88rem;">Inspect every change with full diffs, AI-generated explanations, and one-click rollback.</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot">4</div>
+            <h3 style="font-size:1rem; margin-bottom:0.3rem;">Ship with confidence</h3>
+            <p class="text-muted" style="font-size:0.88rem;">Automated tests, security scans, and deployment pipelines run before anything reaches production.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal reveal-delay-2">
+        <div class="glass" style="padding:1.8rem; margin-bottom:1.5rem;">
+          <div class="tags" style="margin-bottom:1rem;">
+            <span class="tag">Python</span>
+            <span class="tag blue">FastAPI</span>
+            <span class="tag yellow">PostgreSQL</span>
+          </div>
+          <div class="code-block">
+<span class="cm"># punkQ auto-generated endpoint</span>
+<span class="kw">@app</span><span class="op">.</span><span class="fn">post</span><span class="op">(</span><span class="str">"/api/users"</span><span class="op">)</span>
+<span class="kw">async def</span> <span class="fn">create_user</span><span class="op">(</span>
+    data: <span class="fn">UserCreate</span><span class="op">,</span>
+    db: <span class="fn">AsyncSession</span> <span class="op">=</span> <span class="fn">Depends</span><span class="op">(</span><span class="fn">get_db</span><span class="op">)</span>
+<span class="op">):</span>
+    <span class="cm"># Injected: validation, rate limit, audit</span>
+    <span class="kw">return await</span> <span class="fn">users</span><span class="op">.</span><span class="fn">create</span><span class="op">(</span>db<span class="op">,</span> data<span class="op">)</span>
+          </div>
+        </div>
+
+        <div class="glass" style="padding:1.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <span style="font-size:0.85rem; font-weight:600;">Code Quality Score</span>
+            <span class="tag" style="font-size:0.8rem;">A+</span>
+          </div>
+          <div style="display:grid; gap:0.75rem;">
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:0.3rem;">
+                <span class="text-muted">Security</span><span>98%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" data-width="98%" style="width:0%"></div></div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:0.3rem;">
+                <span class="text-muted">Performance</span><span>94%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" data-width="94%" style="width:0%"></div></div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:0.3rem;">
+                <span class="text-muted">Maintainability</span><span>91%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" data-width="91%" style="width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ===== CTA ===== -->
+<section class="section">
+  <div class="container" style="text-align:center;">
+    <div class="reveal">
+      <div class="section-label">Get started today</div>
+      <h2 style="margin-bottom:1rem;">Ready to write better code?</h2>
+      <p class="text-muted" style="max-width:50ch; margin-inline:auto; margin-bottom:2.5rem; font-size:1.05rem;">
+        Join thousands of developers shipping more, stressing less, and building things they're actually proud of.
+      </p>
+      <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+        <a href="contact.html" class="btn btn-primary btn-lg">Join the Waitlist</a>
+        <a href="products.html" class="btn btn-outline btn-lg">See All Products</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="margin-bottom:0.75rem;" aria-hidden="true">
+          <div class="logo-mark">pQ</div>
+          <span>punkQ</span>
+        </div>
+        <p>AI-powered coding intelligence for teams who ship fast and break nothing.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="products.html">Q-Coding</a>
+        <a href="products.html">Q-Review</a>
+        <a href="products.html">Q-Deploy</a>
+        <a href="products.html">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="about.html">About</a>
+        <a href="about.html">Team</a>
+        <a href="contact.html">Careers</a>
+        <a href="contact.html">Press</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="demo.html">Demo</a>
+        <a href="blog.html">Tech Notes</a>
+        <a href="#">GitHub</a>
+        <a href="#">Status</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 punkQ. All rights reserved.</span>
+      <span>Built with ❤️ by the Q-Coding division</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>

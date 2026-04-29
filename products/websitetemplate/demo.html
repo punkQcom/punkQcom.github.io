@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="punkQ Demo — See AI-powered code intelligence in action. Live interactive showcase of Q-Coding capabilities.">
+  <title>Demo — punkQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo" aria-label="punkQ home">
+      <div class="logo-mark" aria-hidden="true">pQ</div>
+      <span>punkQ</span>
+    </a>
+    <ul class="nav-links" role="list">
+      <li><a href="index.html" class="nav-link" data-page="home">Home</a></li>
+      <li><a href="products.html" class="nav-link" data-page="products">Products</a></li>
+      <li><a href="demo.html" class="nav-link active" data-page="demo">Demo</a></li>
+      <li><a href="blog.html" class="nav-link" data-page="blog">Tech Notes</a></li>
+      <li><a href="about.html" class="nav-link" data-page="about">About</a></li>
+      <li><a href="contact.html" class="nav-link" data-page="contact">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle light/dark theme">
+        <span class="icon-sun" aria-hidden="true">☀️</span>
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+      </button>
+      <a href="contact.html" class="btn btn-primary btn-sm">Get Started</a>
+    </div>
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="nav-mobile">
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </button>
+  </div>
+</nav>
+<div class="nav-mobile" id="nav-mobile" role="navigation" aria-label="Mobile navigation">
+  <a href="index.html" class="nav-link" data-page="home">Home</a>
+  <a href="products.html" class="nav-link" data-page="products">Products</a>
+  <a href="demo.html" class="nav-link active" data-page="demo">Demo</a>
+  <a href="blog.html" class="nav-link" data-page="blog">Tech Notes</a>
+  <a href="about.html" class="nav-link" data-page="about">About</a>
+  <a href="contact.html" class="nav-link" data-page="contact">Contact</a>
+</div>
+
+<!-- ===== PAGE HEADER ===== -->
+<header class="page-header" id="main-content">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">See it live</div>
+      <h1>Interactive Demo</h1>
+      <p>Experience punkQ's AI capabilities first-hand. No sign-up required — just explore what's possible when AI truly understands your code.</p>
+    </div>
+  </div>
+</header>
+
+<!-- ===== DEMO TABS ===== -->
+<section class="section" style="padding-top:0;">
+  <div class="container">
+
+    <!-- Tab navigation -->
+    <div class="demo-tabs" role="tablist" aria-label="Demo scenarios">
+      <button class="demo-tab active" role="tab" id="tab-autocomplete" aria-selected="true" aria-controls="panel-autocomplete" data-tab="autocomplete">
+        <span aria-hidden="true">⚡</span> Smart Autocomplete
+      </button>
+      <button class="demo-tab" role="tab" id="tab-review" aria-selected="false" aria-controls="panel-review" data-tab="review">
+        <span aria-hidden="true">🔍</span> Code Review
+      </button>
+      <button class="demo-tab" role="tab" id="tab-refactor" aria-selected="false" aria-controls="panel-refactor" data-tab="refactor">
+        <span aria-hidden="true">🔧</span> Refactor
+      </button>
+      <button class="demo-tab" role="tab" id="tab-generate" aria-selected="false" aria-controls="panel-generate" data-tab="generate">
+        <span aria-hidden="true">🚀</span> Generate
+      </button>
+    </div>
+
+    <!-- Panel: Smart Autocomplete -->
+    <div class="demo-panel active" id="panel-autocomplete" role="tabpanel" aria-labelledby="tab-autocomplete">
+      <div class="demo-panel-grid">
+        <div class="demo-editor glass">
+          <div class="demo-editor-header">
+            <div class="browser-dots" aria-hidden="true">
+              <div class="browser-dot"></div>
+              <div class="browser-dot"></div>
+              <div class="browser-dot"></div>
+            </div>
+            <span class="demo-filename">auth.ts</span>
+            <span class="tag" style="font-size:0.7rem; margin-left:auto;">TypeScript</span>
+          </div>
+          <div class="demo-editor-body" aria-label="Code editor showing smart autocomplete">
+            <div class="demo-line-nums" aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+              <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+              <span>11</span><span>12</span><span>13</span><span>14</span><span>15</span>
+            </div>
+            <div class="demo-code">
+<span class="kw">import</span> <span class="op">{</span> <span class="fn">hash</span><span class="op">,</span> <span class="fn">compare</span> <span class="op">}</span> <span class="kw">from</span> <span class="str">'bcrypt'</span><span class="op">;</span>
+<span class="kw">import</span> <span class="op">{</span> <span class="fn">db</span> <span class="op">}</span> <span class="kw">from</span> <span class="str">'./database'</span><span class="op">;</span>
+
+<span class="kw">export async function</span> <span class="fn">createUser</span><span class="op">(</span>
+  email<span class="op">:</span> <span class="fn">string</span><span class="op">,</span>
+  password<span class="op">:</span> <span class="fn">string</span>
+<span class="op">) {</span>
+  <span class="cm">// punkQ suggests: validate input first</span>
+  <span class="kw">const</span> hashed <span class="op">=</span> <span class="kw">await</span> <span class="fn">hash</span><span class="op">(</span>password<span class="op">,</span> <span class="str">12</span><span class="op">);</span>
+  <span class="kw">return</span> db.users.<span class="fn">create</span><span class="op">({</span>
+    email<span class="op">,</span>
+    password<span class="op">:</span> hashed<span class="op">,</span>
+    <span class="cm">// ▌ AI completing...</span>
+            </div>
+          </div>
+          <div class="demo-autocomplete-popup glass" aria-live="polite" aria-label="AI suggestions">
+            <div class="autocomplete-item active">
+              <span class="autocomplete-icon" aria-hidden="true">✓</span>
+              <code>createdAt: new Date(),</code>
+            </div>
+            <div class="autocomplete-item">
+              <span class="autocomplete-icon" aria-hidden="true">✓</span>
+              <code>updatedAt: new Date(),</code>
+            </div>
+            <div class="autocomplete-item">
+              <span class="autocomplete-icon" aria-hidden="true">✓</span>
+              <code>role: 'user',</code>
+            </div>
+          </div>
+        </div>
+        <div class="demo-info">
+          <h3 style="margin-bottom:1rem;">Context-Aware Suggestions</h3>
+          <p class="text-muted" style="margin-bottom:1.5rem; line-height:1.8;">
+            punkQ reads your entire codebase — schema definitions, existing patterns, imported libraries — before making a single suggestion. Every completion fits naturally into your architecture.
+          </p>
+          <div style="display:grid; gap:1rem;">
+            <div class="glass" style="padding:1rem; display:flex; align-items:flex-start; gap:0.75rem;">
+              <div class="feature-icon" style="flex-shrink:0; width:36px;height:36px;" aria-hidden="true">🧠</div>
+              <div>
+                <div style="font-size:0.9rem; font-weight:600; margin-bottom:0.25rem;">Full-repo context</div>
+                <div style="font-size:0.82rem; color:var(--color-text-muted);">Understands your schemas, types, and patterns</div>
+              </div>
+            </div>
+            <div class="glass" style="padding:1rem; display:flex; align-items:flex-start; gap:0.75rem;">
+              <div class="feature-icon blue" style="flex-shrink:0; width:36px;height:36px;" aria-hidden="true">⚡</div>
+              <div>
+                <div style="font-size:0.9rem; font-weight:600; margin-bottom:0.25rem;">&lt;40ms latency</div>
+                <div style="font-size:0.82rem; color:var(--color-text-muted);">Faster than you can think about the next token</div>
+              </div>
+            </div>
+            <div class="glass" style="padding:1rem; display:flex; align-items:flex-start; gap:0.75rem;">
+              <div class="feature-icon yellow" style="flex-shrink:0; width:36px;height:36px;" aria-hidden="true">🔒</div>
+              <div>
+                <div style="font-size:0.9rem; font-weight:600; margin-bottom:0.25rem;">Security aware</div>
+                <div style="font-size:0.82rem; color:var(--color-text-muted);">Flags patterns that introduce vulnerabilities</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel: Code Review -->
+    <div class="demo-panel" id="panel-review" role="tabpanel" aria-labelledby="tab-review" hidden>
+      <div class="demo-panel-grid">
+        <div class="demo-editor glass">
+          <div class="demo-editor-header">
+            <div class="browser-dots" aria-hidden="true">
+              <div class="browser-dot"></div>
+              <div class="browser-dot"></div>
+              <div class="browser-dot"></div>
+            </div>
+            <span class="demo-filename">api/orders.py</span>
+            <span class="tag blue" style="font-size:0.7rem; margin-left:auto;">Python</span>
+          </div>
+          <div class="demo-editor-body" aria-label="Code editor showing code review annotations">
+            <div class="demo-line-nums" aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+              <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+            </div>
+            <div class="demo-code">
+<span class="kw">@app</span>.<span class="fn">get</span><span class="op">(</span><span class="str">"/orders"</span><span class="op">)</span>
+<span class="kw">def</span> <span class="fn">get_orders</span><span class="op">(</span>user_id<span class="op">:</span> <span class="fn">str</span><span class="op">):</span>
+  query <span class="op">=</span> <span class="str">f"SELECT * FROM orders WHERE user_id = </span><span class="op">{</span>user_id<span class="op">}</span><span class="str">"</span>
+  <span class="demo-review-line" aria-describedby="review-tip-1">  <span class="cm"># ← SQL injection risk</span></span>
+  result <span class="op">=</span> db.<span class="fn">execute</span><span class="op">(</span>query<span class="op">)</span>
+  <span class="kw">return</span> result.<span class="fn">fetchall</span><span class="op">()</span>
+
+<span class="cm"># Missing: auth check, pagination,</span>
+<span class="cm"># error handling, response schema</span>
+            </div>
+          </div>
+          <div class="demo-review-badge glass" id="review-tip-1" role="alert">
+            <span class="tag" style="background:color-mix(in srgb,#ef4444 12%,transparent);border-color:color-mix(in srgb,#ef4444 25%,transparent);color:#ef4444;">Critical</span>
+            <span style="font-size:0.82rem; margin-left:0.5rem;">SQL injection via f-string interpolation. Use parameterised queries.</span>
+          </div>
+        </div>
+        <div class="demo-info">
+          <h3 style="margin-bottom:1rem;">Instant Code Review</h3>
+          <p class="text-muted" style="margin-bottom:1.5rem; line-height:1.8;">
+            Q-Review analyses every pull request like a senior engineer would — checking security, performance, maintainability, and correctness — before a human ever sees it.
+          </p>
+          <div class="review-summary glass" style="padding:1.25rem;" aria-label="Review summary">
+            <div style="font-size:0.85rem; font-weight:600; margin-bottom:1rem;">Review Summary</div>
+            <div style="display:grid; gap:0.6rem;">
+              <div style="display:flex; justify-content:space-between; font-size:0.82rem;">
+                <span class="text-muted">Security issues</span>
+                <span style="color:#ef4444; font-weight:600;">1 critical</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.82rem;">
+                <span class="text-muted">Missing auth</span>
+                <span style="color:var(--color-accent-3); font-weight:600;">1 warning</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.82rem;">
+                <span class="text-muted">Code style</span>
+                <span style="color:var(--color-accent-2); font-weight:600;">2 suggestions</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.82rem;">
+                <span class="text-muted">Performance</span>
+                <span style="color:#10b981; font-weight:600;">OK</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel: Refactor -->
+    <div class="demo-panel" id="panel-refactor" role="tabpanel" aria-labelledby="tab-refactor" hidden>
+      <div class="demo-panel-grid">
+        <div>
+          <div class="glass" style="padding:1.25rem; margin-bottom:1rem;">
+            <div style="font-size:0.75rem; font-family:var(--font-mono); color:var(--color-text-muted); margin-bottom:0.75rem;">BEFORE</div>
+            <div class="code-block" style="font-size:0.8rem;" aria-label="Code before refactoring">
+<span class="kw">function</span> <span class="fn">processData</span><span class="op">(</span>d<span class="op">) {</span>
+  <span class="kw">var</span> r <span class="op">=</span> <span class="op">[];</span>
+  <span class="kw">for</span> <span class="op">(</span><span class="kw">var</span> i <span class="op">=</span> <span class="str">0</span><span class="op">;</span> i <span class="op">&lt;</span> d.<span class="fn">length</span><span class="op">;</span> i<span class="op">++) {</span>
+    <span class="kw">if</span> <span class="op">(</span>d<span class="op">[</span>i<span class="op">].</span>active <span class="op">==</span> <span class="str">true</span><span class="op">) {</span>
+      r.<span class="fn">push</span><span class="op">({</span>id<span class="op">:</span> d<span class="op">[</span>i<span class="op">].</span>id<span class="op">,</span> v<span class="op">:</span> d<span class="op">[</span>i<span class="op">].</span>value <span class="op">*</span> <span class="str">2</span><span class="op">});</span>
+    <span class="op">}</span>
+  <span class="op">}</span>
+  <span class="kw">return</span> r<span class="op">;</span>
+<span class="op">}</span>
+            </div>
+          </div>
+          <div class="glass" style="padding:1.25rem;">
+            <div style="font-size:0.75rem; font-family:var(--font-mono); color:#10b981; margin-bottom:0.75rem;">AFTER — punkQ Refactored</div>
+            <div class="code-block" style="font-size:0.8rem; border-color:color-mix(in srgb,#10b981 30%,transparent);" aria-label="Code after refactoring">
+<span class="kw">const</span> <span class="fn">processData</span> <span class="op">=</span> <span class="op">(</span>
+  items<span class="op">:</span> DataItem<span class="op">[]</span>
+<span class="op">):</span> ProcessedItem<span class="op">[] =&gt;</span>
+  items
+    .<span class="fn">filter</span><span class="op">(</span><span class="op">(</span><span class="op">{</span> active <span class="op">})</span> <span class="op">=&gt;</span> active<span class="op">)</span>
+    .<span class="fn">map</span><span class="op">(</span><span class="op">(</span><span class="op">{</span> id<span class="op">,</span> value <span class="op">})</span> <span class="op">=&gt;</span>
+      <span class="op">({</span> id<span class="op">,</span> v<span class="op">:</span> value <span class="op">*</span> <span class="str">2</span> <span class="op">})</span>
+    <span class="op">);</span>
+            </div>
+          </div>
+        </div>
+        <div class="demo-info">
+          <h3 style="margin-bottom:1rem;">Intelligent Refactoring</h3>
+          <p class="text-muted" style="margin-bottom:1.5rem; line-height:1.8;">
+            Q-Coding doesn't just suggest style tweaks — it restructures code to match your team's idioms, adds types, and eliminates anti-patterns while preserving exact semantics.
+          </p>
+          <div style="display:grid; gap:0.75rem;">
+            <div style="display:flex; align-items:center; gap:0.75rem; font-size:0.88rem;">
+              <span style="color:#10b981;" aria-hidden="true">✓</span> <span>Preserves exact behaviour</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem; font-size:0.88rem;">
+              <span style="color:#10b981;" aria-hidden="true">✓</span> <span>Adds TypeScript types automatically</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem; font-size:0.88rem;">
+              <span style="color:#10b981;" aria-hidden="true">✓</span> <span>Matches your existing code style</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem; font-size:0.88rem;">
+              <span style="color:#10b981;" aria-hidden="true">✓</span> <span>Generates tests for refactored code</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel: Generate -->
+    <div class="demo-panel" id="panel-generate" role="tabpanel" aria-labelledby="tab-generate" hidden>
+      <div class="demo-panel-grid">
+        <div>
+          <div class="glass" style="padding:1.25rem; margin-bottom:1rem;">
+            <div style="font-size:0.75rem; color:var(--color-text-muted); margin-bottom:0.75rem; font-weight:600;">PROMPT</div>
+            <div class="demo-prompt-bubble">
+              "Create a paginated REST endpoint for listing products with filtering by category, price range, and full-text search. Use my existing FastAPI + SQLAlchemy setup."
+            </div>
+          </div>
+          <div class="glass" style="padding:1.25rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--color-accent);animation:pulse 2s infinite;" aria-hidden="true"></div>
+              <div style="font-size:0.75rem; font-family:var(--font-mono); color:var(--color-text-muted);">Generating api/products.py…</div>
+            </div>
+            <div class="code-block" style="font-size:0.75rem;" aria-label="AI-generated code output">
+<span class="kw">@router</span>.<span class="fn">get</span><span class="op">(</span><span class="str">"/products"</span><span class="op">,</span> response_model<span class="op">=</span><span class="fn">Page</span><span class="op">[</span>ProductSchema<span class="op">])</span>
+<span class="kw">async def</span> <span class="fn">list_products</span><span class="op">(</span>
+    category<span class="op">:</span> <span class="fn">str</span> <span class="op">|</span> <span class="fn">None</span> <span class="op">=</span> Query(None),
+    min_price<span class="op">:</span> <span class="fn">Decimal</span> <span class="op">|</span> <span class="fn">None</span> <span class="op">=</span> Query(None),
+    max_price<span class="op">:</span> <span class="fn">Decimal</span> <span class="op">|</span> <span class="fn">None</span> <span class="op">=</span> Query(None),
+    q<span class="op">:</span> <span class="fn">str</span> <span class="op">|</span> <span class="fn">None</span> <span class="op">=</span> Query(None),
+    page<span class="op">:</span> <span class="fn">int</span> <span class="op">=</span> Query(1, ge=1),
+    db<span class="op">:</span> <span class="fn">AsyncSession</span> <span class="op">=</span> Depends(get_db)
+<span class="op">) -&gt;</span> <span class="fn">Page</span><span class="op">[</span>ProductSchema<span class="op">]:</span>
+    <span class="kw">return await</span> products.<span class="fn">list_paginated</span><span class="op">(</span>
+        db<span class="op">,</span> category<span class="op">,</span> min_price<span class="op">,</span>
+        max_price<span class="op">,</span> q<span class="op">,</span> page
+    <span class="op">)</span>
+            </div>
+          </div>
+        </div>
+        <div class="demo-info">
+          <h3 style="margin-bottom:1rem;">Natural Language to Code</h3>
+          <p class="text-muted" style="margin-bottom:1.5rem; line-height:1.8;">
+            Describe what you need in plain English. punkQ scans your existing codebase to understand your conventions, data models, and libraries — then writes code that fits seamlessly.
+          </p>
+          <div class="glass" style="padding:1.25rem;" aria-label="Generation stats">
+            <div style="font-size:0.85rem; font-weight:600; margin-bottom:1rem;">Generated in this session</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; text-align:center;">
+              <div>
+                <div style="font-size:1.5rem; font-weight:800; color:var(--color-accent);">47</div>
+                <div style="font-size:0.75rem; color:var(--color-text-muted);">Lines of code</div>
+              </div>
+              <div>
+                <div style="font-size:1.5rem; font-weight:800; color:var(--color-accent-2);">3</div>
+                <div style="font-size:0.75rem; color:var(--color-text-muted);">Files created</div>
+              </div>
+              <div>
+                <div style="font-size:1.5rem; font-weight:800; color:var(--color-accent-3);">12</div>
+                <div style="font-size:0.75rem; color:var(--color-text-muted);">Tests written</div>
+              </div>
+              <div>
+                <div style="font-size:1.5rem; font-weight:800; color:#10b981;">100%</div>
+                <div style="font-size:0.75rem; color:var(--color-text-muted);">Tests passing</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== CAPABILITY SHOWCASE ===== -->
+<section class="section">
+  <div class="container">
+    <div class="reveal" style="text-align:center; margin-bottom:3.5rem;">
+      <div class="section-label">Under the hood</div>
+      <h2>What makes punkQ different</h2>
+    </div>
+    <div class="grid-3">
+      <div class="glass card reveal reveal-delay-1">
+        <div class="capability-visual" aria-hidden="true">
+          <canvas class="mini-canvas" width="200" height="80" data-type="wave"></canvas>
+        </div>
+        <h3 style="font-size:1rem; margin-top:1rem; margin-bottom:0.5rem;">Real-Time Analysis</h3>
+        <p style="font-size:0.85rem; color:var(--color-text-muted);">Continuous background analysis at typing speed — no "analyse now" button needed.</p>
+      </div>
+      <div class="glass card reveal reveal-delay-2">
+        <div class="capability-visual" aria-hidden="true">
+          <canvas class="mini-canvas" width="200" height="80" data-type="bars"></canvas>
+        </div>
+        <h3 style="font-size:1rem; margin-top:1rem; margin-bottom:0.5rem;">Multi-Language</h3>
+        <p style="font-size:0.85rem; color:var(--color-text-muted);">TypeScript, Python, Go, Rust, Java, and 40+ more — with deep language-specific context.</p>
+      </div>
+      <div class="glass card reveal reveal-delay-3">
+        <div class="capability-visual" aria-hidden="true">
+          <canvas class="mini-canvas" width="200" height="80" data-type="network"></canvas>
+        </div>
+        <h3 style="font-size:1rem; margin-top:1rem; margin-bottom:0.5rem;">Agent Coordination</h3>
+        <p style="font-size:0.85rem; color:var(--color-text-muted);">Multiple specialised agents collaborate on the same codebase without conflicts.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="section">
+  <div class="container" style="text-align:center;">
+    <div class="reveal">
+      <div class="section-label">Ready to try it?</div>
+      <h2 style="margin-bottom:1rem;">Get early access to punkQ</h2>
+      <p class="text-muted" style="max-width:50ch; margin-inline:auto; margin-bottom:2.5rem; font-size:1.05rem;">
+        Join the waitlist and be among the first to experience AI-native code intelligence.
+      </p>
+      <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+        <a href="contact.html" class="btn btn-primary btn-lg">Join the Waitlist</a>
+        <a href="products.html" class="btn btn-outline btn-lg">See All Products</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="margin-bottom:0.75rem;" aria-hidden="true">
+          <div class="logo-mark">pQ</div>
+          <span>punkQ</span>
+        </div>
+        <p>AI-powered coding intelligence for teams who ship fast and break nothing.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="products.html">Q-Coding</a>
+        <a href="products.html">Q-Review</a>
+        <a href="products.html">Q-Deploy</a>
+        <a href="products.html">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="about.html">About</a>
+        <a href="about.html">Team</a>
+        <a href="contact.html">Careers</a>
+        <a href="contact.html">Press</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="demo.html">Demo</a>
+        <a href="blog.html">Tech Notes</a>
+        <a href="#">GitHub</a>
+        <a href="#">Status</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 punkQ. All rights reserved.</span>
+      <span>Built with ❤️ by the Q-Coding division</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>
