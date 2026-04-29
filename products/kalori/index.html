@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Kalori — AI Calorie Tracker</title>
+    <meta name="description" content="Snap a photo. We tell you the calories. Done." />
+
+    <!-- Anti-FOUC: set data-theme before any render to prevent flash of wrong theme -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('kalori-theme');
+          if (stored === 'light' || stored === 'dark') {
+            document.documentElement.setAttribute('data-theme', stored);
+          } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+            document.documentElement.setAttribute('data-theme', 'light');
+          }
+          // default (no attribute): dark — matches :root CSS defaults
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- PWA / theme -->
+    <meta name="theme-color" content="#10b981" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Kalori" />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="/products/kalori/favicon.svg" />
+    <link rel="apple-touch-icon" href="/products/kalori/apple-touch-icon.png" />
+    <script type="module" crossorigin src="/products/kalori/assets/index-CUuqw5JF.js"></script>
+    <link rel="stylesheet" crossorigin href="/products/kalori/assets/index--ErcRBef.css">
+  <link rel="manifest" href="/products/kalori/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/products/kalori/registerSW.js"></script></head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
