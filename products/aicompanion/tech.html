@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI Companion — tekniset tiedot. ESP32-S3-pohjainen laite, WiFi, pilvipohjainen suomenkielinen tekoäly.">
+  <title>Tekniikka — AI Companion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <style>
+    .lang-switcher {
+      display: flex;
+      align-items: center;
+      gap: 0.15rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 100px;
+      padding: 0.2rem;
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+    }
+    .lang-toggle {
+      padding: 0.28rem 0.7rem;
+      border-radius: 100px;
+      border: none;
+      background: transparent;
+      font-family: var(--font-sans);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: all var(--transition);
+      letter-spacing: 0.04em;
+    }
+    .lang-toggle.active {
+      background: linear-gradient(135deg, var(--color-gradient-1), var(--color-gradient-2));
+      color: #fff;
+    }
+
+    /* Tech spec blocks */
+    .spec-section {
+      margin-bottom: 4rem;
+    }
+    .spec-section:last-child { margin-bottom: 0; }
+
+    .spec-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .spec-header-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
+      flex-shrink: 0;
+    }
+    .spec-header-icon.blue {
+      background: color-mix(in srgb, var(--color-accent-2) 12%, transparent);
+      border-color: color-mix(in srgb, var(--color-accent-2) 20%, transparent);
+    }
+    .spec-header-icon.yellow {
+      background: color-mix(in srgb, var(--color-accent-3) 12%, transparent);
+      border-color: color-mix(in srgb, var(--color-accent-3) 20%, transparent);
+    }
+    .spec-header-icon.green {
+      background: color-mix(in srgb, #10b981 12%, transparent);
+      border-color: color-mix(in srgb, #10b981 20%, transparent);
+    }
+
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .spec-table tr {
+      border-bottom: 1px solid var(--color-border);
+    }
+    .spec-table tr:last-child { border-bottom: none; }
+    .spec-table td {
+      padding: 0.85rem 1rem;
+      font-size: 0.9rem;
+      vertical-align: top;
+    }
+    .spec-table td:first-child {
+      width: 38%;
+      color: var(--color-text-muted);
+      font-weight: 500;
+    }
+    .spec-table td:last-child {
+      color: var(--color-text);
+      font-weight: 400;
+    }
+
+    /* Privacy callout */
+    .privacy-callout {
+      border-left: 3px solid var(--color-accent);
+      padding: 1.25rem 1.5rem;
+      background: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface));
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      margin: 2rem 0;
+    }
+    .privacy-callout h4 {
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+      color: var(--color-accent);
+    }
+    .privacy-callout p {
+      font-size: 0.88rem;
+      color: var(--color-text-muted);
+      line-height: 1.7;
+    }
+
+    /* Architecture diagram placeholder */
+    .arch-diagram {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      align-items: center;
+      gap: 1rem;
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+    }
+    .arch-node {
+      text-align: center;
+      padding: 1.25rem 1rem;
+      background: color-mix(in srgb, var(--color-bg) 60%, transparent);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+    }
+    .arch-node-icon { font-size: 1.8rem; margin-bottom: 0.4rem; }
+    .arch-node-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+    }
+    .arch-node-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+    .arch-arrow {
+      color: var(--color-text-muted);
+      font-size: 1.2rem;
+      text-align: center;
+    }
+
+    @media (max-width: 680px) {
+      .arch-diagram {
+        grid-template-columns: 1fr;
+      }
+      .arch-arrow { transform: rotate(90deg); }
+      .spec-table td:first-child { width: 45%; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link"
+   data-fi="Siirry pääsisältöön" data-en="Skip to main content">Siirry pääsisältöön</a>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="nav" id="nav" role="navigation" aria-label="Päävalikko">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo" aria-label="AI Companion etusivu">
+      <div class="logo-mark" aria-hidden="true">AI</div>
+      <span>AI Companion</span>
+    </a>
+
+    <ul class="nav-links" role="list">
+      <li><a href="index.html" class="nav-link" data-page="home"
+             data-fi="Koti" data-en="Home">Koti</a></li>
+      <li><a href="demo.html" class="nav-link" data-page="demo"
+             data-fi="Demo" data-en="Demo">Demo</a></li>
+      <li><a href="tech.html" class="nav-link active" data-page="tech"
+             data-fi="Tekniikka" data-en="Tech">Tekniikka</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <div class="lang-switcher" role="group" aria-label="Kielivalinta">
+        <button class="lang-toggle active" data-lang="fi" aria-pressed="true">FI</button>
+        <button class="lang-toggle" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Vaihda teema">
+        <span class="icon-sun" aria-hidden="true">☀️</span>
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+      </button>
+    </div>
+
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Avaa valikko" aria-expanded="false" aria-controls="nav-mobile">
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile menu -->
+<div class="nav-mobile" id="nav-mobile" role="navigation" aria-label="Mobiilivalikko">
+  <a href="index.html" class="nav-link" data-page="home"
+     data-fi="Koti" data-en="Home">Koti</a>
+  <a href="demo.html" class="nav-link" data-page="demo"
+     data-fi="Demo" data-en="Demo">Demo</a>
+  <a href="tech.html" class="nav-link active" data-page="tech"
+     data-fi="Tekniikka" data-en="Tech">Tekniikka</a>
+  <div class="lang-switcher" style="margin-top:0.75rem;" role="group" aria-label="Kielivalinta">
+    <button class="lang-toggle active" data-lang="fi" aria-pressed="true">FI</button>
+    <button class="lang-toggle" data-lang="en" aria-pressed="false">EN</button>
+  </div>
+</div>
+
+<!-- ===== PAGE HEADER ===== -->
+<div class="page-header" id="main-content">
+  <div class="container">
+    <div class="section-label"
+         data-fi="Tekniset tiedot" data-en="Technical details">Tekniset tiedot</div>
+    <h1 data-fi="Miten AI Companion toimii" data-en="How AI Companion works">Miten AI Companion toimii</h1>
+    <p data-fi="Avoin kuvaus laitteen arkkitehtuurista, yksityisyydestä ja kielituesta."
+       data-en="An open description of the device architecture, privacy, and language support.">
+      Avoin kuvaus laitteen arkkitehtuurista, yksityisyydestä ja kielituesta.
+    </p>
+  </div>
+</div>
+
+<!-- ===== TECH CONTENT ===== -->
+<section class="section" style="padding-top:0;">
+  <div class="container">
+
+    <!-- Architecture overview -->
+    <div class="reveal" style="margin-bottom:3rem;">
+      <div class="arch-diagram">
+        <div class="arch-node">
+          <div class="arch-node-icon">🗣️</div>
+          <div class="arch-node-title" data-fi="Lapsi puhuu" data-en="Child speaks">Lapsi puhuu</div>
+          <div class="arch-node-label" data-fi="Mikrofoni" data-en="Microphone">Mikrofoni</div>
+        </div>
+        <div class="arch-arrow" aria-hidden="true">→</div>
+        <div class="arch-node">
+          <div class="arch-node-icon">📡</div>
+          <div class="arch-node-title" data-fi="Laite" data-en="Device">Laite</div>
+          <div class="arch-node-label" data-fi="ESP32-S3 + WiFi" data-en="ESP32-S3 + WiFi">ESP32-S3 + WiFi</div>
+        </div>
+        <div class="arch-arrow" aria-hidden="true">⇄</div>
+        <div class="arch-node">
+          <div class="arch-node-icon">☁️</div>
+          <div class="arch-node-title" data-fi="Pilvi-AI" data-en="Cloud AI">Pilvi-AI</div>
+          <div class="arch-node-label" data-fi="Puhe + kieli" data-en="Speech + language">Puhe + kieli</div>
+        </div>
+      </div>
+      <p class="text-muted" style="text-align:center; margin-top:1rem; font-size:0.85rem;"
+         data-fi="Laite kuuntelee, lähettää äänen pilveen käsiteltäväksi, ja toistaa vastauksen äänessä. Mitään ei tallenneta."
+         data-en="The device listens, sends audio to the cloud for processing, and plays back the answer as audio. Nothing is stored.">
+        Laite kuuntelee, lähettää äänen pilveen käsiteltäväksi, ja toistaa vastauksen äänessä. Mitään ei tallenneta.
+      </p>
+    </div>
+
+    <div class="grid-2" style="gap:3rem; align-items:start;">
+      <div>
+
+        <!-- Hardware -->
+        <div class="spec-section reveal">
+          <div class="spec-header">
+            <div class="spec-header-icon" aria-hidden="true">🔧</div>
+            <div>
+              <div class="section-label" style="margin-bottom:0.2rem;"
+                   data-fi="Laitteisto" data-en="Hardware">Laitteisto</div>
+              <h3 data-fi="Fyysinen laite" data-en="Physical device">Fyysinen laite</h3>
+            </div>
+          </div>
+          <div class="glass" style="overflow:hidden;">
+            <table class="spec-table">
+              <tbody>
+                <tr>
+                  <td data-fi="Prosessori" data-en="Processor">Prosessori</td>
+                  <td>ESP32-S3</td>
+                </tr>
+                <tr>
+                  <td data-fi="Yhteys" data-en="Connectivity">Yhteys</td>
+                  <td data-fi="WiFi (2.4 GHz)" data-en="WiFi (2.4 GHz)">WiFi (2.4 GHz)</td>
+                </tr>
+                <tr>
+                  <td data-fi="Ääni sisään" data-en="Audio in">Ääni sisään</td>
+                  <td data-fi="Sisäinen mikrofoni" data-en="Built-in microphone">Sisäinen mikrofoni</td>
+                </tr>
+                <tr>
+                  <td data-fi="Ääni ulos" data-en="Audio out">Ääni ulos</td>
+                  <td data-fi="Kaiutin" data-en="Speaker">Kaiutin</td>
+                </tr>
+                <tr>
+                  <td data-fi="Virta" data-en="Power">Virta</td>
+                  <td data-fi="USB-C-sovitin (sisältyy)" data-en="USB-C adapter (included)">USB-C-sovitin (sisältyy)</td>
+                </tr>
+                <tr>
+                  <td data-fi="Toiminta" data-en="Operation">Toiminta</td>
+                  <td data-fi="Itsenäinen kotikäyttö, internet vaaditaan" data-en="Standalone home use, internet required">Itsenäinen kotikäyttö, internet vaaditaan</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Languages -->
+        <div class="spec-section reveal">
+          <div class="spec-header">
+            <div class="spec-header-icon blue" aria-hidden="true">🌐</div>
+            <div>
+              <div class="section-label" style="margin-bottom:0.2rem;"
+                   data-fi="Kielituki" data-en="Language support">Kielituki</div>
+              <h3 data-fi="Puhe ja ymmärrys" data-en="Speech and understanding">Puhe ja ymmärrys</h3>
+            </div>
+          </div>
+          <div class="glass" style="overflow:hidden;">
+            <table class="spec-table">
+              <tbody>
+                <tr>
+                  <td data-fi="Oletuskieli" data-en="Default language">Oletuskieli</td>
+                  <td data-fi="Suomi" data-en="Finnish">Suomi</td>
+                </tr>
+                <tr>
+                  <td data-fi="Toinen kieli" data-en="Second language">Toinen kieli</td>
+                  <td data-fi="Englanti" data-en="English">Englanti</td>
+                </tr>
+                <tr>
+                  <td data-fi="Puheentunnistus" data-en="Speech recognition">Puheentunnistus</td>
+                  <td data-fi="Pilvipohjainen, suomi ja englanti" data-en="Cloud-based, Finnish and English">Pilvipohjainen, suomi ja englanti</td>
+                </tr>
+                <tr>
+                  <td data-fi="Puhesynteesi" data-en="Speech synthesis">Puhesynteesi</td>
+                  <td data-fi="Pilvipohjainen, luonteva suomi" data-en="Cloud-based, natural Finnish">Pilvipohjainen, luonteva suomi</td>
+                </tr>
+                <tr>
+                  <td data-fi="Kielimalli" data-en="Language model">Kielimalli</td>
+                  <td data-fi="Pilvipohjainen AI, vapaasti saatavilla olevat palvelut" data-en="Cloud-based AI, free-tier western services">Pilvipohjainen AI, vapaasti saatavilla olevat palvelut</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <div>
+
+        <!-- Privacy -->
+        <div class="spec-section reveal">
+          <div class="spec-header">
+            <div class="spec-header-icon green" aria-hidden="true">🔒</div>
+            <div>
+              <div class="section-label" style="margin-bottom:0.2rem;"
+                   data-fi="Yksityisyys" data-en="Privacy">Yksityisyys</div>
+              <h3 data-fi="Ei tallennuksia, ei profilointia" data-en="No storage, no profiling">Ei tallennuksia, ei profilointia</h3>
+            </div>
+          </div>
+
+          <div class="privacy-callout">
+            <h4 data-fi="Tärkeintä sinulle vanhempana" data-en="Most important to you as a parent">Tärkeintä sinulle vanhempana</h4>
+            <p data-fi="AI Companion ei tallenna lapsen ääntä eikä mitään puheluhistoriaa. Jokainen keskustelu käsitellään hetkessä pilvessä ja hylätään välittömästi. Ei käyttäjäprofiileja, ei datakeruuta, ei mainontaa."
+               data-en="AI Companion does not store your child's voice or any conversation history. Each interaction is processed momentarily in the cloud and discarded immediately. No user profiles, no data collection, no advertising.">
+              AI Companion ei tallenna lapsen ääntä eikä mitään puheluhistoriaa. Jokainen keskustelu käsitellään hetkessä pilvessä ja hylätään välittömästi. Ei käyttäjäprofiileja, ei datakeruuta, ei mainontaa.
+            </p>
+          </div>
+
+          <div class="glass" style="overflow:hidden;">
+            <table class="spec-table">
+              <tbody>
+                <tr>
+                  <td data-fi="Tallennus" data-en="Storage">Tallennus</td>
+                  <td data-fi="Ei lainkaan — hetkellistä käsittelyä vain" data-en="None — momentary processing only">Ei lainkaan — hetkellistä käsittelyä vain</td>
+                </tr>
+                <tr>
+                  <td data-fi="Käyttäjäprofiili" data-en="User profile">Käyttäjäprofiili</td>
+                  <td data-fi="Ei luoda eikä tallenneta" data-en="Not created, not stored">Ei luoda eikä tallenneta</td>
+                </tr>
+                <tr>
+                  <td data-fi="Mainokset" data-en="Ads">Mainokset</td>
+                  <td data-fi="Ei koskaan" data-en="Never">Ei koskaan</td>
+                </tr>
+                <tr>
+                  <td data-fi="Kolmannet osapuolet" data-en="Third parties">Kolmannet osapuolet</td>
+                  <td data-fi="Pilvikäsittely vaaditaan — laadukkaat länsimaiset palvelut" data-en="Cloud processing required — reputable western services">Pilvikäsittely vaaditaan — laadukkaat länsimaiset palvelut</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Open design -->
+        <div class="spec-section reveal">
+          <div class="spec-header">
+            <div class="spec-header-icon yellow" aria-hidden="true">⚙️</div>
+            <div>
+              <div class="section-label" style="margin-bottom:0.2rem;"
+                   data-fi="Suunnittelu" data-en="Design">Suunnittelu</div>
+              <h3 data-fi="Avoin lähestymistapa" data-en="Open approach">Avoin lähestymistapa</h3>
+            </div>
+          </div>
+          <div class="glass" style="overflow:hidden;">
+            <table class="spec-table">
+              <tbody>
+                <tr>
+                  <td data-fi="Laiteohjelmisto" data-en="Firmware">Laiteohjelmisto</td>
+                  <td data-fi="C++ — kevyt ja tehokas" data-en="C++ — lightweight and efficient">C++ — kevyt ja tehokas</td>
+                </tr>
+                <tr>
+                  <td data-fi="Päivitykset" data-en="Updates">Päivitykset</td>
+                  <td data-fi="WiFin kautta automaattisesti" data-en="Automatic over WiFi">WiFin kautta automaattisesti</td>
+                </tr>
+                <tr>
+                  <td data-fi="Asetus" data-en="Setup">Asetus</td>
+                  <td data-fi="Yksinkertainen WiFi-paritus, kerran vain" data-en="Simple WiFi pairing, once only">Yksinkertainen WiFi-paritus, kerran vain</td>
+                </tr>
+                <tr>
+                  <td data-fi="Käyttöjärjestelmä" data-en="OS">Käyttöjärjestelmä</td>
+                  <td data-fi="Ei vaadita — laite toimii itsenäisesti" data-en="Not required — device operates standalone">Ei vaadita — laite toimii itsenäisesti</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- FAQ-style note -->
+    <div class="reveal" style="margin-top:3rem;">
+      <div class="glass card" style="max-width:680px; margin:0 auto; text-align:center;">
+        <div style="font-size:2rem; margin-bottom:1rem;" aria-hidden="true">❓</div>
+        <h3 data-fi="Lisää kysymyksiä?" data-en="More questions?">Lisää kysymyksiä?</h3>
+        <p class="text-muted" style="margin-top:0.5rem; margin-bottom:1.5rem;"
+           data-fi="AI Companion on vielä kehitteillä. Jos sinulla on teknisiä kysymyksiä tai haluat tietää lisää, ota yhteyttä."
+           data-en="AI Companion is still in development. If you have technical questions or want to know more, get in touch.">
+          AI Companion on vielä kehitteillä. Jos sinulla on teknisiä kysymyksiä tai haluat tietää lisää, ota yhteyttä.
+        </p>
+        <a href="https://punkq.com" class="btn btn-primary"
+           data-fi="punkQ.com" data-en="punkQ.com">punkQ.com</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ===== CTA ===== -->
+<section class="section">
+  <div class="container" style="text-align:center;">
+    <div class="reveal">
+      <h2 data-fi="Haluatko nähdä sen toiminnassa?"
+          data-en="Want to see it in action?">Haluatko nähdä sen toiminnassa?</h2>
+      <p class="text-muted" style="margin-top:1rem; margin-bottom:2.5rem; max-width:46ch; margin-inline:auto;"
+         data-fi="Demo-sivu näyttää, miltä kokemus tulee näyttämään. Tulossa pian."
+         data-en="The demo page shows what the experience will look like. Coming soon.">
+        Demo-sivu näyttää, miltä kokemus tulee näyttämään. Tulossa pian.
+      </p>
+      <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+        <a href="demo.html" class="btn btn-primary btn-lg"
+           data-fi="Katso demo" data-en="See demo">Katso demo</a>
+        <a href="index.html" class="btn btn-outline btn-lg"
+           data-fi="Takaisin etusivulle" data-en="Back to home">Takaisin etusivulle</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="margin-bottom:0.75rem;" aria-hidden="true">
+          <div class="logo-mark">AI</div>
+          <span>AI Companion</span>
+        </div>
+        <p data-fi="Tekoälykaveri lapsellesi — turvallinen, suomenkielinen, aina kotona."
+           data-en="An AI companion for your child — safe, Finnish-speaking, always at home.">
+          Tekoälykaveri lapsellesi — turvallinen, suomenkielinen, aina kotona.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4 data-fi="Sivut" data-en="Pages">Sivut</h4>
+        <a href="index.html" data-fi="Koti" data-en="Home">Koti</a>
+        <a href="demo.html" data-fi="Demo" data-en="Demo">Demo</a>
+        <a href="tech.html" data-fi="Tekniikka" data-en="Tech">Tekniikka</a>
+      </div>
+      <div class="footer-col">
+        <h4 data-fi="Yritys" data-en="Company">Yritys</h4>
+        <a href="https://punkq.com" data-fi="punkQ.com" data-en="punkQ.com">punkQ.com</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-fi="© 2026 punkQ. Kaikki oikeudet pidätetään."
+            data-en="© 2026 punkQ. All rights reserved.">© 2026 punkQ. Kaikki oikeudet pidätetään.</span>
+      <span data-fi="Tehty rakkaudella perheiden puolesta"
+            data-en="Made with love for families">Tehty rakkaudella perheiden puolesta</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>
