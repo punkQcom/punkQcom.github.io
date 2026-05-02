@@ -119,8 +119,8 @@
       50% { opacity: 0.5; transform: scale(0.85); }
     }
 
-    /* Recording button placeholder */
-    .record-btn-placeholder {
+    /* Recording button: clickable launcher (opens iframe demo) */
+    .record-btn-launcher {
       width: 80px;
       height: 80px;
       border-radius: 50%;
@@ -129,12 +129,18 @@
       align-items: center;
       justify-content: center;
       font-size: 2rem;
-      opacity: 0.4;
-      cursor: not-allowed;
+      cursor: pointer;
       box-shadow: 0 8px 32px color-mix(in srgb, var(--color-gradient-1) 35%, transparent);
       position: relative;
+      border: 0;
+      transition: transform var(--transition), box-shadow var(--transition);
     }
-    .record-btn-placeholder::after {
+    .record-btn-launcher:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 40px color-mix(in srgb, var(--color-gradient-1) 50%, transparent);
+    }
+    .record-btn-launcher:active { transform: scale(0.98); }
+    .record-btn-launcher::after {
       content: '';
       position: absolute;
       inset: -6px;
@@ -167,6 +173,61 @@
     .preview-card-icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
     .preview-card h4 { font-size: 1rem; margin-bottom: 0.4rem; }
     .preview-card p { font-size: 0.88rem; color: var(--color-text-muted); line-height: 1.6; }
+
+    /* Demo modal (iframe wrapper) */
+    .demo-modal { position: fixed; inset: 0; z-index: 9999; display: none; }
+    .demo-modal.show { display: block; }
+    .demo-modal-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .demo-modal-card {
+      position: absolute; top: 4%; left: 50%;
+      transform: translateX(-50%);
+      width: min(720px, 92vw);
+      height: 92vh; max-height: 92vh;
+      background: var(--color-bg, #fff);
+      border-radius: var(--radius-lg, 1rem);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .demo-modal-header {
+      padding: 0.85rem 1.1rem;
+      border-bottom: 1px solid var(--color-border, #e5e7eb);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 0.75rem;
+      background: var(--color-surface, transparent);
+    }
+    .demo-modal-header h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .demo-modal-close {
+      background: transparent; border: 0; cursor: pointer;
+      font-size: 1.5rem; line-height: 1;
+      color: var(--color-text-muted, #555);
+      padding: 0.25rem 0.5rem; border-radius: 0.5rem;
+      transition: background var(--transition);
+    }
+    .demo-modal-close:hover {
+      background: color-mix(in srgb, var(--color-text, #000) 8%, transparent);
+      color: var(--color-text, #000);
+    }
+    .demo-modal-frame {
+      flex: 1; width: 100%; border: 0;
+      background: #f5f5f7;
+    }
+    @media (max-width: 640px) {
+      .demo-modal-card {
+        top: 0; transform: none; left: 0;
+        width: 100vw; height: 100vh; max-height: 100vh;
+        border-radius: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -261,11 +322,16 @@
           Täällä tulet pian kuulemaan ja näkemään, miten AI-kaveri juttelee suomeksi. Pysy kuulolla!
         </p>
 
-        <!-- Recording button placeholder (not functional) -->
-        <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;" aria-hidden="true">
-          <div class="record-btn-placeholder" title="Tulossa pian">🎙️</div>
-          <span class="record-label" data-fi="Nauhoita puhe — tulossa pian" data-en="Record voice — coming soon">
-            Nauhoita puhe — tulossa pian
+        <!-- Recording button: opens iframe demo (password-gated) -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+          <button type="button" class="record-btn-launcher"
+                  onclick="openDemoModal()"
+                  data-fi="Avaa demo" data-en="Open demo"
+                  aria-label="Avaa demo" title="Avaa demo">🎙️</button>
+          <span class="record-label"
+                data-fi="Nauhoita puhe — yksityinen demo, pyydä salasana"
+                data-en="Record voice — private demo, password required">
+            Nauhoita puhe — yksityinen demo, pyydä salasana
           </span>
         </div>
       </div>
@@ -359,6 +425,53 @@
     </div>
   </div>
 </footer>
+
+<!-- ===== DEMO MODAL (iframe wrapper for password-gated live demo) ===== -->
+<div id="demo-modal" class="demo-modal" role="dialog" aria-modal="true"
+     aria-labelledby="demo-modal-title">
+  <div class="demo-modal-backdrop" onclick="closeDemoModal()" aria-hidden="true"></div>
+  <div class="demo-modal-card">
+    <div class="demo-modal-header">
+      <h3 id="demo-modal-title"
+          data-fi="Kokeile AI Companionia"
+          data-en="Try AI Companion">Kokeile AI Companionia</h3>
+      <button type="button" class="demo-modal-close"
+              onclick="closeDemoModal()"
+              aria-label="Sulje" title="Sulje">&times;</button>
+    </div>
+    <iframe class="demo-modal-frame" id="demo-iframe"
+            src="about:blank"
+            allow="microphone; autoplay"
+            referrerpolicy="no-referrer"
+            title="AI Companion demo"></iframe>
+  </div>
+</div>
+
+<script>
+  // URL of the deployed live demo. Update if the Azure subdomain ever changes.
+  const AICOMPANION_DEMO_URL =
+    'https://aicompanion.orangecliff-3a4f1285.westeurope.azurecontainerapps.io/login';
+
+  function openDemoModal() {
+    const modal = document.getElementById('demo-modal');
+    const iframe = document.getElementById('demo-iframe');
+    iframe.src = AICOMPANION_DEMO_URL;
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', demoModalEscHandler);
+  }
+  function closeDemoModal() {
+    const modal = document.getElementById('demo-modal');
+    const iframe = document.getElementById('demo-iframe');
+    modal.classList.remove('show');
+    iframe.src = 'about:blank';  // stop any in-flight audio playback
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', demoModalEscHandler);
+  }
+  function demoModalEscHandler(e) {
+    if (e.key === 'Escape') closeDemoModal();
+  }
+</script>
 
 <script src="assets/js/main.js"></script>
 </body>
