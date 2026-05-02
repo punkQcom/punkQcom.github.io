@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Tekoälykaveri lapsellesi — puhuu suomea luontevasti, turvallinen ja yksityinen.">
+  <title>AI Companion — Tekoälykaveri lapsellesi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <style>
+    /* Language toggle in nav */
+    .lang-switcher {
+      display: flex;
+      align-items: center;
+      gap: 0.15rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 100px;
+      padding: 0.2rem;
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+    }
+    .lang-toggle {
+      padding: 0.28rem 0.7rem;
+      border-radius: 100px;
+      border: none;
+      background: transparent;
+      font-family: var(--font-sans);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: all var(--transition);
+      letter-spacing: 0.04em;
+    }
+    .lang-toggle.active {
+      background: linear-gradient(135deg, var(--color-gradient-1), var(--color-gradient-2));
+      color: #fff;
+    }
+
+    /* Companion visual */
+    .companion-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .companion-orb {
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: linear-gradient(135deg,
+        color-mix(in srgb, var(--color-gradient-1) 30%, var(--color-bg-alt)),
+        color-mix(in srgb, var(--color-gradient-2) 30%, var(--color-bg-alt))
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 6rem;
+      box-shadow: 0 0 80px -10px color-mix(in srgb, var(--color-accent) 50%, transparent),
+                  0 0 160px -20px color-mix(in srgb, var(--color-accent-2) 30%, transparent);
+      animation: float 6s ease-in-out infinite;
+      position: relative;
+      overflow: hidden;
+    }
+    .companion-orb::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 25%,
+        color-mix(in srgb, #fff 30%, transparent),
+        transparent 60%
+      );
+    }
+    .companion-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1.5px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+      animation: ring-pulse 4s ease-in-out infinite;
+    }
+    .companion-ring:nth-child(1) { width: 300px; height: 300px; animation-delay: 0s; }
+    .companion-ring:nth-child(2) { width: 360px; height: 360px; animation-delay: 0.8s; }
+    .companion-ring:nth-child(3) { width: 420px; height: 420px; animation-delay: 1.6s; }
+    @keyframes ring-pulse {
+      0%, 100% { opacity: 0.4; transform: scale(1); }
+      50% { opacity: 0.15; transform: scale(1.04); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-16px); }
+    }
+
+    /* Benefit cards */
+    .benefit-icon { font-size: 2rem; margin-bottom: 1rem; }
+
+    /* How it works steps */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      counter-reset: step-counter;
+    }
+    .step-card {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      position: relative;
+    }
+    .step-number {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--color-gradient-1), var(--color-gradient-2));
+      color: #fff;
+      font-weight: 800;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.25rem;
+      box-shadow: 0 4px 16px color-mix(in srgb, var(--color-gradient-1) 40%, transparent);
+    }
+    .step-icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
+
+    @media (max-width: 900px) {
+      .companion-visual { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link"
+   data-fi="Siirry pääsisältöön" data-en="Skip to main content">Siirry pääsisältöön</a>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="nav" id="nav" role="navigation" aria-label="Päävalikko">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo" aria-label="AI Companion etusivu">
+      <div class="logo-mark" aria-hidden="true">AI</div>
+      <span>AI Companion</span>
+    </a>
+
+    <ul class="nav-links" role="list">
+      <li><a href="index.html" class="nav-link active" data-page="home"
+             data-fi="Koti" data-en="Home">Koti</a></li>
+      <li><a href="demo.html" class="nav-link" data-page="demo"
+             data-fi="Demo" data-en="Demo">Demo</a></li>
+      <li><a href="tech.html" class="nav-link" data-page="tech"
+             data-fi="Tekniikka" data-en="Tech">Tekniikka</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <div class="lang-switcher" role="group" aria-label="Kielivalinta">
+        <button class="lang-toggle active" data-lang="fi" aria-pressed="true">FI</button>
+        <button class="lang-toggle" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Vaihda teema">
+        <span class="icon-sun" aria-hidden="true">☀️</span>
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+      </button>
+    </div>
+
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Avaa valikko" aria-expanded="false" aria-controls="nav-mobile">
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile menu -->
+<div class="nav-mobile" id="nav-mobile" role="navigation" aria-label="Mobiilivalikko">
+  <a href="index.html" class="nav-link active" data-page="home"
+     data-fi="Koti" data-en="Home">Koti</a>
+  <a href="demo.html" class="nav-link" data-page="demo"
+     data-fi="Demo" data-en="Demo">Demo</a>
+  <a href="tech.html" class="nav-link" data-page="tech"
+     data-fi="Tekniikka" data-en="Tech">Tekniikka</a>
+  <div class="lang-switcher" style="margin-top:0.75rem;" role="group" aria-label="Kielivalinta">
+    <button class="lang-toggle active" data-lang="fi" aria-pressed="true">FI</button>
+    <button class="lang-toggle" data-lang="en" aria-pressed="false">EN</button>
+  </div>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="hero" id="main-content">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-text">
+        <div class="hero-badge">
+          <div class="dot"></div>
+          <span data-fi="Tulossa pian" data-en="Coming soon">Tulossa pian</span>
+        </div>
+
+        <h1 class="hero-title"
+            data-fi="Tekoälykaveri<br>lapsellesi"
+            data-en="An AI companion<br>for your child">
+          Tekoälykaveri<br>lapsellesi
+        </h1>
+
+        <p class="hero-subtitle"
+           data-fi="Puhuu suomea luontevasti. Kuuntelee, vastaa, oppii — ja pysyy turvallisena lapsesi lähellä."
+           data-en="Speaks Finnish naturally. Listens, responds, learns — and stays safe by your child's side.">
+          Puhuu suomea luontevasti. Kuuntelee, vastaa, oppii — ja pysyy turvallisena lapsesi lähellä.
+        </p>
+
+        <div class="hero-cta">
+          <a href="demo.html" class="btn btn-primary btn-lg"
+             data-fi="Katso demo" data-en="See demo">Katso demo</a>
+          <a href="tech.html" class="btn btn-outline btn-lg"
+             data-fi="Lue lisää" data-en="Learn more">Lue lisää</a>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat-item">
+            <div class="stat-number">100%</div>
+            <div class="stat-label" data-fi="Suomenkielinen" data-en="Finnish language">Suomenkielinen</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">0</div>
+            <div class="stat-label" data-fi="Tietoja tallennettu" data-en="Data stored">Tietoja tallennettu</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">3+</div>
+            <div class="stat-label" data-fi="Ikävuotta" data-en="Years old">Ikävuotta</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Visual -->
+      <div class="companion-visual reveal reveal-delay-2">
+        <div class="companion-ring"></div>
+        <div class="companion-ring"></div>
+        <div class="companion-ring"></div>
+        <div class="companion-orb">🤖</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== BENEFITS ===== -->
+<section class="section" id="benefits">
+  <div class="container">
+    <div class="reveal" style="text-align:center; margin-bottom:3.5rem;">
+      <div class="section-label" data-fi="Miksi AI Companion" data-en="Why AI Companion">Miksi AI Companion</div>
+      <h2 data-fi="Turvallinen ja hauska kaveri kotiin"
+          data-en="A safe and fun companion for home">Turvallinen ja hauska kaveri kotiin</h2>
+      <p class="text-muted" style="margin-top:0.75rem; max-width:54ch; margin-inline:auto;"
+         data-fi="Suunniteltu lapsille — helppo käyttää, hauska jutella ja täysin turvallinen."
+         data-en="Designed for children — easy to use, fun to chat with, and completely safe.">
+        Suunniteltu lapsille — helppo käyttää, hauska jutella ja täysin turvallinen.
+      </p>
+    </div>
+
+    <div class="grid-3">
+      <div class="glass card reveal reveal-delay-1">
+        <div class="benefit-icon">🇫🇮</div>
+        <h3 data-fi="Puhuu suomea" data-en="Speaks Finnish">Puhuu suomea</h3>
+        <p data-fi="Luonteva suomi — ei konemaisuutta, ei vierasta aksenttia. Lapsi voi jutella omalla äidinkielellään."
+           data-en="Natural Finnish — no robotic tone, no foreign accent. Your child can talk in their mother tongue.">
+          Luonteva suomi — ei konemaisuutta, ei vierasta aksenttia. Lapsi voi jutella omalla äidinkielellään.
+        </p>
+      </div>
+      <div class="glass card reveal reveal-delay-2">
+        <div class="benefit-icon">🔒</div>
+        <h3 data-fi="Turvallinen ja yksityinen" data-en="Safe and private">Turvallinen ja yksityinen</h3>
+        <p data-fi="Mitään tietoja ei tallenneta. Kaikki käsitellään hetkessä ja katoaa heti. Ei profiloitia, ei mainoksia."
+           data-en="No data is stored. Everything is processed instantly and vanishes. No profiling, no ads.">
+          Mitään tietoja ei tallenneta. Kaikki käsitellään hetkessä ja katoaa heti. Ei profilointia, ei mainoksia.
+        </p>
+      </div>
+      <div class="glass card reveal reveal-delay-3">
+        <div class="benefit-icon">🎙️</div>
+        <h3 data-fi="Vain puhumalla" data-en="Just talk to it">Vain puhumalla</h3>
+        <p data-fi="Ei näppäimistöä, ei sovelluksia. Lapsi puhuu, kaveri vastaa — niin yksinkertaista se on."
+           data-en="No keyboard, no apps. Your child talks, the companion answers — it's that simple.">
+          Ei näppäimistöä, ei sovelluksia. Lapsi puhuu, kaveri vastaa — niin yksinkertaista se on.
+        </p>
+      </div>
+      <div class="glass card reveal reveal-delay-1">
+        <div class="benefit-icon">📡</div>
+        <h3 data-fi="Toimii kotona" data-en="Works at home">Toimii kotona</h3>
+        <p data-fi="Yhdistää kodin WiFiin ja on heti valmis. Ei tarvita älypuhelinta, tietokonetta eikä muita laitteita."
+           data-en="Connects to home WiFi and is immediately ready. No smartphone, computer, or other devices needed.">
+          Yhdistää kodin WiFiin ja on heti valmis. Ei tarvita älypuhelinta, tietokonetta eikä muita laitteita.
+        </p>
+      </div>
+      <div class="glass card reveal reveal-delay-2">
+        <div class="benefit-icon">🌱</div>
+        <h3 data-fi="Opettavainen" data-en="Educational">Opettavainen</h3>
+        <p data-fi="Vastaa uteliaisiin kysymyksiin, kertoo tarinoita ja auttaa oppimaan uusia asioita leikkisästi."
+           data-en="Answers curious questions, tells stories, and helps learn new things in a playful way.">
+          Vastaa uteliaisiin kysymyksiin, kertoo tarinoita ja auttaa oppimaan uusia asioita leikkisästi.
+        </p>
+      </div>
+      <div class="glass card reveal reveal-delay-3">
+        <div class="benefit-icon">🏠</div>
+        <h3 data-fi="Aina kotona" data-en="Always at home">Aina kotona</h3>
+        <p data-fi="Fyysinen laite, joka on aina samassa paikassa. Lapsi tietää aina missä kaveri on — kotona, turvassa."
+           data-en="A physical device that is always in the same place. Your child always knows where the companion is — at home, safe.">
+          Fyysinen laite, joka on aina samassa paikassa. Lapsi tietää aina missä kaveri on — kotona, turvassa.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="section">
+  <div class="container">
+    <div class="reveal" style="text-align:center; margin-bottom:3.5rem;">
+      <div class="section-label"
+           data-fi="Miten se toimii" data-en="How it works">Miten se toimii</div>
+      <h2 data-fi="Kolme askelta ja kaveri on valmis"
+          data-en="Three steps and the companion is ready">Kolme askelta ja kaveri on valmis</h2>
+    </div>
+
+    <div class="steps-grid">
+      <div class="glass step-card reveal reveal-delay-1">
+        <div class="step-number">1</div>
+        <div class="step-icon">📦</div>
+        <h3 data-fi="Laita laite pöydälle" data-en="Place device on table">Laita laite pöydälle</h3>
+        <p class="text-muted"
+           data-fi="Kompakti laite sopii mihin tahansa kotiin. Kytke virta päälle."
+           data-en="A compact device that fits anywhere at home. Just plug it in.">
+          Kompakti laite sopii mihin tahansa kotiin. Kytke virta päälle.
+        </p>
+      </div>
+      <div class="glass step-card reveal reveal-delay-2">
+        <div class="step-number">2</div>
+        <div class="step-icon">📶</div>
+        <h3 data-fi="Yhdistä WiFiin" data-en="Connect to WiFi">Yhdistä WiFiin</h3>
+        <p class="text-muted"
+           data-fi="Nopea asetus kerran, sen jälkeen laite yhdistää automaattisesti."
+           data-en="Quick setup once, then the device connects automatically.">
+          Nopea asetus kerran, sen jälkeen laite yhdistää automaattisesti.
+        </p>
+      </div>
+      <div class="glass step-card reveal reveal-delay-3">
+        <div class="step-number">3</div>
+        <div class="step-icon">🗣️</div>
+        <h3 data-fi="Ala jutella" data-en="Start talking">Ala jutella</h3>
+        <p class="text-muted"
+           data-fi="Lapsi puhuu, kaveri kuuntelee ja vastaa. Niin helppoa!"
+           data-en="Your child talks, the companion listens and responds. That easy!">
+          Lapsi puhuu, kaveri kuuntelee ja vastaa. Niin helppoa!
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ===== CTA ===== -->
+<section class="section">
+  <div class="container" style="text-align:center;">
+    <div class="reveal">
+      <div class="section-label"
+           data-fi="Haluatko lisätietoja" data-en="Want to learn more">Haluatko lisätietoja</div>
+      <h2 data-fi="Katso demo tai tutustu tekniikkaan"
+          data-en="Watch the demo or explore the tech">Katso demo tai tutustu tekniikkaan</h2>
+      <p class="text-muted" style="max-width:50ch; margin-inline:auto; margin-bottom:2.5rem; margin-top:1rem; font-size:1.05rem;"
+         data-fi="AI Companion on rakennettu lapsille. Turvallinen, suomenkielinen ja aina kotona."
+         data-en="AI Companion is built for children. Safe, Finnish-speaking, and always at home.">
+        AI Companion on rakennettu lapsille. Turvallinen, suomenkielinen ja aina kotona.
+      </p>
+      <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+        <a href="demo.html" class="btn btn-primary btn-lg"
+           data-fi="Katso demo" data-en="See demo">Katso demo</a>
+        <a href="tech.html" class="btn btn-outline btn-lg"
+           data-fi="Tekniset tiedot" data-en="Technical info">Tekniset tiedot</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="margin-bottom:0.75rem;" aria-hidden="true">
+          <div class="logo-mark">AI</div>
+          <span>AI Companion</span>
+        </div>
+        <p data-fi="Tekoälykaveri lapsellesi — turvallinen, suomenkielinen, aina kotona."
+           data-en="An AI companion for your child — safe, Finnish-speaking, always at home.">
+          Tekoälykaveri lapsellesi — turvallinen, suomenkielinen, aina kotona.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4 data-fi="Sivut" data-en="Pages">Sivut</h4>
+        <a href="index.html" data-fi="Koti" data-en="Home">Koti</a>
+        <a href="demo.html" data-fi="Demo" data-en="Demo">Demo</a>
+        <a href="tech.html" data-fi="Tekniikka" data-en="Tech">Tekniikka</a>
+      </div>
+      <div class="footer-col">
+        <h4 data-fi="Yritys" data-en="Company">Yritys</h4>
+        <a href="https://punkq.com" data-fi="punkQ.com" data-en="punkQ.com">punkQ.com</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-fi="© 2026 punkQ. Kaikki oikeudet pidätetään."
+            data-en="© 2026 punkQ. All rights reserved.">© 2026 punkQ. Kaikki oikeudet pidätetään.</span>
+      <span data-fi="Tehty rakkaudella perheiden puolesta"
+            data-en="Made with love for families">Tehty rakkaudella perheiden puolesta</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>

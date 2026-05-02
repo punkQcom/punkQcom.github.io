@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI Companion demo — tulossa pian.">
+  <title>Demo — AI Companion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <style>
+    .lang-switcher {
+      display: flex;
+      align-items: center;
+      gap: 0.15rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 100px;
+      padding: 0.2rem;
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+    }
+    .lang-toggle {
+      padding: 0.28rem 0.7rem;
+      border-radius: 100px;
+      border: none;
+      background: transparent;
+      font-family: var(--font-sans);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition: all var(--transition);
+      letter-spacing: 0.04em;
+    }
+    .lang-toggle.active {
+      background: linear-gradient(135deg, var(--color-gradient-1), var(--color-gradient-2));
+      color: #fff;
+    }
+
+    /* Demo placeholder area */
+    .demo-placeholder {
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .demo-stage {
+      background: var(--color-surface);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius-lg);
+      min-height: 380px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      padding: 3rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: border-color var(--transition);
+    }
+    .demo-stage:hover {
+      border-color: color-mix(in srgb, var(--color-accent) 40%, var(--color-border));
+    }
+    .demo-stage-icon {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(135deg,
+        color-mix(in srgb, var(--color-gradient-1) 20%, var(--color-bg-alt)),
+        color-mix(in srgb, var(--color-gradient-2) 20%, var(--color-bg-alt))
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      animation: pulse-soft 3s ease-in-out infinite;
+      box-shadow: 0 8px 32px color-mix(in srgb, var(--color-accent) 20%, transparent);
+    }
+    @keyframes pulse-soft {
+      0%, 100% { transform: scale(1); box-shadow: 0 8px 32px color-mix(in srgb, var(--color-accent) 20%, transparent); }
+      50% { transform: scale(1.06); box-shadow: 0 12px 48px color-mix(in srgb, var(--color-accent) 35%, transparent); }
+    }
+    .demo-stage-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    .demo-stage-sub {
+      font-size: 1rem;
+      color: var(--color-text-muted);
+      max-width: 38ch;
+      line-height: 1.7;
+    }
+    .demo-coming-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 1.1rem;
+      background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+      border: 1px solid color-mix(in srgb, var(--color-accent) 25%, var(--color-border));
+      border-radius: 100px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--color-accent);
+    }
+    .demo-coming-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* Recording button placeholder */
+    .record-btn-placeholder {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--color-gradient-1), var(--color-gradient-2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: 0 8px 32px color-mix(in srgb, var(--color-gradient-1) 35%, transparent);
+      position: relative;
+    }
+    .record-btn-placeholder::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 2px dashed color-mix(in srgb, var(--color-accent) 40%, transparent);
+      animation: spin 8s linear infinite;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .record-label {
+      font-size: 0.82rem;
+      color: var(--color-text-muted);
+      font-weight: 500;
+      margin-top: 0.5rem;
+    }
+
+    /* Preview info cards */
+    .preview-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-top: 3rem;
+    }
+    .preview-card {
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .preview-card-icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
+    .preview-card h4 { font-size: 1rem; margin-bottom: 0.4rem; }
+    .preview-card p { font-size: 0.88rem; color: var(--color-text-muted); line-height: 1.6; }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link"
+   data-fi="Siirry pääsisältöön" data-en="Skip to main content">Siirry pääsisältöön</a>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="nav" id="nav" role="navigation" aria-label="Päävalikko">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo" aria-label="AI Companion etusivu">
+      <div class="logo-mark" aria-hidden="true">AI</div>
+      <span>AI Companion</span>
+    </a>
+
+    <ul class="nav-links" role="list">
+      <li><a href="index.html" class="nav-link" data-page="home"
+             data-fi="Koti" data-en="Home">Koti</a></li>
+      <li><a href="demo.html" class="nav-link active" data-page="demo"
+             data-fi="Demo" data-en="Demo">Demo</a></li>
+      <li><a href="tech.html" class="nav-link" data-page="tech"
+             data-fi="Tekniikka" data-en="Tech">Tekniikka</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <div class="lang-switcher" role="group" aria-label="Kielivalinta">
+        <button class="lang-toggle active" data-lang="fi" aria-pressed="true">FI</button>
+        <button class="lang-toggle" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Vaihda teema">
+        <span class="icon-sun" aria-hidden="true">☀️</span>
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+      </button>
+    </div>
+
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Avaa valikko" aria-expanded="false" aria-controls="nav-mobile">
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile menu -->
+<div class="nav-mobile" id="nav-mobile" role="navigation" aria-label="Mobiilivalikko">
+  <a href="index.html" class="nav-link" data-page="home"
+     data-fi="Koti" data-en="Home">Koti</a>
+  <a href="demo.html" class="nav-link active" data-page="demo"
+     data-fi="Demo" data-en="Demo">Demo</a>
+  <a href="tech.html" class="nav-link" data-page="tech"
+     data-fi="Tekniikka" data-en="Tech">Tekniikka</a>
+  <div class="lang-switcher" style="margin-top:0.75rem;" role="group" aria-label="Kielivalinta">
+    <button class="lang-toggle active" data-lang="fi" aria-pressed="true">FI</button>
+    <button class="lang-toggle" data-lang="en" aria-pressed="false">EN</button>
+  </div>
+</div>
+
+<!-- ===== PAGE HEADER ===== -->
+<div class="page-header" id="main-content">
+  <div class="container">
+    <div class="hero-badge" style="margin-bottom:1.5rem; justify-content:center;">
+      <div class="dot"></div>
+      <span data-fi="Demo tulossa pian" data-en="Demo coming soon">Demo tulossa pian</span>
+    </div>
+    <h1 data-fi="Kokeile AI Companionia" data-en="Try AI Companion">Kokeile AI Companionia</h1>
+    <p data-fi="Interaktiivinen demo on tulossa. Alla voit tutustua siihen, miltä kokemus tulee näyttämään."
+       data-en="An interactive demo is on its way. Below you can get a preview of what the experience will look like.">
+      Interaktiivinen demo on tulossa. Alla voit tutustua siihen, miltä kokemus tulee näyttämään.
+    </p>
+  </div>
+</div>
+
+<!-- ===== DEMO STAGE ===== -->
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <div class="demo-placeholder reveal">
+
+      <!-- Main demo stage / recording placeholder -->
+      <div class="demo-stage">
+        <div class="demo-stage-icon" aria-hidden="true">🤖</div>
+
+        <div class="demo-coming-badge">
+          <div class="dot"></div>
+          <span data-fi="Demo tulossa pian" data-en="Demo coming soon">Demo tulossa pian</span>
+        </div>
+
+        <h2 class="demo-stage-title"
+            data-fi="ÄäniDemo valmisteilla"
+            data-en="Voice demo in preparation">ÄäniDemo valmisteilla</h2>
+
+        <p class="demo-stage-sub"
+           data-fi="Täällä tulet pian kuulemaan ja näkemään, miten AI Companion juttelee suomeksi. Pysy kuulolla!"
+           data-en="Here you will soon hear and see how AI Companion chats in Finnish. Stay tuned!">
+          Täällä tulet pian kuulemaan ja näkemään, miten AI Companion juttelee suomeksi. Pysy kuulolla!
+        </p>
+
+        <!-- Recording button placeholder (not functional) -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;" aria-hidden="true">
+          <div class="record-btn-placeholder" title="Tulossa pian">🎙️</div>
+          <span class="record-label" data-fi="Nauhoita puhe — tulossa pian" data-en="Record voice — coming soon">
+            Nauhoita puhe — tulossa pian
+          </span>
+        </div>
+      </div>
+
+      <!-- Preview of what demo will include -->
+      <div class="preview-cards">
+        <div class="glass preview-card reveal reveal-delay-1">
+          <div class="preview-card-icon">🎙️</div>
+          <h4 data-fi="Puheentunnistus" data-en="Speech recognition">Puheentunnistus</h4>
+          <p data-fi="Lapsi puhuu suomea — kaveri ymmärtää ja vastaa heti."
+             data-en="The child speaks Finnish — the companion understands and replies instantly.">
+            Lapsi puhuu suomea — kaveri ymmärtää ja vastaa heti.
+          </p>
+        </div>
+        <div class="glass preview-card reveal reveal-delay-2">
+          <div class="preview-card-icon">💬</div>
+          <h4 data-fi="Luonteva vastaus" data-en="Natural response">Luonteva vastaus</h4>
+          <p data-fi="Vastaukset ovat ystävällisiä, ikätasoisia ja suomenkielisiä."
+             data-en="Responses are friendly, age-appropriate, and in Finnish.">
+            Vastaukset ovat ystävällisiä, ikätasoisia ja suomenkielisiä.
+          </p>
+        </div>
+        <div class="glass preview-card reveal reveal-delay-3">
+          <div class="preview-card-icon">🔊</div>
+          <h4 data-fi="Äänenvastaus" data-en="Voice reply">Äänenvastaus</h4>
+          <p data-fi="Kaveri puhuu takaisin selkeällä suomen kielessä. Ei tekstiä, vain puhetta."
+             data-en="The companion speaks back in clear Finnish. No text, just voice.">
+            Kaveri puhuu takaisin selkeällä suomen kielessä. Ei tekstiä, vain puhetta.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ===== CTA ===== -->
+<section class="section">
+  <div class="container" style="text-align:center;">
+    <div class="reveal">
+      <h2 data-fi="Haluatko tietää lisää teknisistä tiedoista?"
+          data-en="Want to know more about the technical details?">
+        Haluatko tietää lisää teknisistä tiedoista?
+      </h2>
+      <p class="text-muted" style="margin-top:1rem; margin-bottom:2.5rem; max-width:46ch; margin-inline:auto;"
+         data-fi="Lue tekniikkasivu — avoin ja rehellinen kuvaus siitä, miten laite toimii."
+         data-en="Read the tech page — an open and honest description of how the device works.">
+        Lue tekniikkasivu — avoin ja rehellinen kuvaus siitä, miten laite toimii.
+      </p>
+      <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+        <a href="tech.html" class="btn btn-primary btn-lg"
+           data-fi="Tekniset tiedot" data-en="Technical info">Tekniset tiedot</a>
+        <a href="index.html" class="btn btn-outline btn-lg"
+           data-fi="Takaisin etusivulle" data-en="Back to home">Takaisin etusivulle</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="margin-bottom:0.75rem;" aria-hidden="true">
+          <div class="logo-mark">AI</div>
+          <span>AI Companion</span>
+        </div>
+        <p data-fi="Tekoälykaveri lapsellesi — turvallinen, suomenkielinen, aina kotona."
+           data-en="An AI companion for your child — safe, Finnish-speaking, always at home.">
+          Tekoälykaveri lapsellesi — turvallinen, suomenkielinen, aina kotona.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4 data-fi="Sivut" data-en="Pages">Sivut</h4>
+        <a href="index.html" data-fi="Koti" data-en="Home">Koti</a>
+        <a href="demo.html" data-fi="Demo" data-en="Demo">Demo</a>
+        <a href="tech.html" data-fi="Tekniikka" data-en="Tech">Tekniikka</a>
+      </div>
+      <div class="footer-col">
+        <h4 data-fi="Yritys" data-en="Company">Yritys</h4>
+        <a href="https://punkq.com" data-fi="punkQ.com" data-en="punkQ.com">punkQ.com</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-fi="© 2026 punkQ. Kaikki oikeudet pidätetään."
+            data-en="© 2026 punkQ. All rights reserved.">© 2026 punkQ. Kaikki oikeudet pidätetään.</span>
+      <span data-fi="Tehty rakkaudella perheiden puolesta"
+            data-en="Made with love for families">Tehty rakkaudella perheiden puolesta</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>
