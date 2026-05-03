@@ -7,6 +7,11 @@
   <title>AI Companion — Kokeile AI-kaveria</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Pre-warm the live demo backend. The iframe is loaded only when the
+       user clicks the mic, but the Azure Container App scales to zero, so
+       a cold first hit there takes ~10s. preconnect handles TCP+TLS;
+       the fetch('/health') below the page actually wakes the container. -->
+  <link rel="preconnect" href="https://aicompanion.orangecliff-3a4f1285.westeurope.azurecontainerapps.io" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/main.css">
   <style>
@@ -443,8 +448,19 @@
 
 <script>
   // URL of the deployed live demo. Update if the Azure subdomain ever changes.
-  const AICOMPANION_DEMO_URL =
-    'https://aicompanion.orangecliff-3a4f1285.westeurope.azurecontainerapps.io/login';
+  const AICOMPANION_ORIGIN =
+    'https://aicompanion.orangecliff-3a4f1285.westeurope.azurecontainerapps.io';
+  const AICOMPANION_DEMO_URL = AICOMPANION_ORIGIN + '/login';
+
+  // Pre-warm the Azure Container App on page open: it scales to zero, so
+  // the first hit takes ~10s for cold start. Firing /health while the
+  // visitor reads the page means the container is warm by the time they
+  // click the mic. no-cors because /health is cross-origin and we don't
+  // need to read the response — just kick the cold start.
+  try {
+    fetch(AICOMPANION_ORIGIN + '/health',
+          {mode: 'no-cors', cache: 'no-store', credentials: 'omit'});
+  } catch (_) { /* best-effort prewarm; never block page load */ }
 
   function openDemoModal() {
     const modal = document.getElementById('demo-modal');
