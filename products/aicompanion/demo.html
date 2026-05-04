@@ -438,9 +438,18 @@
               onclick="closeDemoModal()"
               aria-label="Sulje" title="Sulje">&times;</button>
     </div>
+    <!-- Permissions Policy: explicitly delegate microphone+autoplay to the
+         Azure origin. The shorter `allow="microphone; autoplay"` form uses
+         the default `'src'` allowlist, which mobile Chrome silently fails
+         to re-evaluate when the iframe is initialized with src=about:blank
+         and then navigated to the Azure URL on click — symptom is no
+         permission prompt and a never-resolving getUserMedia promise.
+         If the Azure subdomain ever changes, update this attribute, the
+         AICOMPANION_ORIGIN constant in the script below, and the
+         <link rel="preconnect"> tag in <head>. -->
     <iframe class="demo-modal-frame" id="demo-iframe"
             src="about:blank"
-            allow="microphone; autoplay"
+            allow="microphone https://aicompanion.orangecliff-3a4f1285.westeurope.azurecontainerapps.io; autoplay https://aicompanion.orangecliff-3a4f1285.westeurope.azurecontainerapps.io"
             referrerpolicy="no-referrer"
             title="AI Companion demo"></iframe>
   </div>
