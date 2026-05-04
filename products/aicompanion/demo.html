@@ -499,15 +499,27 @@
   // in the footer. GitHub Pages serves a Last-Modified header that tracks
   // the deploy. Lets a tester verify "is my browser actually on the latest
   // demo.html?" without view-source. No build step, no manual bump.
+  // Rendered in Europe/Helsinki time; the EET/EEST label auto-toggles per
+  // DST via the offset Intl reports for the file's mtime.
   (function stampBuild() {
     const el = document.getElementById('build-stamp');
     if (!el) return;
     const d = new Date(document.lastModified);
     if (isNaN(d.getTime())) return;
-    const pad = n => String(n).padStart(2, '0');
-    el.textContent = 'build ' + d.getUTCFullYear() + '-' +
-      pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()) + ' ' +
-      pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ' UTC';
+    const parts = new Intl.DateTimeFormat('sv-SE', {
+      timeZone: 'Europe/Helsinki',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit',
+      hour12: false
+    }).formatToParts(d);
+    const v = type => parts.find(p => p.type === type).value;
+    const dateTime = `${v('year')}-${v('month')}-${v('day')} ${v('hour')}:${v('minute')}`;
+    const offset = new Intl.DateTimeFormat('en', {
+      timeZone: 'Europe/Helsinki',
+      timeZoneName: 'longOffset'
+    }).formatToParts(d).find(p => p.type === 'timeZoneName').value;
+    const tz = offset === 'GMT+03:00' ? 'EEST' : 'EET';
+    el.textContent = `build ${dateTime} ${tz}`;
   })();
 </script>
 
