@@ -421,6 +421,10 @@
             data-en="© 2026 punkQ. All rights reserved.">© 2026 punkQ. Kaikki oikeudet pidätetään.</span>
       <span data-fi="Tehty rakkaudella perheiden puolesta"
             data-en="Made with love for families">Tehty rakkaudella perheiden puolesta</span>
+      <!-- Auto-updates per deploy via the Last-Modified header GitHub Pages
+           serves with this file. Lets us verify "is my browser on the new
+           version?" at a glance without a manual version bump. -->
+      <span id="build-stamp" class="build-stamp"></span>
     </div>
   </div>
 </footer>
@@ -490,6 +494,21 @@
   function demoModalEscHandler(e) {
     if (e.key === 'Escape') closeDemoModal();
   }
+
+  // Surface the file's Last-Modified time as a human-readable build stamp
+  // in the footer. GitHub Pages serves a Last-Modified header that tracks
+  // the deploy. Lets a tester verify "is my browser actually on the latest
+  // demo.html?" without view-source. No build step, no manual bump.
+  (function stampBuild() {
+    const el = document.getElementById('build-stamp');
+    if (!el) return;
+    const d = new Date(document.lastModified);
+    if (isNaN(d.getTime())) return;
+    const pad = n => String(n).padStart(2, '0');
+    el.textContent = 'build ' + d.getUTCFullYear() + '-' +
+      pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()) + ' ' +
+      pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ' UTC';
+  })();
 </script>
 
 <script src="assets/js/main.js"></script>
