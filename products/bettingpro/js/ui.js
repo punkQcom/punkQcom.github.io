@@ -1632,6 +1632,18 @@ const helpContent = {
     `,
   },
 
+  'standings': {
+    title: 'Standings',
+    body: `
+      <p><strong>Standings</strong> shows the league table calculated from finished match results. Teams are ranked by points (3 for a win, 1 for a draw), then goal difference, then goals scored.</p>
+      <p>The table respects the active tournament filter, so for international leagues you can view standings for a specific competition (e.g. World Cup qualifiers only).</p>
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Sarjataulukko</strong> näyttää sarjatilanteen pelattujen otteluiden perusteella. Joukkueet järjestetään pisteiden mukaan (3 voitosta, 1 tasapelistä), sitten maalieron ja tehtyjen maalien perusteella.</p>
+      <p>Taulukko noudattaa aktiivista turnaussuodatinta, joten kansainvälisissä sarjoissa voit tarkastella tietyn kilpailun sarjatilannetta.</p>
+    `,
+  },
+
   'league_veikkausliiga': {
     title: 'Veikkausliiga',
     body: `
@@ -1820,6 +1832,42 @@ export function renderPLSimulation(plData, containerId) {
       <td>${b.odds.toFixed(2)}</td>
       <td>${b.stake.toFixed(2)}</td>
       <td class="${plCls}">${sign}${b.profit.toFixed(2)}</td>
+    </tr>`;
+  }
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+/* === Standings Table Renderer === */
+
+export function renderStandings(data, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (!data || data.length === 0) {
+    container.innerHTML = '<p class="muted">No match data available</p>';
+    return;
+  }
+
+  let html = '<table class="results-table standings-table">';
+  html += '<thead><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th></tr></thead>';
+  html += '<tbody>';
+
+  for (const row of data) {
+    const gdClass = row.goalDiff > 0 ? 'value-positive' : row.goalDiff < 0 ? 'value-negative' : '';
+    const gdText = row.goalDiff > 0 ? `+${row.goalDiff}` : String(row.goalDiff);
+    html += `<tr${row.rank === 1 ? ' class="standings-leader"' : ''}>
+      <td>${row.rank}</td>
+      <td class="standings-team">${esc(row.team)}</td>
+      <td>${row.played}</td>
+      <td>${row.won}</td>
+      <td>${row.drawn}</td>
+      <td>${row.lost}</td>
+      <td>${row.goalsFor}</td>
+      <td>${row.goalsAgainst}</td>
+      <td class="${gdClass}">${gdText}</td>
+      <td class="standings-pts">${row.points}</td>
     </tr>`;
   }
 

@@ -1605,3 +1605,21 @@ details.card[open] summary h2::before {
   letter-spacing: 0.5px;
   margin: 6px 0 0;
 }
+
+/* === Standings Table === */
+.standings-table td,
+.standings-table th {
+  text-align: center;
+}
+
+.standings-table .standings-team {
+  text-align: left;
+}
+
+.standings-table .standings-pts {
+  font-weight: 700;
+}
+
+.standings-table .standings-leader td {
+  background: rgba(96, 165, 250, 0.08);
+}
