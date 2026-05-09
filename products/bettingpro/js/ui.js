@@ -1851,7 +1851,7 @@ export function renderStandings(data, containerId) {
   }
 
   let html = '<table class="results-table standings-table">';
-  html += '<thead><tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th></tr></thead>';
+  html += '<thead><tr><th title="Rank">#</th><th>Team</th><th title="Played">P</th><th title="Won">W</th><th title="Drawn">D</th><th title="Lost">L</th><th title="Goals For">GF</th><th title="Goals Against">GA</th><th title="Goal Difference">GD</th><th title="Points">Pts</th></tr></thead>';
   html += '<tbody>';
 
   for (const row of data) {
