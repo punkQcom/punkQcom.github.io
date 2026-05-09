@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1776101219';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1776101219';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1776101219';
+import { shinProbabilities } from './shin.js?v=1778347862';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1778347862';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1778347862';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1776101219';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1778347862';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
-  renderMatchContext
-} from './ui.js?v=1776101219';
+  renderMatchContext, renderStandings
+} from './ui.js?v=1778347862';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -488,9 +488,10 @@ async function loadAndShowLeague(leagueId, season) {
   // Elo ratings table — computed client-side, reactive to Previous Season slider
   updateEloTable();
 
-  // Tracker and P/L — render from precomputed data (with filter awareness)
+  // Tracker, P/L, and standings — render from precomputed data (with filter awareness)
   renderTrackerFiltered();
   renderPLSimulationFiltered();
+  renderStandingsFiltered();
 }
 
 // ── Date-based match list ────────────────────────────────────────────
@@ -530,11 +531,54 @@ function activeTournamentLabel() {
   return t?.label || currentTournamentFilter;
 }
 
+/** Build standings table from finished matches. */
+function buildStandings(matches) {
+  const finished = filterByTournament(
+    (matches || []).filter(m => m.homeGoals != null && m.awayGoals != null)
+  );
+  const teams = {};
+  for (const m of finished) {
+    for (const name of [m.homeTeam, m.awayTeam]) {
+      if (!teams[name]) teams[name] = { team: name, played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0 };
+    }
+    const h = teams[m.homeTeam];
+    const a = teams[m.awayTeam];
+    h.played++; a.played++;
+    h.goalsFor += m.homeGoals; h.goalsAgainst += m.awayGoals;
+    a.goalsFor += m.awayGoals; a.goalsAgainst += m.homeGoals;
+    if (m.homeGoals > m.awayGoals) { h.won++; a.lost++; }
+    else if (m.homeGoals < m.awayGoals) { a.won++; h.lost++; }
+    else { h.drawn++; a.drawn++; }
+  }
+  const rows = Object.values(teams).map(t => ({
+    ...t,
+    goalDiff: t.goalsFor - t.goalsAgainst,
+    points: t.won * 3 + t.drawn,
+  }));
+  rows.sort((a, b) => b.points - a.points || b.goalDiff - a.goalDiff || b.goalsFor - a.goalsFor);
+  rows.forEach((r, i) => r.rank = i + 1);
+  return rows;
+}
+
+/** Render standings with tournament filter applied. */
+function renderStandingsFiltered() {
+  const matches = currentLeagueData?.matches || [];
+  const data = buildStandings(matches);
+  const el = document.getElementById('standings-container');
+  if (!el) return;
+  const banner = currentTournamentFilter !== 'all'
+    ? `<div class="filter-banner">Showing: ${esc(activeTournamentLabel())} only</div>`
+    : '';
+  renderStandings(data, 'standings-container');
+  if (banner) el.insertAdjacentHTML('afterbegin', banner);
+}
+
 /** Re-render everything that depends on the tournament filter. */
 function rerenderForFilter() {
   initDateView(currentLeagueData);
   renderTrackerFiltered();
   renderPLSimulationFiltered();
+  renderStandingsFiltered();
   updateEloTable();
 }
 
