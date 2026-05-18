@@ -405,6 +405,52 @@
       cursor: pointer; border: none;
     }
     .timeout-val { font-size: 14px; color: #BDBDBD; }
+
+    /* ===== Demo modal ===== */
+    .demo-modal { position: fixed; inset: 0; z-index: 9999; display: none; }
+    .demo-modal.show { display: block; }
+    .demo-modal-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    }
+    .demo-modal-card {
+      position: absolute; top: 4%; left: 50%;
+      transform: translateX(-50%);
+      width: min(720px, 92vw);
+      height: 92vh; max-height: 92vh;
+      background: var(--color-bg, #fff);
+      border-radius: var(--radius-lg, 1rem);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .demo-modal-header {
+      padding: 0.85rem 1.1rem;
+      border-bottom: 1px solid var(--color-border, #e5e7eb);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      background: var(--color-surface, transparent);
+    }
+    .demo-modal-header h3 { margin: 0; font-size: 1rem; font-weight: 600; }
+    .demo-modal-close {
+      background: transparent; border: 0; cursor: pointer;
+      font-size: 1.5rem; line-height: 1;
+      color: var(--color-text-muted, #555);
+      padding: 0.25rem 0.5rem; border-radius: 0.5rem;
+    }
+    .demo-modal-close:hover {
+      background: color-mix(in srgb, var(--color-text, #000) 8%, transparent);
+    }
+    .demo-modal-frame {
+      flex: 1; width: 100%; border: 0; background: #f5f5f7;
+    }
+    @media (max-width: 640px) {
+      .demo-modal-card {
+        top: 0; transform: none; left: 0;
+        width: 100vw; height: 100vh; max-height: 100vh;
+        border-radius: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -660,7 +706,20 @@
   </div>
 </footer>
 
-<!-- Demo modal (iframe) — added in Task 9 -->
+<!-- Demo modal (iframe to Azure) -->
+<div id="demo-modal" class="demo-modal" role="dialog" aria-modal="true">
+  <div class="demo-modal-backdrop" onclick="closeDemoModal()" aria-hidden="true"></div>
+  <div class="demo-modal-card">
+    <div class="demo-modal-header">
+      <h3 data-fi="Kokeile AI Companionia" data-en="Try AI Companion">Kokeile AI Companionia</h3>
+      <button type="button" class="demo-modal-close"
+              onclick="closeDemoModal()" aria-label="Sulje">&times;</button>
+    </div>
+    <iframe class="demo-modal-frame" id="demo-iframe" src="about:blank"
+            allow="microphone https://aicompanion.orangecliff-3a4f1285.westeurope.azurecontainerapps.io; autoplay https://aicompanion.orangecliff-3a4f1285.westeurope.azurecontainerapps.io"
+            referrerpolicy="no-referrer" title="AI Companion demo"></iframe>
+  </div>
+</div>
 
 <script>
 'use strict';
@@ -862,6 +921,59 @@ screen.addEventListener('mousedown', e => {
   onStart(e.clientX, e.clientY);
 });
 screen.addEventListener('mouseup', e => onEnd(e.clientX));
+
+// ===== Azure prewarm =====
+const AZURE_ORIGIN = 'https://aicompanion.orangecliff-3a4f1285.westeurope.azurecontainerapps.io';
+try { fetch(AZURE_ORIGIN + '/health', {mode:'no-cors', cache:'no-store', credentials:'omit'}); }
+catch(_) {}
+
+// ===== State management =====
+const homeScreen = document.getElementById('screen-home');
+const stateLabel = document.getElementById('state-label');
+const pulseDot = document.getElementById('pulse-dot');
+const thinkingDots = document.getElementById('thinking-dots');
+
+const stateColors = {
+  idle: '#1B5E20', listening: '#039BE5',
+  thinking: '#FBC02D', speaking: '#7B1FA2',
+  error: '#D32F2F'
+};
+
+function setState(state) {
+  homeScreen.style.backgroundColor = stateColors[state] || stateColors.idle;
+  stateLabel.textContent = state.charAt(0).toUpperCase() + state.slice(1);
+
+  // Pulse dot: visible only in idle
+  pulseDot.style.display = state === 'idle' ? '' : 'none';
+  // Thinking dots: visible only in thinking
+  thinkingDots.style.display = state === 'thinking' ? 'flex' : 'none';
+}
+
+// ===== Demo modal =====
+function openDemoModal() {
+  const modal = document.getElementById('demo-modal');
+  const iframe = document.getElementById('demo-iframe');
+  iframe.src = AZURE_ORIGIN + '/login';
+  modal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  setState('listening');
+  document.addEventListener('keydown', demoEscHandler);
+}
+function closeDemoModal() {
+  const modal = document.getElementById('demo-modal');
+  const iframe = document.getElementById('demo-iframe');
+  modal.classList.remove('show');
+  iframe.src = 'about:blank';
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', demoEscHandler);
+  // Transition: speaking briefly, then idle
+  setState('speaking');
+  setTimeout(() => setState('idle'), 1500);
+}
+function demoEscHandler(e) { if (e.key === 'Escape') closeDemoModal(); }
+
+// Mic button opens modal
+document.getElementById('mic-btn').addEventListener('click', openDemoModal);
 </script>
 <script src="assets/js/main.js"></script>
 </body>
