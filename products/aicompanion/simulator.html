@@ -354,6 +354,19 @@
       border-radius: 50%; background: #FFF;
       cursor: pointer; border: none;
     }
+
+    /* ===== About screen ===== */
+    .about-list {
+      display: flex; flex-direction: column;
+      width: 100%; padding: 0 12px;
+    }
+    .about-row {
+      display: flex; justify-content: space-between;
+      align-items: center;
+      padding: 3px 12px;
+    }
+    .about-key { font-size: 14px; color: #BDBDBD; }
+    .about-val { font-size: 14px; color: #FFF; }
   </style>
 </head>
 <body>
@@ -510,7 +523,37 @@
             </div>
             <!-- Tab 2: About -->
             <div class="tab-screen sim-bg-dark" id="screen-about">
-              <!-- Filled in Task 6 -->
+              <div class="screen-title">About</div>
+              <div class="about-list">
+                <div class="about-row">
+                  <span class="about-key">Firmware:</span>
+                  <span class="about-val">v0.4.2</span>
+                </div>
+                <div class="about-row" data-sim-tip="Simulated data">
+                  <span class="about-key">IP:</span>
+                  <span class="about-val">192.168.1.42</span>
+                </div>
+                <div class="about-row" data-sim-tip="Simulated data">
+                  <span class="about-key">MAC:</span>
+                  <span class="about-val">A0:B1:C2:D3:E4:F5</span>
+                </div>
+                <div class="about-row" data-sim-tip="Simulated data">
+                  <span class="about-key">Heap:</span>
+                  <span class="about-val">148 KB</span>
+                </div>
+                <div class="about-row" data-sim-tip="Simulated data">
+                  <span class="about-key">PSRAM:</span>
+                  <span class="about-val">8192 KB</span>
+                </div>
+                <div class="about-row">
+                  <span class="about-key">Uptime:</span>
+                  <span class="about-val" id="about-uptime">00:00:00</span>
+                </div>
+                <div class="about-row" data-sim-tip="Simulated data">
+                  <span class="about-key">Battery:</span>
+                  <span class="about-val">3.85 V  71%</span>
+                </div>
+              </div>
             </div>
             <!-- Tab 3: Radar -->
             <div class="tab-screen sim-bg-dark" id="screen-radar">
@@ -687,6 +730,19 @@ brightSlider.value = loadPref('sim.brightness', '60');
 brightSlider.addEventListener('input', () => {
   savePref('sim.brightness', brightSlider.value);
 });
+
+// ===== About: Uptime =====
+const uptimeStart = Date.now();
+function updateUptime() {
+  const el = document.getElementById('about-uptime');
+  if (!el) return;
+  const s = Math.floor((Date.now() - uptimeStart) / 1000);
+  const h = Math.floor(s / 3600).toString().padStart(2,'0');
+  const m = Math.floor((s % 3600) / 60).toString().padStart(2,'0');
+  const sec = (s % 60).toString().padStart(2,'0');
+  el.textContent = h + ':' + m + ':' + sec;
+}
+setInterval(updateUptime, 1000);
 </script>
 <script src="assets/js/main.js"></script>
 </body>
