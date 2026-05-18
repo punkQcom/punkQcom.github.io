@@ -286,6 +286,74 @@
       box-shadow: 0 6px 24px rgba(124,58,237,0.5);
     }
     .mic-btn:active { transform: translateX(-50%) scale(0.95); }
+
+    /* ===== Settings / About / Radar shared ===== */
+    .screen-title {
+      font-size: 20px; font-weight: 700; color: #FFF;
+      padding: 12px 0 4px; text-align: center;
+    }
+    .settings-list {
+      display: flex; flex-direction: column;
+      width: 100%; overflow-y: auto;
+      max-height: calc(100% - 48px);
+    }
+    .setting-row {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px; cursor: pointer;
+    }
+    .setting-row label {
+      font-size: 14px; color: #FFF;
+      cursor: pointer; flex: 1;
+    }
+    /* Toggle switch */
+    .toggle {
+      position: relative; width: 44px; height: 24px;
+      background: #555; border-radius: 12px;
+      cursor: pointer; transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: #4CAF50; }
+    .toggle .knob {
+      position: absolute; top: 2px; left: 2px;
+      width: 20px; height: 20px;
+      background: #FFF; border-radius: 50%;
+      transition: left 0.2s;
+    }
+    .toggle.on .knob { left: 22px; }
+
+    /* Reset WiFi button */
+    .reset-btn {
+      width: 90%; margin: 0 auto;
+      padding: 10px; border: none; border-radius: 6px;
+      background: #DC2626; color: #FFF;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; text-align: center;
+      transition: background 0.2s;
+    }
+    .reset-btn.armed { background: #D97706; }
+
+    /* Brightness slider row */
+    .slider-row {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+    }
+    .slider-row label { font-size: 14px; color: #FFF; }
+    .brightness-slider {
+      -webkit-appearance: none; appearance: none;
+      width: 160px; height: 20px;
+      background: #333; border-radius: 10px; outline: none;
+    }
+    .brightness-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 20px; height: 20px;
+      border-radius: 50%; background: #FFF; cursor: pointer;
+    }
+    .brightness-slider::-moz-range-thumb {
+      width: 20px; height: 20px;
+      border-radius: 50%; background: #FFF;
+      cursor: pointer; border: none;
+    }
   </style>
 </head>
 <body>
@@ -404,7 +472,41 @@
             </div>
             <!-- Tab 1: Settings -->
             <div class="tab-screen sim-bg-dark" id="screen-settings">
-              <!-- Filled in Task 5 -->
+              <div class="screen-title">Settings</div>
+              <div class="settings-list">
+                <button class="reset-btn" id="reset-wifi-btn"
+                        data-sim-tip="Simulated — real device erases WiFi config">Reset WiFi</button>
+                <div style="height:4px"></div>
+                <div class="slider-row" data-sim-tip="Simulated — real device controls backlight">
+                  <label>Brightness</label>
+                  <input type="range" class="brightness-slider" id="brightness-slider"
+                         min="5" max="100" value="60">
+                </div>
+                <div class="setting-row" data-toggle="sim.show_clock" data-target="w-clock">
+                  <label>Show Clock</label>
+                  <div class="toggle on"><div class="knob"></div></div>
+                </div>
+                <div class="setting-row" data-toggle="sim.show_temp" data-target="w-temp">
+                  <label>Show Temperature</label>
+                  <div class="toggle on"><div class="knob"></div></div>
+                </div>
+                <div class="setting-row" data-toggle="sim.show_humid" data-target="w-humid">
+                  <label>Show Humidity</label>
+                  <div class="toggle on"><div class="knob"></div></div>
+                </div>
+                <div class="setting-row" data-toggle="sim.show_wifi" data-target="w-wifi">
+                  <label>Show WiFi Signal</label>
+                  <div class="toggle on"><div class="knob"></div></div>
+                </div>
+                <div class="setting-row" data-toggle="sim.show_batt" data-target="w-batt">
+                  <label>Show Battery</label>
+                  <div class="toggle on"><div class="knob"></div></div>
+                </div>
+                <div class="setting-row" data-sim-tip="Simulated — real device mirrors touch axes">
+                  <label>Invert Touch</label>
+                  <div class="toggle" id="invert-touch-toggle"><div class="knob"></div></div>
+                </div>
+              </div>
             </div>
             <!-- Tab 2: About -->
             <div class="tab-screen sim-bg-dark" id="screen-about">
@@ -507,6 +609,84 @@ function updateMuteIcon() {
     speakerIcon.classList.remove('muted');
   }
 }
+
+// ===== Settings: widget toggles =====
+document.querySelectorAll('.setting-row[data-toggle]').forEach(row => {
+  const key = row.dataset.toggle;
+  const targetId = row.dataset.target;
+  const toggle = row.querySelector('.toggle');
+  const saved = loadPref(key, 'true');
+  const isOn = saved === 'true';
+
+  if (!isOn) toggle.classList.remove('on');
+  if (targetId) {
+    const target = document.getElementById(targetId);
+    if (target) target.style.display = isOn ? '' : 'none';
+  }
+
+  function flip() {
+    const on = toggle.classList.toggle('on');
+    savePref(key, on ? 'true' : 'false');
+    if (targetId) {
+      const target = document.getElementById(targetId);
+      if (target) target.style.display = on ? '' : 'none';
+    }
+    updateWidgetBar();
+  }
+  row.addEventListener('click', (e) => {
+    if (e.target.closest('.toggle')) { flip(); return; }
+    flip();
+  });
+});
+
+function updateWidgetBar() {
+  const bar = document.getElementById('widget-bar');
+  if (!bar) return;
+  const ids = ['w-clock','w-temp','w-humid','w-wifi','w-batt'];
+  const anyVisible = ids.some(id => {
+    const el = document.getElementById(id);
+    return el && el.style.display !== 'none';
+  });
+  bar.style.display = anyVisible ? '' : 'none';
+}
+updateWidgetBar();
+
+// Invert Touch toggle (visual only)
+const invertToggle = document.getElementById('invert-touch-toggle');
+if (invertToggle) {
+  invertToggle.addEventListener('click', () => {
+    invertToggle.classList.toggle('on');
+  });
+}
+
+// ===== Settings: Reset WiFi button =====
+const resetBtn = document.getElementById('reset-wifi-btn');
+let resetArmed = false;
+let resetTimer = null;
+resetBtn.addEventListener('click', () => {
+  if (!resetArmed) {
+    resetArmed = true;
+    resetBtn.textContent = 'Tap again to confirm';
+    resetBtn.classList.add('armed');
+    resetTimer = setTimeout(() => {
+      resetArmed = false;
+      resetBtn.textContent = 'Reset WiFi';
+      resetBtn.classList.remove('armed');
+    }, 3000);
+  } else {
+    clearTimeout(resetTimer);
+    resetArmed = false;
+    resetBtn.textContent = 'Reset WiFi';
+    resetBtn.classList.remove('armed');
+  }
+});
+
+// ===== Settings: Brightness slider =====
+const brightSlider = document.getElementById('brightness-slider');
+brightSlider.value = loadPref('sim.brightness', '60');
+brightSlider.addEventListener('input', () => {
+  savePref('sim.brightness', brightSlider.value);
+});
 </script>
 <script src="assets/js/main.js"></script>
 </body>
