@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI Companion — laitesimulaattori.">
+  <title>AI Companion — Simulaattori</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://aicompanion.orangecliff-3a4f1285.westeurope.azurecontainerapps.io" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <style>
+    /* --- Language switcher (shared across pages) --- */
+    .lang-switcher {
+      display: flex; align-items: center; gap: 0.15rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 100px; padding: 0.2rem;
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    }
+    .lang-toggle {
+      padding: 0.28rem 0.7rem; border-radius: 100px; border: none;
+      background: transparent; font-family: var(--font-sans);
+      font-size: 0.78rem; font-weight: 700;
+      color: var(--color-text-muted); cursor: pointer;
+      transition: all var(--transition); letter-spacing: 0.04em;
+    }
+    .lang-toggle.active {
+      background: linear-gradient(135deg, var(--color-gradient-1), var(--color-gradient-2));
+      color: #fff;
+    }
+
+    /* --- Device frame --- */
+    .device-wrapper {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 2rem 1rem;
+    }
+    .device-frame {
+      background: #2A2A2A;
+      border-radius: 20px;
+      padding: 8px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+    }
+    .device-screen {
+      width: 640px; height: 480px;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      background: #121212;
+    }
+    /* Mobile: no frame, full width */
+    @media (max-width: 640px) {
+      .device-frame {
+        background: none; border-radius: 0; padding: 0;
+        box-shadow: none; width: 100%;
+      }
+      .device-screen {
+        width: 100%; height: auto;
+        aspect-ratio: 320 / 240;
+        border-radius: 0;
+      }
+    }
+
+    /* --- Tab slider (holds all 4 screens side by side) --- */
+    .tab-slider {
+      display: flex;
+      width: 400%;
+      height: 100%;
+      transition: transform 0.3s ease;
+    }
+    .tab-screen {
+      width: 25%;
+      height: 100%;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* --- Dot indicators --- */
+    .dot-nav {
+      display: flex; gap: 8px;
+      justify-content: center;
+      padding: 12px 0;
+    }
+    .dot-nav .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #666666;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .dot-nav .dot.active { background: #FFFFFF; }
+
+    /* ===== Device color palette ===== */
+    .sim-bg-idle      { background-color: #1B5E20; }
+    .sim-bg-listening { background-color: #039BE5; }
+    .sim-bg-thinking  { background-color: #FBC02D; }
+    .sim-bg-speaking  { background-color: #7B1FA2; }
+    .sim-bg-error     { background-color: #D32F2F; }
+    .sim-bg-dark      { background-color: #121212; }
+
+    /* ===== Tooltip for simulated data ===== */
+    [data-sim-tip] {
+      position: relative;
+      cursor: help;
+    }
+    [data-sim-tip]::after {
+      content: attr(data-sim-tip);
+      position: absolute;
+      bottom: 100%; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 100;
+    }
+    [data-sim-tip]:hover::after { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link"
+   data-fi="Siirry pääsisältöön" data-en="Skip to main content">Siirry pääsisältöön</a>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="nav" id="nav" role="navigation" aria-label="Päävalikko">
+  <div class="container nav-inner">
+    <a href="index.html" class="nav-logo" aria-label="AI Companion etusivu">
+      <div class="logo-mark" aria-hidden="true">AI</div>
+      <span>AI Companion</span>
+    </a>
+    <ul class="nav-links" role="list">
+      <li><a href="index.html" class="nav-link" data-page="home"
+             data-fi="Koti" data-en="Home">Koti</a></li>
+      <li><a href="demo.html" class="nav-link" data-page="demo"
+             data-fi="Demo" data-en="Demo">Demo</a></li>
+      <li><a href="simulator.html" class="nav-link active" data-page="simulator"
+             data-fi="Simulaattori" data-en="Simulator">Simulaattori</a></li>
+      <li><a href="tech.html" class="nav-link" data-page="tech"
+             data-fi="Tekniikka" data-en="Tech">Tekniikka</a></li>
+    </ul>
+    <div class="nav-actions">
+      <div class="lang-switcher" role="group" aria-label="Kielivalinta">
+        <button class="lang-toggle active" data-lang="fi" aria-pressed="true">FI</button>
+        <button class="lang-toggle" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" aria-label="Vaihda teema">
+        <span class="icon-sun" aria-hidden="true">☀️</span>
+        <span class="icon-moon" aria-hidden="true">🌙</span>
+      </button>
+    </div>
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Avaa valikko" aria-expanded="false" aria-controls="nav-mobile">
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </button>
+  </div>
+</nav>
+<div class="nav-mobile" id="nav-mobile" role="navigation" aria-label="Mobiilivalikko">
+  <a href="index.html" class="nav-link" data-page="home" data-fi="Koti" data-en="Home">Koti</a>
+  <a href="demo.html" class="nav-link" data-page="demo" data-fi="Demo" data-en="Demo">Demo</a>
+  <a href="simulator.html" class="nav-link active" data-page="simulator" data-fi="Simulaattori" data-en="Simulator">Simulaattori</a>
+  <a href="tech.html" class="nav-link" data-page="tech" data-fi="Tekniikka" data-en="Tech">Tekniikka</a>
+  <div class="lang-switcher" style="margin-top:0.75rem;" role="group" aria-label="Kielivalinta">
+    <button class="lang-toggle active" data-lang="fi" aria-pressed="true">FI</button>
+    <button class="lang-toggle" data-lang="en" aria-pressed="false">EN</button>
+  </div>
+</div>
+
+<!-- ===== PAGE HEADER ===== -->
+<div class="page-header" id="main-content">
+  <div class="container">
+    <h1 data-fi="Laitesimulaattori" data-en="Device Simulator">Laitesimulaattori</h1>
+    <p data-fi="Kokeile laitteen käyttöliittymää suoraan selaimessa. Pyyhkäise sivusuunnassa vaihtaaksesi näkymää."
+       data-en="Try the device interface directly in your browser. Swipe left or right to switch screens.">
+      Kokeile laitteen käyttöliittymää suoraan selaimessa. Pyyhkäise sivusuunnassa vaihtaaksesi näkymää.
+    </p>
+  </div>
+</div>
+
+<!-- ===== DEVICE SIMULATOR ===== -->
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <div class="device-wrapper">
+      <div class="device-frame">
+        <div class="device-screen" id="device-screen">
+          <div class="tab-slider" id="tab-slider">
+            <!-- Tab 0: Home -->
+            <div class="tab-screen sim-bg-idle" id="screen-home">
+              <!-- Filled in Task 2-4 -->
+            </div>
+            <!-- Tab 1: Settings -->
+            <div class="tab-screen sim-bg-dark" id="screen-settings">
+              <!-- Filled in Task 5 -->
+            </div>
+            <!-- Tab 2: About -->
+            <div class="tab-screen sim-bg-dark" id="screen-about">
+              <!-- Filled in Task 6 -->
+            </div>
+            <!-- Tab 3: Radar -->
+            <div class="tab-screen sim-bg-dark" id="screen-radar">
+              <!-- Filled in Task 7 -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Dot navigation -->
+      <div class="dot-nav" id="dot-nav">
+        <div class="dot active" data-tab="0"></div>
+        <div class="dot" data-tab="1"></div>
+        <div class="dot" data-tab="2"></div>
+        <div class="dot" data-tab="3"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="margin-bottom:0.75rem;" aria-hidden="true">
+          <div class="logo-mark">AI</div>
+          <span>AI Companion</span>
+        </div>
+        <p data-fi="AI-kaveri läheisellesi — turvallinen, suomenkielinen, aina kotona."
+           data-en="An AI Companion for your loved one — safe, Finnish-speaking, always at home.">
+          AI-kaveri läheisellesi — turvallinen, suomenkielinen, aina kotona.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4 data-fi="Sivut" data-en="Pages">Sivut</h4>
+        <a href="index.html" data-fi="Koti" data-en="Home">Koti</a>
+        <a href="demo.html" data-fi="Demo" data-en="Demo">Demo</a>
+        <a href="simulator.html" data-fi="Simulaattori" data-en="Simulator">Simulaattori</a>
+        <a href="tech.html" data-fi="Tekniikka" data-en="Tech">Tekniikka</a>
+      </div>
+      <div class="footer-col">
+        <h4 data-fi="Yritys" data-en="Company">Yritys</h4>
+        <a href="https://punkq.com" data-fi="punkQ.com" data-en="punkQ.com">punkQ.com</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-fi="© 2026 punkQ. Kaikki oikeudet pidätetään."
+            data-en="© 2026 punkQ. All rights reserved.">© 2026 punkQ. Kaikki oikeudet pidätetään.</span>
+      <span data-fi="Tehty rakkaudella perheiden puolesta"
+            data-en="Made with love for families">Tehty rakkaudella perheiden puolesta</span>
+    </div>
+  </div>
+</footer>
+
+<!-- Demo modal (iframe) — added in Task 9 -->
+
+<script>
+'use strict';
+// JS added in Tasks 2-9
+</script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
