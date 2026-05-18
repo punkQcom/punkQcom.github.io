@@ -367,6 +367,44 @@
     }
     .about-key { font-size: 14px; color: #BDBDBD; }
     .about-val { font-size: 14px; color: #FFF; }
+
+    /* ===== Radar screen ===== */
+    .radar-content {
+      display: flex; flex-direction: column;
+      padding: 0 12px; gap: 16px;
+    }
+    .presence-row {
+      display: flex; align-items: center;
+      padding: 6px 12px; gap: 10px;
+    }
+    .presence-key { font-size: 14px; color: #BDBDBD; }
+    .presence-val {
+      font-size: 20px; font-weight: 700;
+      transition: color 0.3s;
+    }
+    .presence-val.on { color: #4CAF50; }
+    .presence-val.off { color: #757575; }
+
+    .timeout-group {
+      display: flex; flex-direction: column;
+      padding: 0 10px; gap: 6px;
+    }
+    .timeout-group label { font-size: 14px; color: #FFF; }
+    .timeout-slider {
+      -webkit-appearance: none; appearance: none;
+      width: 90%; height: 20px;
+      background: #333; border-radius: 10px; outline: none;
+    }
+    .timeout-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 20px; height: 20px;
+      border-radius: 50%; background: #FFF; cursor: pointer;
+    }
+    .timeout-slider::-moz-range-thumb {
+      width: 20px; height: 20px;
+      border-radius: 50%; background: #FFF;
+      cursor: pointer; border: none;
+    }
+    .timeout-val { font-size: 14px; color: #BDBDBD; }
   </style>
 </head>
 <body>
@@ -557,7 +595,19 @@
             </div>
             <!-- Tab 3: Radar -->
             <div class="tab-screen sim-bg-dark" id="screen-radar">
-              <!-- Filled in Task 7 -->
+              <div class="screen-title">Radar Settings</div>
+              <div class="radar-content">
+                <div class="presence-row" data-sim-tip="Simulated data">
+                  <span class="presence-key">Presence:</span>
+                  <span class="presence-val off" id="radar-presence">CLEAR</span>
+                </div>
+                <div class="timeout-group">
+                  <label>Sleep timeout</label>
+                  <input type="range" class="timeout-slider" id="timeout-slider"
+                         min="30" max="600" value="60">
+                  <span class="timeout-val" id="timeout-val">60s</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -743,6 +793,28 @@ function updateUptime() {
   el.textContent = h + ':' + m + ':' + sec;
 }
 setInterval(updateUptime, 1000);
+
+// ===== Radar: presence simulation =====
+const presenceEl = document.getElementById('radar-presence');
+function randomPresence() {
+  const detected = Math.random() > 0.5;
+  presenceEl.textContent = detected ? 'DETECTED' : 'CLEAR';
+  presenceEl.className = 'presence-val ' + (detected ? 'on' : 'off');
+  const next = 15000 + Math.random() * 15000; // 15-30s
+  setTimeout(randomPresence, next);
+}
+setTimeout(randomPresence, 15000 + Math.random() * 15000);
+
+// ===== Radar: sleep timeout slider =====
+const timeoutSlider = document.getElementById('timeout-slider');
+const timeoutVal = document.getElementById('timeout-val');
+timeoutSlider.value = loadPref('sim.sleep_timeout', '60');
+timeoutVal.textContent = timeoutSlider.value + 's';
+
+timeoutSlider.addEventListener('input', () => {
+  timeoutVal.textContent = timeoutSlider.value + 's';
+  savePref('sim.sleep_timeout', timeoutSlider.value);
+});
 </script>
 <script src="assets/js/main.js"></script>
 </body>
