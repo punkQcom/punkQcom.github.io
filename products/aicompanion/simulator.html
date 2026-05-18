@@ -210,6 +210,82 @@
       font-size: 28px; font-weight: 700; color: #FFF;
       margin-top: 16px;
     }
+    /* Volume slider (vertical, right side) */
+    .vol-group {
+      position: absolute; right: 18px;
+      top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
+      z-index: 10;
+    }
+    .vol-slider {
+      -webkit-appearance: none; appearance: none;
+      width: 130px; height: 16px;
+      background: #333; border-radius: 8px; outline: none;
+      transform: rotate(-90deg);
+      transform-origin: center center;
+    }
+    .vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 24px; height: 24px;
+      border-radius: 50%; background: #FFF;
+      cursor: pointer;
+    }
+    .vol-slider::-moz-range-thumb {
+      width: 24px; height: 24px;
+      border-radius: 50%; background: #FFF;
+      cursor: pointer; border: none;
+    }
+    .speaker-icon {
+      position: relative;
+      width: 22px; height: 22px;
+    }
+    .speaker-body {
+      position: absolute; left: 1px; top: 6px;
+      width: 8px; height: 10px;
+      background: #FFF; border-radius: 1px;
+    }
+    .speaker-cone {
+      position: absolute; left: 8px; top: 2px;
+      width: 10px; height: 18px;
+      background: #FFF; border-radius: 2px;
+    }
+    .mute-line {
+      position: absolute; top: 0; left: 0;
+      width: 22px; height: 22px;
+      display: none;
+    }
+    .mute-line::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 10px;
+      width: 3px; height: 22px;
+      background: #F44336;
+      border-radius: 1px;
+      transform: rotate(45deg);
+      transform-origin: center center;
+    }
+    .muted .mute-line { display: block; }
+
+    /* Mic button */
+    .mic-btn {
+      position: absolute; bottom: 20px; left: 50%;
+      transform: translateX(-50%);
+      width: 50px; height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7c3aed, #0ea5e9);
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 4px 16px rgba(124,58,237,0.35);
+      transition: transform 0.15s, box-shadow 0.15s;
+      z-index: 10;
+    }
+    .mic-btn:hover {
+      transform: translateX(-50%) scale(1.05);
+      box-shadow: 0 6px 24px rgba(124,58,237,0.5);
+    }
+    .mic-btn:active { transform: translateX(-50%) scale(0.95); }
   </style>
 </head>
 <body>
@@ -312,7 +388,19 @@
                 </div>
                 <div class="state-label" id="state-label">Idle</div>
               </div>
-              <!-- Volume slider + mic button added in Task 4 -->
+              <!-- Volume slider (right side) -->
+              <div class="vol-group">
+                <input type="range" class="vol-slider" id="vol-slider"
+                       min="0" max="100" value="90" orient="vertical">
+                <div class="speaker-icon" id="speaker-icon">
+                  <div class="speaker-body"></div>
+                  <div class="speaker-cone"></div>
+                  <div class="mute-line"></div>
+                </div>
+              </div>
+              <!-- Mic button -->
+              <button class="mic-btn" id="mic-btn" title="Start AI conversation"
+                      data-fi="Aloita keskustelu" data-en="Start conversation">🎙️</button>
             </div>
             <!-- Tab 1: Settings -->
             <div class="tab-screen sim-bg-dark" id="screen-settings">
@@ -391,6 +479,34 @@ function updateClock() {
 }
 setInterval(updateClock, 1000);
 updateClock();
+
+// ===== Volume =====
+const volSlider = document.getElementById('vol-slider');
+const speakerIcon = document.getElementById('speaker-icon');
+
+function loadPref(key, def) {
+  const v = localStorage.getItem(key);
+  return v !== null ? v : def;
+}
+function savePref(key, val) {
+  localStorage.setItem(key, val);
+}
+
+volSlider.value = loadPref('sim.volume', '90');
+updateMuteIcon();
+
+volSlider.addEventListener('input', () => {
+  savePref('sim.volume', volSlider.value);
+  updateMuteIcon();
+});
+
+function updateMuteIcon() {
+  if (parseInt(volSlider.value) === 0) {
+    speakerIcon.classList.add('muted');
+  } else {
+    speakerIcon.classList.remove('muted');
+  }
+}
 </script>
 <script src="assets/js/main.js"></script>
 </body>
