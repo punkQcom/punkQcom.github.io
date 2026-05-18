@@ -815,6 +815,53 @@ timeoutSlider.addEventListener('input', () => {
   timeoutVal.textContent = timeoutSlider.value + 's';
   savePref('sim.sleep_timeout', timeoutSlider.value);
 });
+
+// ===== Tab navigation =====
+let currentTab = 0;
+const totalTabs = 4;
+const slider = document.getElementById('tab-slider');
+const dots = document.querySelectorAll('#dot-nav .dot');
+
+function goToTab(index) {
+  if (index < 0 || index >= totalTabs) return;
+  currentTab = index;
+  slider.style.transform = 'translateX(-' + (index * 25) + '%)';
+  dots.forEach((d, i) => d.classList.toggle('active', i === index));
+}
+
+// Dot clicks
+dots.forEach(d => {
+  d.addEventListener('click', () => goToTab(parseInt(d.dataset.tab)));
+});
+
+// Swipe handling (touch + mouse)
+const screen = document.getElementById('device-screen');
+let startX = 0, startY = 0, dragging = false;
+
+function onStart(x, y) { startX = x; startY = y; dragging = true; }
+function onEnd(x) {
+  if (!dragging) return;
+  dragging = false;
+  const dx = x - startX;
+  if (Math.abs(dx) > 40) {
+    if (dx < 0) goToTab(currentTab + 1);
+    else goToTab(currentTab - 1);
+  }
+}
+
+screen.addEventListener('touchstart', e => {
+  const t = e.touches[0];
+  onStart(t.clientX, t.clientY);
+}, { passive: true });
+screen.addEventListener('touchend', e => {
+  onEnd(e.changedTouches[0].clientX);
+});
+screen.addEventListener('mousedown', e => {
+  // Don't hijack clicks on sliders, buttons, toggles
+  if (e.target.closest('input, button, .toggle, .mic-btn')) return;
+  onStart(e.clientX, e.clientY);
+});
+screen.addEventListener('mouseup', e => onEnd(e.clientX));
 </script>
 <script src="assets/js/main.js"></script>
 </body>
