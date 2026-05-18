@@ -168,6 +168,48 @@
       background: #BDBDBD;
       border-radius: 0 1px 1px 0;
     }
+
+    /* Home center content */
+    .home-content {
+      position: absolute;
+      top: 36px; left: 0; right: 0; bottom: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .ai-name {
+      font-size: 28px; font-weight: 700; color: #FFF;
+      margin-bottom: 16px;
+    }
+    .pulse-dot {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: #FFF;
+      animation: breathe 3s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%, 100% { opacity: 0.2; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+    .thinking-dots {
+      display: none; /* shown via JS when state=thinking */
+      gap: 14px;
+    }
+    .thinking-dots .tdot {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: #000;
+      animation: bounce 1.4s ease-in-out infinite;
+    }
+    .thinking-dots .tdot:nth-child(2) { animation-delay: 0.2s; }
+    .thinking-dots .tdot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-12px); }
+    }
+    .state-label {
+      font-size: 28px; font-weight: 700; color: #FFF;
+      margin-top: 16px;
+    }
   </style>
 </head>
 <body>
@@ -259,7 +301,18 @@
                   <div class="batt-nub"></div>
                 </div>
               </div>
-              <!-- Home content added in Task 3-4 -->
+              <!-- Home center -->
+              <div class="home-content">
+                <div class="ai-name">AI Companion</div>
+                <div class="pulse-dot" id="pulse-dot"></div>
+                <div class="thinking-dots" id="thinking-dots">
+                  <div class="tdot"></div>
+                  <div class="tdot"></div>
+                  <div class="tdot"></div>
+                </div>
+                <div class="state-label" id="state-label">Idle</div>
+              </div>
+              <!-- Volume slider + mic button added in Task 4 -->
             </div>
             <!-- Tab 1: Settings -->
             <div class="tab-screen sim-bg-dark" id="screen-settings">
