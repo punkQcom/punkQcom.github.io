@@ -122,6 +122,52 @@
       z-index: 100;
     }
     [data-sim-tip]:hover::after { opacity: 1; }
+
+    /* ===== Home screen ===== */
+    .widget-bar {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 36px;
+      background: rgba(26,26,26,0.8);
+      display: flex; align-items: center;
+      justify-content: space-evenly;
+      padding: 0 15px;
+      z-index: 10;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px; color: #BDBDBD;
+    }
+
+    /* WiFi signal bars */
+    .wifi-icon {
+      display: flex; align-items: flex-end; gap: 2px; height: 22px;
+    }
+    .wifi-icon .bar {
+      width: 4px; border-radius: 1px;
+      background: #444;
+    }
+    .wifi-icon .bar.lit { background: #BDBDBD; }
+
+    /* Battery icon */
+    .batt-icon {
+      display: flex; align-items: center; gap: 0;
+    }
+    .batt-body {
+      width: 22px; height: 12px;
+      border: 1px solid #BDBDBD;
+      border-radius: 2px;
+      padding: 1px;
+      display: flex; gap: 2px;
+    }
+    .batt-seg {
+      width: 3px; height: 100%;
+      background: #333;
+      border-radius: 0;
+    }
+    .batt-seg.lit { background: #4CAF50; }
+    .batt-nub {
+      width: 2px; height: 6px;
+      background: #BDBDBD;
+      border-radius: 0 1px 1px 0;
+    }
   </style>
 </head>
 <body>
@@ -192,7 +238,28 @@
           <div class="tab-slider" id="tab-slider">
             <!-- Tab 0: Home -->
             <div class="tab-screen sim-bg-idle" id="screen-home">
-              <!-- Filled in Task 2-4 -->
+              <!-- Widget bar -->
+              <div class="widget-bar" id="widget-bar">
+                <span id="w-clock">--:--</span>
+                <span id="w-temp" data-sim-tip="Simulated data">22.5C</span>
+                <span id="w-humid" data-sim-tip="Simulated data">45%</span>
+                <div class="wifi-icon" id="w-wifi" data-sim-tip="Simulated data">
+                  <div class="bar lit" style="height:6px"></div>
+                  <div class="bar lit" style="height:11px"></div>
+                  <div class="bar lit" style="height:16px"></div>
+                  <div class="bar" style="height:22px"></div>
+                </div>
+                <div class="batt-icon" id="w-batt" data-sim-tip="Simulated data">
+                  <div class="batt-body">
+                    <div class="batt-seg lit"></div>
+                    <div class="batt-seg lit"></div>
+                    <div class="batt-seg lit"></div>
+                    <div class="batt-seg"></div>
+                  </div>
+                  <div class="batt-nub"></div>
+                </div>
+              </div>
+              <!-- Home content added in Task 3-4 -->
             </div>
             <!-- Tab 1: Settings -->
             <div class="tab-screen sim-bg-dark" id="screen-settings">
@@ -261,7 +328,16 @@
 
 <script>
 'use strict';
-// JS added in Tasks 2-9
+// ===== Clock (live browser time) =====
+function updateClock() {
+  const el = document.getElementById('w-clock');
+  if (!el) return;
+  const now = new Date();
+  el.textContent = now.getHours().toString().padStart(2,'0') + ':' +
+                   now.getMinutes().toString().padStart(2,'0');
+}
+setInterval(updateClock, 1000);
+updateClock();
 </script>
 <script src="assets/js/main.js"></script>
 </body>
