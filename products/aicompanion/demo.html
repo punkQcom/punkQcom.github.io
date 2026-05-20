@@ -215,6 +215,9 @@
       background: #333; border-radius: 8px; outline: none;
       transform: rotate(-90deg);
       transform-origin: center center;
+      /* rotation is visual-only; reserve the vertical space the rotated
+         slider actually occupies so the speaker icon sits below it */
+      margin: 54px 0;
     }
     .vol-slider::-webkit-slider-thumb {
       -webkit-appearance: none; appearance: none;
