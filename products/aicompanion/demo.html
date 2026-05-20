@@ -99,27 +99,19 @@
     .sim-bg-dark      { background-color: #121212; }
 
     /* ===== Tooltip for simulated data ===== */
-    [data-sim-tip] {
-      position: relative;
-      cursor: help;
-    }
-    [data-sim-tip]::after {
-      content: attr(data-sim-tip);
-      position: absolute;
-      bottom: 100%; left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.85);
+    [data-sim-tip] { cursor: help; }
+    .sim-tooltip {
+      position: fixed;
+      background: rgba(0,0,0,0.88);
       color: #fff;
-      font-size: 11px;
-      padding: 4px 8px;
+      font-size: 12px;
+      padding: 5px 10px;
       border-radius: 4px;
       white-space: nowrap;
       pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s;
-      z-index: 100;
+      z-index: 10000;
+      transition: opacity 0.15s;
     }
-    [data-sim-tip]:hover::after { opacity: 1; }
 
     /* ===== Home screen ===== */
     .widget-bar {
@@ -236,35 +228,13 @@
       cursor: pointer; border: none;
     }
     .speaker-icon {
-      position: relative;
-      width: 22px; height: 22px;
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
     }
-    .speaker-body {
-      position: absolute; left: 1px; top: 6px;
-      width: 8px; height: 10px;
-      background: #FFF; border-radius: 1px;
-    }
-    .speaker-cone {
-      position: absolute; left: 8px; top: 2px;
-      width: 10px; height: 18px;
-      background: #FFF; border-radius: 2px;
-    }
-    .mute-line {
-      position: absolute; top: 0; left: 0;
-      width: 22px; height: 22px;
-      display: none;
-    }
-    .mute-line::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 10px;
-      width: 3px; height: 22px;
-      background: #F44336;
-      border-radius: 1px;
-      transform: rotate(45deg);
-      transform-origin: center center;
-    }
-    .muted .mute-line { display: block; }
+    .speaker-icon svg { width: 28px; height: 28px; }
+    .speaker-icon .mute-slash { display: none; }
+    .speaker-icon.muted .mute-slash { display: block; }
+    .speaker-icon.muted .sound-waves { display: none; }
 
     /* Mic button */
     .mic-btn {
@@ -575,13 +545,17 @@
                 <input type="range" class="vol-slider" id="vol-slider"
                        min="0" max="100" value="90" orient="vertical">
                 <div class="speaker-icon" id="speaker-icon">
-                  <div class="speaker-body"></div>
-                  <div class="speaker-cone"></div>
-                  <div class="mute-line"></div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#FFF" stroke="none"/>
+                    <path class="sound-waves" d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                    <path class="sound-waves" d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                    <line class="mute-slash" x1="1" y1="1" x2="23" y2="23" stroke="#F44336" stroke-width="3"/>
+                  </svg>
                 </div>
               </div>
-              <button class="mic-btn" id="mic-btn" title="Start AI conversation"
-                      data-fi="Aloita keskustelu" data-en="Start conversation">&#127908;&#65039;</button>
+              <button class="mic-btn" id="mic-btn"
+                      title="Aloita keskustelu / Start conversation"
+                      aria-label="Aloita keskustelu">&#127908;&#65039;</button>
             </div>
             <!-- Tab 1: Settings -->
             <div class="tab-screen sim-bg-dark" id="screen-settings">
@@ -1049,6 +1023,32 @@ function demoModalEscHandler(e) {
 
 // Mic button opens modal
 document.getElementById('mic-btn').addEventListener('click', openDemoModal);
+
+// ===== JS tooltips (avoids overflow:hidden clipping) =====
+(function initSimTooltips() {
+  let tip = null;
+  document.addEventListener('pointerenter', e => {
+    const el = e.target.closest('[data-sim-tip]');
+    if (!el) return;
+    if (tip) tip.remove();
+    tip = document.createElement('div');
+    tip.className = 'sim-tooltip';
+    tip.textContent = el.getAttribute('data-sim-tip');
+    document.body.appendChild(tip);
+    const r = el.getBoundingClientRect();
+    const tw = tip.offsetWidth;
+    let left = r.left + r.width / 2 - tw / 2;
+    left = Math.max(4, Math.min(left, window.innerWidth - tw - 4));
+    tip.style.left = left + 'px';
+    tip.style.top = (r.top - tip.offsetHeight - 6) + 'px';
+  }, true);
+  document.addEventListener('pointerleave', e => {
+    if (e.target.closest('[data-sim-tip]') && tip) {
+      tip.remove();
+      tip = null;
+    }
+  }, true);
+})();
 
 // ===== Build stamp =====
 (function stampBuild() {
