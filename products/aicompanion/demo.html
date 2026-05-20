@@ -3,168 +3,406 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="AI Companion demo — kokeile nyt.">
+  <meta name="description" content="AI Companion demo — kokeile laitetta selaimessa.">
   <title>AI Companion — Kokeile AI-kaveria</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- Pre-warm the live demo backend. The iframe is loaded only when the
-       user clicks the mic, but the Azure Container App scales to zero, so
-       a cold first hit there takes ~10s. preconnect handles TCP+TLS;
-       the fetch('/health') below the page actually wakes the container. -->
   <link rel="preconnect" href="https://aicompanion.orangecliff-3a4f1285.westeurope.azurecontainerapps.io" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/main.css">
   <style>
     .lang-switcher {
-      display: flex;
-      align-items: center;
-      gap: 0.15rem;
+      display: flex; align-items: center; gap: 0.15rem;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
-      border-radius: 100px;
-      padding: 0.2rem;
-      backdrop-filter: var(--blur);
-      -webkit-backdrop-filter: var(--blur);
+      border-radius: 100px; padding: 0.2rem;
+      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
     }
     .lang-toggle {
-      padding: 0.28rem 0.7rem;
-      border-radius: 100px;
-      border: none;
-      background: transparent;
-      font-family: var(--font-sans);
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--color-text-muted);
-      cursor: pointer;
-      transition: all var(--transition);
-      letter-spacing: 0.04em;
+      padding: 0.28rem 0.7rem; border-radius: 100px; border: none;
+      background: transparent; font-family: var(--font-sans);
+      font-size: 0.78rem; font-weight: 700;
+      color: var(--color-text-muted); cursor: pointer;
+      transition: all var(--transition); letter-spacing: 0.04em;
     }
     .lang-toggle.active {
       background: linear-gradient(135deg, var(--color-gradient-1), var(--color-gradient-2));
       color: #fff;
     }
 
-    /* Demo placeholder area */
-    .demo-placeholder {
-      width: 100%;
-      max-width: 720px;
-      margin: 0 auto;
+    /* --- Device frame --- */
+    .device-wrapper {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 2rem 1rem;
     }
-    .demo-stage {
-      background: var(--color-surface);
-      backdrop-filter: var(--blur);
-      -webkit-backdrop-filter: var(--blur);
-      border: 2px dashed var(--color-border);
-      border-radius: var(--radius-lg);
-      min-height: 380px;
+    .device-frame {
+      background: #2A2A2A;
+      border-radius: 20px;
+      padding: 8px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+    }
+    .device-screen {
+      width: 640px; height: 480px;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      background: #121212;
+    }
+    @media (max-width: 640px) {
+      .device-frame {
+        background: none; border-radius: 0; padding: 0;
+        box-shadow: none; width: 100%;
+      }
+      .device-screen {
+        width: 100%; height: auto;
+        aspect-ratio: 320 / 240;
+        border-radius: 0;
+      }
+    }
+
+    /* --- Tab slider --- */
+    .tab-slider {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1.5rem;
-      padding: 3rem 2rem;
-      text-align: center;
+      width: 400%;
+      height: 100%;
+      transition: transform 0.3s ease;
+    }
+    .tab-screen {
+      width: 25%;
+      height: 100%;
+      flex-shrink: 0;
       position: relative;
       overflow: hidden;
-      transition: border-color var(--transition);
-    }
-    .demo-stage:hover {
-      border-color: color-mix(in srgb, var(--color-accent) 40%, var(--color-border));
-    }
-    .demo-stage-icon {
-      width: 96px;
-      height: 96px;
-      border-radius: 50%;
-      background: linear-gradient(135deg,
-        color-mix(in srgb, var(--color-gradient-1) 20%, var(--color-bg-alt)),
-        color-mix(in srgb, var(--color-gradient-2) 20%, var(--color-bg-alt))
-      );
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3rem;
-      animation: pulse-soft 3s ease-in-out infinite;
-      box-shadow: 0 8px 32px color-mix(in srgb, var(--color-accent) 20%, transparent);
-    }
-    @keyframes pulse-soft {
-      0%, 100% { transform: scale(1); box-shadow: 0 8px 32px color-mix(in srgb, var(--color-accent) 20%, transparent); }
-      50% { transform: scale(1.06); box-shadow: 0 12px 48px color-mix(in srgb, var(--color-accent) 35%, transparent); }
-    }
-    .demo-stage-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-    }
-    .demo-stage-sub {
-      font-size: 1rem;
-      color: var(--color-text-muted);
-      max-width: 38ch;
-      line-height: 1.7;
-    }
-    .demo-coming-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.45rem 1.1rem;
-      background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
-      border: 1px solid color-mix(in srgb, var(--color-accent) 25%, var(--color-border));
-      border-radius: 100px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--color-accent);
-    }
-    .demo-coming-badge .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--color-accent);
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.85); }
     }
 
-    /* Recording button: clickable launcher (opens iframe demo) */
-    .record-btn-launcher {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--color-gradient-1), var(--color-gradient-2));
-      display: flex;
-      align-items: center;
+    /* --- Dot indicators --- */
+    .dot-nav {
+      display: flex; gap: 8px;
       justify-content: center;
-      font-size: 2rem;
+      padding: 12px 0;
+    }
+    .dot-nav .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #666666;
       cursor: pointer;
-      box-shadow: 0 8px 32px color-mix(in srgb, var(--color-gradient-1) 35%, transparent);
+      transition: background 0.2s;
+    }
+    .dot-nav .dot.active { background: #FFFFFF; }
+
+    /* ===== Device color palette ===== */
+    .sim-bg-idle      { background-color: #1B5E20; }
+    .sim-bg-listening { background-color: #039BE5; }
+    .sim-bg-thinking  { background-color: #FBC02D; }
+    .sim-bg-speaking  { background-color: #7B1FA2; }
+    .sim-bg-error     { background-color: #D32F2F; }
+    .sim-bg-dark      { background-color: #121212; }
+
+    /* ===== Tooltip for simulated data ===== */
+    [data-sim-tip] {
       position: relative;
-      border: 0;
-      transition: transform var(--transition), box-shadow var(--transition);
+      cursor: help;
     }
-    .record-btn-launcher:hover {
-      transform: scale(1.05);
-      box-shadow: 0 12px 40px color-mix(in srgb, var(--color-gradient-1) 50%, transparent);
+    [data-sim-tip]::after {
+      content: attr(data-sim-tip);
+      position: absolute;
+      bottom: 100%; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 100;
     }
-    .record-btn-launcher:active { transform: scale(0.98); }
-    .record-btn-launcher::after {
+    [data-sim-tip]:hover::after { opacity: 1; }
+
+    /* ===== Home screen ===== */
+    .widget-bar {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 36px;
+      background: rgba(26,26,26,0.8);
+      display: flex; align-items: center;
+      justify-content: space-evenly;
+      padding: 0 15px;
+      z-index: 10;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px; color: #BDBDBD;
+    }
+
+    /* WiFi signal bars */
+    .wifi-icon {
+      display: flex; align-items: flex-end; gap: 2px; height: 22px;
+    }
+    .wifi-icon .bar {
+      width: 4px; border-radius: 1px;
+      background: #444;
+    }
+    .wifi-icon .bar.lit { background: #BDBDBD; }
+
+    /* Battery icon */
+    .batt-icon {
+      display: flex; align-items: center; gap: 0;
+    }
+    .batt-body {
+      width: 22px; height: 12px;
+      border: 1px solid #BDBDBD;
+      border-radius: 2px;
+      padding: 1px;
+      display: flex; gap: 2px;
+    }
+    .batt-seg {
+      width: 3px; height: 100%;
+      background: #333;
+      border-radius: 0;
+    }
+    .batt-seg.lit { background: #4CAF50; }
+    .batt-nub {
+      width: 2px; height: 6px;
+      background: #BDBDBD;
+      border-radius: 0 1px 1px 0;
+    }
+
+    /* Home center content */
+    .home-content {
+      position: absolute;
+      top: 36px; left: 0; right: 0; bottom: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .ai-name {
+      font-size: 28px; font-weight: 700; color: #FFF;
+      margin-bottom: 16px;
+    }
+    .pulse-dot {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: #FFF;
+      animation: breathe 3s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%, 100% { opacity: 0.2; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+    .thinking-dots {
+      display: none;
+      gap: 14px;
+    }
+    .thinking-dots .tdot {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: #000;
+      animation: bounce 1.4s ease-in-out infinite;
+    }
+    .thinking-dots .tdot:nth-child(2) { animation-delay: 0.2s; }
+    .thinking-dots .tdot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-12px); }
+    }
+    .state-label {
+      font-size: 28px; font-weight: 700; color: #FFF;
+      margin-top: 16px;
+    }
+
+    /* Volume slider (vertical, right side) */
+    .vol-group {
+      position: absolute; right: 18px;
+      top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
+      z-index: 10;
+    }
+    .vol-slider {
+      -webkit-appearance: none; appearance: none;
+      width: 130px; height: 16px;
+      background: #333; border-radius: 8px; outline: none;
+      transform: rotate(-90deg);
+      transform-origin: center center;
+    }
+    .vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 24px; height: 24px;
+      border-radius: 50%; background: #FFF;
+      cursor: pointer;
+    }
+    .vol-slider::-moz-range-thumb {
+      width: 24px; height: 24px;
+      border-radius: 50%; background: #FFF;
+      cursor: pointer; border: none;
+    }
+    .speaker-icon {
+      position: relative;
+      width: 22px; height: 22px;
+    }
+    .speaker-body {
+      position: absolute; left: 1px; top: 6px;
+      width: 8px; height: 10px;
+      background: #FFF; border-radius: 1px;
+    }
+    .speaker-cone {
+      position: absolute; left: 8px; top: 2px;
+      width: 10px; height: 18px;
+      background: #FFF; border-radius: 2px;
+    }
+    .mute-line {
+      position: absolute; top: 0; left: 0;
+      width: 22px; height: 22px;
+      display: none;
+    }
+    .mute-line::after {
       content: '';
       position: absolute;
-      inset: -6px;
+      top: 0; left: 10px;
+      width: 3px; height: 22px;
+      background: #F44336;
+      border-radius: 1px;
+      transform: rotate(45deg);
+      transform-origin: center center;
+    }
+    .muted .mute-line { display: block; }
+
+    /* Mic button */
+    .mic-btn {
+      position: absolute; bottom: 20px; left: 50%;
+      transform: translateX(-50%);
+      width: 50px; height: 50px;
       border-radius: 50%;
-      border: 2px dashed color-mix(in srgb, var(--color-accent) 40%, transparent);
-      animation: spin 8s linear infinite;
+      background: linear-gradient(135deg, #7c3aed, #0ea5e9);
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 4px 16px rgba(124,58,237,0.35);
+      transition: transform 0.15s, box-shadow 0.15s;
+      z-index: 10;
     }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+    .mic-btn:hover {
+      transform: translateX(-50%) scale(1.05);
+      box-shadow: 0 6px 24px rgba(124,58,237,0.5);
     }
-    .record-label {
-      font-size: 0.82rem;
-      color: var(--color-text-muted);
-      font-weight: 500;
-      margin-top: 0.5rem;
+    .mic-btn:active { transform: translateX(-50%) scale(0.95); }
+
+    /* ===== Settings / About / Radar shared ===== */
+    .screen-title {
+      font-size: 20px; font-weight: 700; color: #FFF;
+      padding: 12px 0 4px; text-align: center;
+    }
+    .settings-list {
+      display: flex; flex-direction: column;
+      width: 100%; overflow-y: auto;
+      max-height: calc(100% - 48px);
+    }
+    .setting-row {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px; cursor: pointer;
+    }
+    .setting-row label {
+      font-size: 14px; color: #FFF;
+      cursor: pointer; flex: 1;
+    }
+    .toggle {
+      position: relative; width: 44px; height: 24px;
+      background: #555; border-radius: 12px;
+      cursor: pointer; transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: #4CAF50; }
+    .toggle .knob {
+      position: absolute; top: 2px; left: 2px;
+      width: 20px; height: 20px;
+      background: #FFF; border-radius: 50%;
+      transition: left 0.2s;
+    }
+    .toggle.on .knob { left: 22px; }
+
+    .reset-btn {
+      width: 90%; margin: 0 auto;
+      padding: 10px; border: none; border-radius: 6px;
+      background: #DC2626; color: #FFF;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; text-align: center;
+      transition: background 0.2s;
+    }
+    .reset-btn.armed { background: #D97706; }
+
+    .slider-row {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+    }
+    .slider-row label { font-size: 14px; color: #FFF; }
+    .brightness-slider {
+      -webkit-appearance: none; appearance: none;
+      width: 160px; height: 20px;
+      background: #333; border-radius: 10px; outline: none;
+    }
+    .brightness-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 20px; height: 20px;
+      border-radius: 50%; background: #FFF; cursor: pointer;
+    }
+    .brightness-slider::-moz-range-thumb {
+      width: 20px; height: 20px;
+      border-radius: 50%; background: #FFF;
+      cursor: pointer; border: none;
     }
 
-    /* Preview info cards */
+    /* ===== About screen ===== */
+    .about-list {
+      display: flex; flex-direction: column;
+      width: 100%; padding: 0 12px;
+    }
+    .about-row {
+      display: flex; justify-content: space-between;
+      align-items: center;
+      padding: 3px 12px;
+    }
+    .about-key { font-size: 14px; color: #BDBDBD; }
+    .about-val { font-size: 14px; color: #FFF; }
+
+    /* ===== Radar screen ===== */
+    .radar-content {
+      display: flex; flex-direction: column;
+      padding: 0 12px; gap: 16px;
+    }
+    .presence-row {
+      display: flex; align-items: center;
+      padding: 6px 12px; gap: 10px;
+    }
+    .presence-key { font-size: 14px; color: #BDBDBD; }
+    .presence-val {
+      font-size: 20px; font-weight: 700;
+      transition: color 0.3s;
+    }
+    .presence-val.on { color: #4CAF50; }
+    .presence-val.off { color: #757575; }
+
+    .timeout-group {
+      display: flex; flex-direction: column;
+      padding: 0 10px; gap: 6px;
+    }
+    .timeout-group label { font-size: 14px; color: #FFF; }
+    .timeout-slider {
+      -webkit-appearance: none; appearance: none;
+      width: 90%; height: 20px;
+      background: #333; border-radius: 10px; outline: none;
+    }
+    .timeout-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 20px; height: 20px;
+      border-radius: 50%; background: #FFF; cursor: pointer;
+    }
+    .timeout-slider::-moz-range-thumb {
+      width: 20px; height: 20px;
+      border-radius: 50%; background: #FFF;
+      cursor: pointer; border: none;
+    }
+    .timeout-val { font-size: 14px; color: #BDBDBD; }
+
+    /* ===== Preview info cards ===== */
     .preview-cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -179,14 +417,13 @@
     .preview-card h4 { font-size: 1rem; margin-bottom: 0.4rem; }
     .preview-card p { font-size: 0.88rem; color: var(--color-text-muted); line-height: 1.6; }
 
-    /* Demo modal (iframe wrapper) */
+    /* ===== Demo modal ===== */
     .demo-modal { position: fixed; inset: 0; z-index: 9999; display: none; }
     .demo-modal.show { display: block; }
     .demo-modal-backdrop {
       position: absolute; inset: 0;
-      background: rgba(0, 0, 0, 0.55);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
     }
     .demo-modal-card {
       position: absolute; top: 4%; left: 50%;
@@ -195,36 +432,28 @@
       height: 92vh; max-height: 92vh;
       background: var(--color-bg, #fff);
       border-radius: var(--radius-lg, 1rem);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-      display: flex; flex-direction: column;
-      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      display: flex; flex-direction: column; overflow: hidden;
     }
     .demo-modal-header {
       padding: 0.85rem 1.1rem;
       border-bottom: 1px solid var(--color-border, #e5e7eb);
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 0.75rem;
+      display: flex; align-items: center;
+      justify-content: space-between;
       background: var(--color-surface, transparent);
     }
-    .demo-modal-header h3 {
-      margin: 0;
-      font-size: 1rem;
-      font-weight: 600;
-    }
+    .demo-modal-header h3 { margin: 0; font-size: 1rem; font-weight: 600; }
     .demo-modal-close {
       background: transparent; border: 0; cursor: pointer;
       font-size: 1.5rem; line-height: 1;
       color: var(--color-text-muted, #555);
       padding: 0.25rem 0.5rem; border-radius: 0.5rem;
-      transition: background var(--transition);
     }
     .demo-modal-close:hover {
       background: color-mix(in srgb, var(--color-text, #000) 8%, transparent);
-      color: var(--color-text, #000);
     }
     .demo-modal-frame {
-      flex: 1; width: 100%; border: 0;
-      background: #f5f5f7;
+      flex: 1; width: 100%; border: 0; background: #f5f5f7;
     }
     @media (max-width: 640px) {
       .demo-modal-card {
@@ -253,8 +482,6 @@
              data-fi="Koti" data-en="Home">Koti</a></li>
       <li><a href="demo.html" class="nav-link active" data-page="demo"
              data-fi="Demo" data-en="Demo">Demo</a></li>
-      <li><a href="simulator.html" class="nav-link" data-page="simulator"
-             data-fi="Simulaattori" data-en="Simulator">Simulaattori</a></li>
       <li><a href="tech.html" class="nav-link" data-page="tech"
              data-fi="Tekniikka" data-en="Tech">Tekniikka</a></li>
     </ul>
@@ -265,8 +492,8 @@
         <button class="lang-toggle" data-lang="en" aria-pressed="false">EN</button>
       </div>
       <button class="theme-toggle" id="theme-toggle" aria-label="Vaihda teema">
-        <span class="icon-sun" aria-hidden="true">☀️</span>
-        <span class="icon-moon" aria-hidden="true">🌙</span>
+        <span class="icon-sun" aria-hidden="true">&#9728;&#65039;</span>
+        <span class="icon-moon" aria-hidden="true">&#127769;</span>
       </button>
     </div>
 
@@ -282,8 +509,6 @@
      data-fi="Koti" data-en="Home">Koti</a>
   <a href="demo.html" class="nav-link active" data-page="demo"
      data-fi="Demo" data-en="Demo">Demo</a>
-  <a href="simulator.html" class="nav-link" data-page="simulator"
-     data-fi="Simulaattori" data-en="Simulator">Simulaattori</a>
   <a href="tech.html" class="nav-link" data-page="tech"
      data-fi="Tekniikka" data-en="Tech">Tekniikka</a>
   <div class="lang-switcher" style="margin-top:0.75rem;" role="group" aria-label="Kielivalinta">
@@ -300,71 +525,189 @@
       <span data-fi="Demo saatavilla nyt" data-en="Demo available now">Demo saatavilla nyt</span>
     </div>
     <h1 data-fi="Kokeile AI-kaveria" data-en="Try the AI Companion">Kokeile AI-kaveria</h1>
-    <p data-fi="Interaktiivinen demo on käytettävissä. Paina mikrofonikuvaketta ja aloita keskustelu."
-       data-en="The interactive demo is available. Press the microphone button and start a conversation.">
-      Interaktiivinen demo on käytettävissä. Paina mikrofonikuvaketta ja aloita keskustelu.
+    <p data-fi="Tutustu laitteen käyttöliittymään selaimessa. Pyyhkäise sivusuunnassa ja paina mikrofonia aloittaaksesi keskustelun."
+       data-en="Explore the device interface in your browser. Swipe sideways and press the microphone to start a conversation.">
+      Tutustu laitteen käyttöliittymään selaimessa. Pyyhkäise sivusuunnassa ja paina mikrofonia aloittaaksesi keskustelun.
     </p>
   </div>
 </div>
 
-<!-- ===== DEMO STAGE ===== -->
+<!-- ===== DEVICE SIMULATOR ===== -->
 <section class="section" style="padding-top:0;">
   <div class="container">
-    <div class="demo-placeholder reveal">
-
-      <!-- Main demo stage / recording placeholder -->
-      <div class="demo-stage">
-        <div class="demo-stage-icon" aria-hidden="true">🤖</div>
-
-        <h2 class="demo-stage-title"
-            data-fi="Äänidemo käytettävissä"
-            data-en="Voice demo available">Äänidemo käytettävissä</h2>
-
-        <p class="demo-stage-sub"
-           data-fi="Kuule ja näe, miten AI-kaveri juttelee suomeksi. Paina mikrofonikuvaketta aloittaaksesi."
-           data-en="Hear and see how the AI Companion chats in Finnish. Press the microphone button to start.">
-          Kuule ja näe, miten AI-kaveri juttelee suomeksi. Paina mikrofonikuvaketta aloittaaksesi.
-        </p>
-
-        <!-- Recording button: opens iframe demo (password-gated) -->
-        <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-          <button type="button" class="record-btn-launcher"
-                  onclick="openDemoModal()"
-                  aria-label="Avaa demo" title="Avaa demo">🎙️</button>
-          <span class="record-label"
-                data-fi="Yksityinen demo — pyydä salasana"
-                data-en="Private demo — password required">
-            Yksityinen demo — pyydä salasana
-          </span>
+    <div class="device-wrapper">
+      <div class="device-frame">
+        <div class="device-screen" id="device-screen">
+          <div class="tab-slider" id="tab-slider">
+            <!-- Tab 0: Home -->
+            <div class="tab-screen sim-bg-idle" id="screen-home">
+              <div class="widget-bar" id="widget-bar">
+                <span id="w-clock">--:--</span>
+                <span id="w-temp" data-sim-tip="Simulated data">22.5C</span>
+                <span id="w-humid" data-sim-tip="Simulated data">45%</span>
+                <div class="wifi-icon" id="w-wifi" data-sim-tip="Simulated data">
+                  <div class="bar lit" style="height:6px"></div>
+                  <div class="bar lit" style="height:11px"></div>
+                  <div class="bar lit" style="height:16px"></div>
+                  <div class="bar" style="height:22px"></div>
+                </div>
+                <div class="batt-icon" id="w-batt" data-sim-tip="Simulated data">
+                  <div class="batt-body">
+                    <div class="batt-seg lit"></div>
+                    <div class="batt-seg lit"></div>
+                    <div class="batt-seg lit"></div>
+                    <div class="batt-seg"></div>
+                  </div>
+                  <div class="batt-nub"></div>
+                </div>
+              </div>
+              <div class="home-content">
+                <div class="ai-name">AI Companion</div>
+                <div class="pulse-dot" id="pulse-dot"></div>
+                <div class="thinking-dots" id="thinking-dots">
+                  <div class="tdot"></div>
+                  <div class="tdot"></div>
+                  <div class="tdot"></div>
+                </div>
+                <div class="state-label" id="state-label">Idle</div>
+              </div>
+              <div class="vol-group">
+                <input type="range" class="vol-slider" id="vol-slider"
+                       min="0" max="100" value="90" orient="vertical">
+                <div class="speaker-icon" id="speaker-icon">
+                  <div class="speaker-body"></div>
+                  <div class="speaker-cone"></div>
+                  <div class="mute-line"></div>
+                </div>
+              </div>
+              <button class="mic-btn" id="mic-btn" title="Start AI conversation"
+                      data-fi="Aloita keskustelu" data-en="Start conversation">&#127908;&#65039;</button>
+            </div>
+            <!-- Tab 1: Settings -->
+            <div class="tab-screen sim-bg-dark" id="screen-settings">
+              <div class="screen-title">Settings</div>
+              <div class="settings-list">
+                <button class="reset-btn" id="reset-wifi-btn"
+                        data-sim-tip="Simulated — real device erases WiFi config">Reset WiFi</button>
+                <div style="height:4px"></div>
+                <div class="slider-row" data-sim-tip="Simulated — real device controls backlight">
+                  <label>Brightness</label>
+                  <input type="range" class="brightness-slider" id="brightness-slider"
+                         min="5" max="100" value="60">
+                </div>
+                <div class="setting-row" data-toggle="sim.show_clock" data-target="w-clock">
+                  <label>Show Clock</label>
+                  <div class="toggle on"><div class="knob"></div></div>
+                </div>
+                <div class="setting-row" data-toggle="sim.show_temp" data-target="w-temp">
+                  <label>Show Temperature</label>
+                  <div class="toggle on"><div class="knob"></div></div>
+                </div>
+                <div class="setting-row" data-toggle="sim.show_humid" data-target="w-humid">
+                  <label>Show Humidity</label>
+                  <div class="toggle on"><div class="knob"></div></div>
+                </div>
+                <div class="setting-row" data-toggle="sim.show_wifi" data-target="w-wifi">
+                  <label>Show WiFi Signal</label>
+                  <div class="toggle on"><div class="knob"></div></div>
+                </div>
+                <div class="setting-row" data-toggle="sim.show_batt" data-target="w-batt">
+                  <label>Show Battery</label>
+                  <div class="toggle on"><div class="knob"></div></div>
+                </div>
+                <div class="setting-row" data-sim-tip="Simulated — real device mirrors touch axes">
+                  <label>Invert Touch</label>
+                  <div class="toggle" id="invert-touch-toggle"><div class="knob"></div></div>
+                </div>
+              </div>
+            </div>
+            <!-- Tab 2: About -->
+            <div class="tab-screen sim-bg-dark" id="screen-about">
+              <div class="screen-title">About</div>
+              <div class="about-list">
+                <div class="about-row">
+                  <span class="about-key">Firmware:</span>
+                  <span class="about-val">v0.4.2</span>
+                </div>
+                <div class="about-row" data-sim-tip="Simulated data">
+                  <span class="about-key">IP:</span>
+                  <span class="about-val">192.168.1.42</span>
+                </div>
+                <div class="about-row" data-sim-tip="Simulated data">
+                  <span class="about-key">MAC:</span>
+                  <span class="about-val">A0:B1:C2:D3:E4:F5</span>
+                </div>
+                <div class="about-row" data-sim-tip="Simulated data">
+                  <span class="about-key">Heap:</span>
+                  <span class="about-val">148 KB</span>
+                </div>
+                <div class="about-row" data-sim-tip="Simulated data">
+                  <span class="about-key">PSRAM:</span>
+                  <span class="about-val">8192 KB</span>
+                </div>
+                <div class="about-row">
+                  <span class="about-key">Uptime:</span>
+                  <span class="about-val" id="about-uptime">00:00:00</span>
+                </div>
+                <div class="about-row" data-sim-tip="Simulated data">
+                  <span class="about-key">Battery:</span>
+                  <span class="about-val">3.85 V  71%</span>
+                </div>
+              </div>
+            </div>
+            <!-- Tab 3: Radar -->
+            <div class="tab-screen sim-bg-dark" id="screen-radar">
+              <div class="screen-title">Radar Settings</div>
+              <div class="radar-content">
+                <div class="presence-row" data-sim-tip="Simulated data">
+                  <span class="presence-key">Presence:</span>
+                  <span class="presence-val off" id="radar-presence">CLEAR</span>
+                </div>
+                <div class="timeout-group">
+                  <label>Sleep timeout</label>
+                  <input type="range" class="timeout-slider" id="timeout-slider"
+                         min="30" max="600" value="60">
+                  <span class="timeout-val" id="timeout-val">60s</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+      <!-- Dot navigation -->
+      <div class="dot-nav" id="dot-nav">
+        <div class="dot active" data-tab="0"></div>
+        <div class="dot" data-tab="1"></div>
+        <div class="dot" data-tab="2"></div>
+        <div class="dot" data-tab="3"></div>
+      </div>
+    </div>
 
-      <!-- Preview of what demo will include -->
-      <div class="preview-cards">
-        <div class="glass preview-card reveal reveal-delay-1">
-          <div class="preview-card-icon">🎙️</div>
-          <h4 data-fi="Puheentunnistus" data-en="Speech recognition">Puheentunnistus</h4>
-          <p data-fi="Puhu suomea — AI-kaveri ymmärtää ja vastaa heti."
-             data-en="Speak Finnish — the AI Companion understands and replies instantly.">
-            Puhu suomea — AI-kaveri ymmärtää ja vastaa heti.
-          </p>
-        </div>
-        <div class="glass preview-card reveal reveal-delay-2">
-          <div class="preview-card-icon">💬</div>
-          <h4 data-fi="Luonteva vastaus" data-en="Natural response">Luonteva vastaus</h4>
-          <p data-fi="Vastaukset ovat ystävällisiä, selkeitä ja suomenkielisiä."
-             data-en="Responses are friendly, clear, and in Finnish.">
-            Vastaukset ovat ystävällisiä, selkeitä ja suomenkielisiä.
-          </p>
-        </div>
-        <div class="glass preview-card reveal reveal-delay-3">
-          <div class="preview-card-icon">🔊</div>
-          <h4 data-fi="Äänenvastaus" data-en="Voice reply">Äänenvastaus</h4>
-          <p data-fi="AI-kaveri puhuu takaisin selkeällä suomella. Ei tekstiä, vain puhetta."
-             data-en="The AI Companion speaks back in clear Finnish. No text, just voice.">
-            AI-kaveri puhuu takaisin selkeällä suomella. Ei tekstiä, vain puhetta.
-          </p>
-        </div>
+    <!-- Preview cards: what happens when you press the mic -->
+    <div class="preview-cards">
+      <div class="glass preview-card reveal reveal-delay-1">
+        <div class="preview-card-icon">&#127908;&#65039;</div>
+        <h4 data-fi="Puheentunnistus" data-en="Speech recognition">Puheentunnistus</h4>
+        <p data-fi="Puhu suomea — AI-kaveri ymmärtää ja vastaa heti."
+           data-en="Speak Finnish — the AI Companion understands and replies instantly.">
+          Puhu suomea — AI-kaveri ymmärtää ja vastaa heti.
+        </p>
+      </div>
+      <div class="glass preview-card reveal reveal-delay-2">
+        <div class="preview-card-icon">&#128172;</div>
+        <h4 data-fi="Luonteva vastaus" data-en="Natural response">Luonteva vastaus</h4>
+        <p data-fi="Vastaukset ovat ystävällisiä, selkeitä ja suomenkielisiä."
+           data-en="Responses are friendly, clear, and in Finnish.">
+          Vastaukset ovat ystävällisiä, selkeitä ja suomenkielisiä.
+        </p>
+      </div>
+      <div class="glass preview-card reveal reveal-delay-3">
+        <div class="preview-card-icon">&#128266;</div>
+        <h4 data-fi="Äänenvastaus" data-en="Voice reply">Äänenvastaus</h4>
+        <p data-fi="AI-kaveri puhuu takaisin selkeällä suomella. Ei tekstiä, vain puhetta."
+           data-en="The AI Companion speaks back in clear Finnish. No text, just voice.">
+          AI-kaveri puhuu takaisin selkeällä suomella. Ei tekstiä, vain puhetta.
+        </p>
       </div>
     </div>
   </div>
@@ -413,7 +756,6 @@
         <h4 data-fi="Sivut" data-en="Pages">Sivut</h4>
         <a href="index.html" data-fi="Koti" data-en="Home">Koti</a>
         <a href="demo.html" data-fi="Demo" data-en="Demo">Demo</a>
-        <a href="simulator.html" data-fi="Simulaattori" data-en="Simulator">Simulaattori</a>
         <a href="tech.html" data-fi="Tekniikka" data-en="Tech">Tekniikka</a>
       </div>
       <div class="footer-col">
@@ -422,13 +764,10 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span data-fi="© 2026 punkQ. Kaikki oikeudet pidätetään."
-            data-en="© 2026 punkQ. All rights reserved.">© 2026 punkQ. Kaikki oikeudet pidätetään.</span>
+      <span data-fi="&copy; 2026 punkQ. Kaikki oikeudet pidätetään."
+            data-en="&copy; 2026 punkQ. All rights reserved.">&copy; 2026 punkQ. Kaikki oikeudet pidätetään.</span>
       <span data-fi="Tehty rakkaudella perheiden puolesta"
             data-en="Made with love for families">Tehty rakkaudella perheiden puolesta</span>
-      <!-- Auto-updates per deploy via the Last-Modified header GitHub Pages
-           serves with this file. Lets us verify "is my browser on the new
-           version?" at a glance without a manual version bump. -->
       <span id="build-stamp" class="build-stamp"></span>
     </div>
   </div>
@@ -447,15 +786,6 @@
               onclick="closeDemoModal()"
               aria-label="Sulje" title="Sulje">&times;</button>
     </div>
-    <!-- Permissions Policy: explicitly delegate microphone+autoplay to the
-         Azure origin. The shorter `allow="microphone; autoplay"` form uses
-         the default `'src'` allowlist, which mobile Chrome silently fails
-         to re-evaluate when the iframe is initialized with src=about:blank
-         and then navigated to the Azure URL on click — symptom is no
-         permission prompt and a never-resolving getUserMedia promise.
-         If the Azure subdomain ever changes, update this attribute, the
-         AICOMPANION_ORIGIN constant in the script below, and the
-         <link rel="preconnect"> tag in <head>. -->
     <iframe class="demo-modal-frame" id="demo-iframe"
             src="about:blank"
             allow="microphone https://aicompanion.orangecliff-3a4f1285.westeurope.azurecontainerapps.io; autoplay https://aicompanion.orangecliff-3a4f1285.westeurope.azurecontainerapps.io"
@@ -465,67 +795,282 @@
 </div>
 
 <script>
-  // URL of the deployed live demo. Update if the Azure subdomain ever changes.
-  const AICOMPANION_ORIGIN =
-    'https://aicompanion.orangecliff-3a4f1285.westeurope.azurecontainerapps.io';
-  const AICOMPANION_DEMO_URL = AICOMPANION_ORIGIN + '/login';
+'use strict';
 
-  // Pre-warm the Azure Container App on page open: it scales to zero, so
-  // the first hit takes ~10s for cold start. Firing /health while the
-  // visitor reads the page means the container is warm by the time they
-  // click the mic. no-cors because /health is cross-origin and we don't
-  // need to read the response — just kick the cold start.
-  try {
-    fetch(AICOMPANION_ORIGIN + '/health',
-          {mode: 'no-cors', cache: 'no-store', credentials: 'omit'});
-  } catch (_) { /* best-effort prewarm; never block page load */ }
+// ===== Azure prewarm =====
+const AICOMPANION_ORIGIN =
+  'https://aicompanion.orangecliff-3a4f1285.westeurope.azurecontainerapps.io';
+const AICOMPANION_DEMO_URL = AICOMPANION_ORIGIN + '/login';
+try {
+  fetch(AICOMPANION_ORIGIN + '/health',
+        {mode: 'no-cors', cache: 'no-store', credentials: 'omit'});
+} catch (_) { /* best-effort prewarm */ }
 
-  function openDemoModal() {
-    const modal = document.getElementById('demo-modal');
-    const iframe = document.getElementById('demo-iframe');
-    iframe.src = AICOMPANION_DEMO_URL;
-    modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
-    document.addEventListener('keydown', demoModalEscHandler);
+// ===== Clock (live browser time) =====
+function updateClock() {
+  const el = document.getElementById('w-clock');
+  if (!el) return;
+  const now = new Date();
+  el.textContent = now.getHours().toString().padStart(2,'0') + ':' +
+                   now.getMinutes().toString().padStart(2,'0');
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ===== Preferences =====
+function loadPref(key, def) {
+  const v = localStorage.getItem(key);
+  return v !== null ? v : def;
+}
+function savePref(key, val) {
+  localStorage.setItem(key, val);
+}
+
+// ===== Volume =====
+const volSlider = document.getElementById('vol-slider');
+const speakerIcon = document.getElementById('speaker-icon');
+
+volSlider.value = loadPref('sim.volume', '90');
+updateMuteIcon();
+
+volSlider.addEventListener('input', () => {
+  savePref('sim.volume', volSlider.value);
+  updateMuteIcon();
+});
+
+function updateMuteIcon() {
+  if (parseInt(volSlider.value) === 0) {
+    speakerIcon.classList.add('muted');
+  } else {
+    speakerIcon.classList.remove('muted');
   }
-  function closeDemoModal() {
-    const modal = document.getElementById('demo-modal');
-    const iframe = document.getElementById('demo-iframe');
-    modal.classList.remove('show');
-    iframe.src = 'about:blank';  // stop any in-flight audio playback
-    document.body.style.overflow = '';
-    document.removeEventListener('keydown', demoModalEscHandler);
-  }
-  function demoModalEscHandler(e) {
-    if (e.key === 'Escape') closeDemoModal();
+}
+
+// ===== Settings: widget toggles =====
+document.querySelectorAll('.setting-row[data-toggle]').forEach(row => {
+  const key = row.dataset.toggle;
+  const targetId = row.dataset.target;
+  const toggle = row.querySelector('.toggle');
+  const saved = loadPref(key, 'true');
+  const isOn = saved === 'true';
+
+  if (!isOn) toggle.classList.remove('on');
+  if (targetId) {
+    const target = document.getElementById(targetId);
+    if (target) target.style.display = isOn ? '' : 'none';
   }
 
-  // Surface the file's Last-Modified time as a human-readable build stamp
-  // in the footer. GitHub Pages serves a Last-Modified header that tracks
-  // the deploy. Lets a tester verify "is my browser actually on the latest
-  // demo.html?" without view-source. No build step, no manual bump.
-  // Rendered in Europe/Helsinki time; the EET/EEST label auto-toggles per
-  // DST via the offset Intl reports for the file's mtime.
-  (function stampBuild() {
-    const el = document.getElementById('build-stamp');
-    if (!el) return;
-    const d = new Date(document.lastModified);
-    if (isNaN(d.getTime())) return;
-    const parts = new Intl.DateTimeFormat('sv-SE', {
-      timeZone: 'Europe/Helsinki',
-      year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit',
-      hour12: false
-    }).formatToParts(d);
-    const v = type => parts.find(p => p.type === type).value;
-    const dateTime = `${v('year')}-${v('month')}-${v('day')} ${v('hour')}:${v('minute')}`;
-    const offset = new Intl.DateTimeFormat('en', {
-      timeZone: 'Europe/Helsinki',
-      timeZoneName: 'longOffset'
-    }).formatToParts(d).find(p => p.type === 'timeZoneName').value;
-    const tz = offset === 'GMT+03:00' ? 'EEST' : 'EET';
-    el.textContent = `build ${dateTime} ${tz}`;
-  })();
+  function flip() {
+    const on = toggle.classList.toggle('on');
+    savePref(key, on ? 'true' : 'false');
+    if (targetId) {
+      const target = document.getElementById(targetId);
+      if (target) target.style.display = on ? '' : 'none';
+    }
+    updateWidgetBar();
+  }
+  row.addEventListener('click', (e) => {
+    if (e.target.closest('.toggle')) { flip(); return; }
+    flip();
+  });
+});
+
+function updateWidgetBar() {
+  const bar = document.getElementById('widget-bar');
+  if (!bar) return;
+  const ids = ['w-clock','w-temp','w-humid','w-wifi','w-batt'];
+  const anyVisible = ids.some(id => {
+    const el = document.getElementById(id);
+    return el && el.style.display !== 'none';
+  });
+  bar.style.display = anyVisible ? '' : 'none';
+}
+updateWidgetBar();
+
+// Invert Touch toggle (visual only)
+const invertToggle = document.getElementById('invert-touch-toggle');
+if (invertToggle) {
+  invertToggle.addEventListener('click', () => {
+    invertToggle.classList.toggle('on');
+  });
+}
+
+// ===== Settings: Reset WiFi button =====
+const resetBtn = document.getElementById('reset-wifi-btn');
+let resetArmed = false;
+let resetTimer = null;
+resetBtn.addEventListener('click', () => {
+  if (!resetArmed) {
+    resetArmed = true;
+    resetBtn.textContent = 'Tap again to confirm';
+    resetBtn.classList.add('armed');
+    resetTimer = setTimeout(() => {
+      resetArmed = false;
+      resetBtn.textContent = 'Reset WiFi';
+      resetBtn.classList.remove('armed');
+    }, 3000);
+  } else {
+    clearTimeout(resetTimer);
+    resetArmed = false;
+    resetBtn.textContent = 'Reset WiFi';
+    resetBtn.classList.remove('armed');
+  }
+});
+
+// ===== Settings: Brightness slider =====
+const brightSlider = document.getElementById('brightness-slider');
+brightSlider.value = loadPref('sim.brightness', '60');
+brightSlider.addEventListener('input', () => {
+  savePref('sim.brightness', brightSlider.value);
+});
+
+// ===== About: Uptime =====
+const uptimeStart = Date.now();
+function updateUptime() {
+  const el = document.getElementById('about-uptime');
+  if (!el) return;
+  const s = Math.floor((Date.now() - uptimeStart) / 1000);
+  const h = Math.floor(s / 3600).toString().padStart(2,'0');
+  const m = Math.floor((s % 3600) / 60).toString().padStart(2,'0');
+  const sec = (s % 60).toString().padStart(2,'0');
+  el.textContent = h + ':' + m + ':' + sec;
+}
+setInterval(updateUptime, 1000);
+
+// ===== Radar: presence simulation =====
+const presenceEl = document.getElementById('radar-presence');
+function randomPresence() {
+  const detected = Math.random() > 0.5;
+  presenceEl.textContent = detected ? 'DETECTED' : 'CLEAR';
+  presenceEl.className = 'presence-val ' + (detected ? 'on' : 'off');
+  const next = 15000 + Math.random() * 15000;
+  setTimeout(randomPresence, next);
+}
+setTimeout(randomPresence, 15000 + Math.random() * 15000);
+
+// ===== Radar: sleep timeout slider =====
+const timeoutSlider = document.getElementById('timeout-slider');
+const timeoutVal = document.getElementById('timeout-val');
+timeoutSlider.value = loadPref('sim.sleep_timeout', '60');
+timeoutVal.textContent = timeoutSlider.value + 's';
+
+timeoutSlider.addEventListener('input', () => {
+  timeoutVal.textContent = timeoutSlider.value + 's';
+  savePref('sim.sleep_timeout', timeoutSlider.value);
+});
+
+// ===== Tab navigation =====
+let currentTab = 0;
+const totalTabs = 4;
+const slider = document.getElementById('tab-slider');
+const dots = document.querySelectorAll('#dot-nav .dot');
+
+function goToTab(index) {
+  if (index < 0 || index >= totalTabs) return;
+  currentTab = index;
+  slider.style.transform = 'translateX(-' + (index * 25) + '%)';
+  dots.forEach((d, i) => d.classList.toggle('active', i === index));
+}
+
+dots.forEach(d => {
+  d.addEventListener('click', () => goToTab(parseInt(d.dataset.tab)));
+});
+
+// Swipe handling (touch + mouse)
+const screen = document.getElementById('device-screen');
+let startX = 0, startY = 0, dragging = false;
+
+function onStart(x, y) { startX = x; startY = y; dragging = true; }
+function onEnd(x) {
+  if (!dragging) return;
+  dragging = false;
+  const dx = x - startX;
+  if (Math.abs(dx) > 40) {
+    if (dx < 0) goToTab(currentTab + 1);
+    else goToTab(currentTab - 1);
+  }
+}
+
+screen.addEventListener('touchstart', e => {
+  const t = e.touches[0];
+  onStart(t.clientX, t.clientY);
+}, { passive: true });
+screen.addEventListener('touchend', e => {
+  onEnd(e.changedTouches[0].clientX);
+});
+screen.addEventListener('mousedown', e => {
+  if (e.target.closest('input, button, .toggle, .mic-btn')) return;
+  onStart(e.clientX, e.clientY);
+});
+screen.addEventListener('mouseup', e => onEnd(e.clientX));
+
+// ===== State management =====
+const homeScreen = document.getElementById('screen-home');
+const stateLabel = document.getElementById('state-label');
+const pulseDot = document.getElementById('pulse-dot');
+const thinkingDots = document.getElementById('thinking-dots');
+
+const stateColors = {
+  idle: '#1B5E20', listening: '#039BE5',
+  thinking: '#FBC02D', speaking: '#7B1FA2',
+  error: '#D32F2F'
+};
+
+function setState(state) {
+  homeScreen.style.backgroundColor = stateColors[state] || stateColors.idle;
+  stateLabel.textContent = state.charAt(0).toUpperCase() + state.slice(1);
+  pulseDot.style.display = state === 'idle' ? '' : 'none';
+  thinkingDots.style.display = state === 'thinking' ? 'flex' : 'none';
+}
+
+// ===== Demo modal =====
+function openDemoModal() {
+  const modal = document.getElementById('demo-modal');
+  const iframe = document.getElementById('demo-iframe');
+  iframe.src = AICOMPANION_DEMO_URL;
+  modal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  setState('listening');
+  document.addEventListener('keydown', demoModalEscHandler);
+}
+function closeDemoModal() {
+  const modal = document.getElementById('demo-modal');
+  const iframe = document.getElementById('demo-iframe');
+  modal.classList.remove('show');
+  iframe.src = 'about:blank';
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', demoModalEscHandler);
+  setState('speaking');
+  setTimeout(() => setState('idle'), 1500);
+}
+function demoModalEscHandler(e) {
+  if (e.key === 'Escape') closeDemoModal();
+}
+
+// Mic button opens modal
+document.getElementById('mic-btn').addEventListener('click', openDemoModal);
+
+// ===== Build stamp =====
+(function stampBuild() {
+  const el = document.getElementById('build-stamp');
+  if (!el) return;
+  const d = new Date(document.lastModified);
+  if (isNaN(d.getTime())) return;
+  const parts = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Helsinki',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit',
+    hour12: false
+  }).formatToParts(d);
+  const v = type => parts.find(p => p.type === type).value;
+  const dateTime = `${v('year')}-${v('month')}-${v('day')} ${v('hour')}:${v('minute')}`;
+  const offset = new Intl.DateTimeFormat('en', {
+    timeZone: 'Europe/Helsinki',
+    timeZoneName: 'longOffset'
+  }).formatToParts(d).find(p => p.type === 'timeZoneName').value;
+  const tz = offset === 'GMT+03:00' ? 'EEST' : 'EET';
+  el.textContent = `build ${dateTime} ${tz}`;
+})();
 </script>
 
 <script src="assets/js/main.js"></script>
