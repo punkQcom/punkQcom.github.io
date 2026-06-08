@@ -3,18 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1778348014';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1778348014';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1778348014';
+import { shinProbabilities } from './shin.js?v=1780946420';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1780946420';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1780946420';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1778348014';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1780946420';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings
-} from './ui.js?v=1778348014';
+} from './ui.js?v=1780946420';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -275,9 +275,14 @@ function populateBookmakerDropdown(data) {
 
 // ── Selector logic ────────────────────────────────────���─────────────
 
+const SPORT_LABELS = { football: 'Football', ice_hockey: 'Ice Hockey' };
+
 function populateSportDropdown() {
   const select = document.getElementById('sport-select');
-  select.innerHTML = '<option value="football">Football</option>';
+  const sports = [...new Set((currentMeta?.leagues || []).map(l => l.sport))];
+  select.innerHTML = sports.map(s =>
+    `<option value="${s}">${SPORT_LABELS[s] || s}</option>`
+  ).join('');
 }
 
 function populateLeagueDropdown(sport) {
@@ -1442,7 +1447,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // Sport dropdown
-  populateSportDropdown();
   document.getElementById('sport-select').addEventListener('change', (e) => {
     populateLeagueDropdown(e.target.value);
   });
@@ -1461,5 +1465,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateLastUpdateDisplay(currentMeta.lastUpdate);
 
   // Populate selectors and load first league
-  populateLeagueDropdown('football');
+  populateSportDropdown();
+  populateLeagueDropdown(document.getElementById('sport-select').value);
 });
