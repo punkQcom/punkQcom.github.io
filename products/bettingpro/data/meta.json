@@ -11,6 +11,15 @@
       "tournaments": null
     },
     {
+      "id": "liiga",
+      "name": "Liiga",
+      "sport": "ice_hockey",
+      "country": "Finland",
+      "season": 2027,
+      "isInternational": false,
+      "tournaments": null
+    },
+    {
       "id": "mens_international",
       "name": "Men's International",
       "sport": "football",
