@@ -1,5 +1,5 @@
 {
-  "lastUpdate": "2026-06-10T08:12:53.924Z",
+  "lastUpdate": "2026-06-10T13:06:33.140Z",
   "leagues": [
     {
       "id": "veikkausliiga",
@@ -7,6 +7,15 @@
       "sport": "football",
       "country": "Finland",
       "season": 2026,
+      "isInternational": false,
+      "tournaments": null
+    },
+    {
+      "id": "liiga",
+      "name": "Liiga",
+      "sport": "ice_hockey",
+      "country": "Finland",
+      "season": 2027,
       "isInternational": false,
       "tournaments": null
     },
@@ -232,6 +241,7 @@
     "veikkausliiga": [
       2025
     ],
+    "liiga": [],
     "mens_international": []
   }
 }
