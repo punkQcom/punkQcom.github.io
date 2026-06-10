@@ -1636,11 +1636,11 @@ const helpContent = {
     title: 'Standings',
     body: `
       <p><strong>Standings</strong> shows the league table calculated from finished match results. Teams are ranked by points (3 for a win, 1 for a draw), then goal difference, then goals scored.</p>
-      <p>The table respects the active tournament filter, so for international leagues you can view standings for a specific competition (e.g. World Cup qualifiers only).</p>
+      <p>The table respects the active tournament filter. For group-stage tournaments like the World Cup, standings are shown as separate group tables (Group A, Group B, …) automatically.</p>
       <hr>
       <p><strong>Suomeksi:</strong></p>
       <p><strong>Sarjataulukko</strong> näyttää sarjatilanteen pelattujen otteluiden perusteella. Joukkueet järjestetään pisteiden mukaan (3 voitosta, 1 tasapelistä), sitten maalieron ja tehtyjen maalien perusteella.</p>
-      <p>Taulukko noudattaa aktiivista turnaussuodatinta, joten kansainvälisissä sarjoissa voit tarkastella tietyn kilpailun sarjatilannetta.</p>
+      <p>Taulukko noudattaa aktiivista turnaussuodatinta. Lohkovaiheturnauksissa, kuten MM-kisoissa, sarjatilanne näytetään automaattisesti erillisinä lohkotaulukoina (Lohko A, Lohko B, …).</p>
     `,
   },
 
@@ -1845,32 +1845,76 @@ export function renderStandings(data, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  if (!data || data.length === 0) {
-    container.innerHTML = '<p class="muted">No match data available</p>';
+  // Group stage mode (WC-style): data.groupedRows is a map of groupKey -> rows[]
+  if (data && data.groupedRows) {
+    const groups = data.groupedRows;
+    if (Object.keys(groups).length === 0) {
+      container.innerHTML = '<p class="muted">No match data available</p>';
+      return;
+    }
+    let html = '<div class="standings-groups">';
+    for (const [key, rows] of Object.entries(groups)) {
+      const label = key.replace('GROUP_', 'Group ');
+      html += `<div class="standings-group"><h4 class="standings-group-header">${esc(label)}</h4>`;
+      html += buildStandingsTable(rows, data.sport);
+      html += '</div>';
+    }
+    html += '</div>';
+    container.innerHTML = html;
     return;
   }
 
-  let html = '<table class="results-table standings-table">';
-  html += '<thead><tr><th title="Rank">#</th><th>Team</th><th title="Played">P</th><th title="Won">W</th><th title="Drawn">D</th><th title="Lost">L</th><th title="Goals For">GF</th><th title="Goals Against">GA</th><th title="Goal Difference">GD</th><th title="Points">Pts</th></tr></thead>';
-  html += '<tbody>';
+  // Flat standings mode (club leagues, qualifiers)
+  const rows = Array.isArray(data) ? data : (data?.rows || []);
+  const sport = Array.isArray(data) ? 'football' : (data?.sport || 'football');
+  if (!rows || rows.length === 0) {
+    container.innerHTML = '<p class="muted">No match data available</p>';
+    return;
+  }
+  container.innerHTML = buildStandingsTable(rows, sport);
+}
 
-  for (const row of data) {
+function buildStandingsTable(rows, sport) {
+  const isHockey = sport === 'ice_hockey';
+  let html = '<table class="results-table standings-table">';
+  if (isHockey) {
+    html += '<thead><tr><th title="Rank">#</th><th>Team</th><th title="Played">P</th><th title="Won">W</th><th title="OT Win">OTW</th><th title="OT Loss">OTL</th><th title="Lost">L</th><th title="Goals For">GF</th><th title="Goals Against">GA</th><th title="Goal Difference">GD</th><th title="Points">Pts</th></tr></thead>';
+  } else {
+    html += '<thead><tr><th title="Rank">#</th><th>Team</th><th title="Played">P</th><th title="Won">W</th><th title="Drawn">D</th><th title="Lost">L</th><th title="Goals For">GF</th><th title="Goals Against">GA</th><th title="Goal Difference">GD</th><th title="Points">Pts</th></tr></thead>';
+  }
+  html += '<tbody>';
+  for (const row of rows) {
     const gdClass = row.goalDiff > 0 ? 'value-positive' : row.goalDiff < 0 ? 'value-negative' : '';
     const gdText = row.goalDiff > 0 ? `+${row.goalDiff}` : String(row.goalDiff);
-    html += `<tr${row.rank === 1 ? ' class="standings-leader"' : ''}>
-      <td>${row.rank}</td>
-      <td class="standings-team">${esc(row.team)}</td>
-      <td>${row.played}</td>
-      <td>${row.won}</td>
-      <td>${row.drawn}</td>
-      <td>${row.lost}</td>
-      <td>${row.goalsFor}</td>
-      <td>${row.goalsAgainst}</td>
-      <td class="${gdClass}">${gdText}</td>
-      <td class="standings-pts">${row.points}</td>
-    </tr>`;
+    if (isHockey) {
+      html += `<tr${row.rank === 1 ? ' class="standings-leader"' : ''}>
+        <td>${row.rank}</td>
+        <td class="standings-team">${esc(row.team)}</td>
+        <td>${row.played}</td>
+        <td>${row.won}</td>
+        <td>${row.otWon || 0}</td>
+        <td>${row.otLost || 0}</td>
+        <td>${row.lost}</td>
+        <td>${row.goalsFor}</td>
+        <td>${row.goalsAgainst}</td>
+        <td class="${gdClass}">${gdText}</td>
+        <td class="standings-pts">${row.points}</td>
+      </tr>`;
+    } else {
+      html += `<tr${row.rank === 1 ? ' class="standings-leader"' : ''}>
+        <td>${row.rank}</td>
+        <td class="standings-team">${esc(row.team)}</td>
+        <td>${row.played}</td>
+        <td>${row.won}</td>
+        <td>${row.drawn}</td>
+        <td>${row.lost}</td>
+        <td>${row.goalsFor}</td>
+        <td>${row.goalsAgainst}</td>
+        <td class="${gdClass}">${gdText}</td>
+        <td class="standings-pts">${row.points}</td>
+      </tr>`;
+    }
   }
-
   html += '</tbody></table>';
-  container.innerHTML = html;
+  return html;
 }
