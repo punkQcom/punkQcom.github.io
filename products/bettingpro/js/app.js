@@ -3,18 +3,19 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1780946420';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1780946420';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1780946420';
+import { shinProbabilities } from './shin.js?v=1781097002';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1781097002';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1781097002';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1780946420';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1781097002';
+import { getSportDefaults } from './sport-config.js?v=1781097002';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings
-} from './ui.js?v=1780946420';
+} from './ui.js?v=1781097002';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -354,6 +355,23 @@ function updatePriorWeightDefault() {
 }
 
 /**
+ * Set Rho (Dixon-Coles) slider default based on sport.
+ */
+function updateRhoDefault() {
+  const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
+  const sd = getSportDefaults(leagueCfg?.sport);
+  const slider = document.getElementById('rho-slider');
+  const label = document.getElementById('rho-value');
+  if (!slider) return;
+  slider.value = sd.rho;
+  if (label) label.textContent = String(sd.rho);
+  const fp = document.getElementById('fp-rho-slider');
+  const fpLabel = document.getElementById('fp-rho-value');
+  if (fp) fp.value = sd.rho;
+  if (fpLabel) fpLabel.textContent = String(sd.rho);
+}
+
+/**
  * Regress Elo ratings toward the mean (1500) between seasons.
  * factor=0 means no regression (keep as-is), factor=1 means reset to 1500.
  */
@@ -461,6 +479,7 @@ async function loadAndShowLeague(leagueId, season) {
   updateMarketTrustDefault(matchCount);
   updatePrevSeasonDefault(matchCount);
   updatePriorWeightDefault();
+  updateRhoDefault();
 
   // Tournament filter: smart default picks wc26 if any WC26 match is ±30 days,
   // otherwise 'all'. Hidden entirely for leagues with no tournaments.
@@ -537,38 +556,74 @@ function activeTournamentLabel() {
 }
 
 /** Build standings table from finished matches. */
-function buildStandings(matches) {
+function buildStandings(matches, sport) {
+  const sd = getSportDefaults(sport || 'football');
+  const isHockey = sport === 'ice_hockey';
   const finished = filterByTournament(
     (matches || []).filter(m => m.homeGoals != null && m.awayGoals != null)
   );
-  const teams = {};
-  for (const m of finished) {
-    for (const name of [m.homeTeam, m.awayTeam]) {
-      if (!teams[name]) teams[name] = { team: name, played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0 };
-    }
-    const h = teams[m.homeTeam];
-    const a = teams[m.awayTeam];
+
+  const initTeam = name => ({ team: name, played: 0, won: 0, otWon: 0, otLost: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0 });
+  const accumulate = (teams, m) => {
+    const h = teams[m.homeTeam], a = teams[m.awayTeam];
     h.played++; a.played++;
     h.goalsFor += m.homeGoals; h.goalsAgainst += m.awayGoals;
     a.goalsFor += m.awayGoals; a.goalsAgainst += m.homeGoals;
-    if (m.homeGoals > m.awayGoals) { h.won++; a.lost++; }
-    else if (m.homeGoals < m.awayGoals) { a.won++; h.lost++; }
-    else { h.drawn++; a.drawn++; }
+    if (m.homeGoals > m.awayGoals) {
+      if (isHockey && m.overtime) { h.otWon++; a.otLost++; } else { h.won++; a.lost++; }
+    } else if (m.homeGoals < m.awayGoals) {
+      if (isHockey && m.overtime) { a.otWon++; h.otLost++; } else { a.won++; h.lost++; }
+    } else {
+      h.drawn++; a.drawn++;
+    }
+  };
+  const toRows = teams => {
+    const rows = Object.values(teams).map(t => {
+      const pts = t.won * sd.pointsForWin
+        + t.otWon * (sd.pointsForOTWin ?? 0)
+        + t.otLost * (sd.pointsForOTLoss ?? 0)
+        + t.drawn * (sd.pointsForDraw ?? 0);
+      return { ...t, goalDiff: t.goalsFor - t.goalsAgainst, points: pts };
+    });
+    rows.sort((a, b) => b.points - a.points || b.goalDiff - a.goalDiff || b.goalsFor - a.goalsFor);
+    rows.forEach((r, i) => r.rank = i + 1);
+    return rows;
+  };
+
+  // WC-style group stage: split into per-group tables (matches carry a group field)
+  const groupStageMatches = finished.filter(m => m.group);
+  if (groupStageMatches.length > 0) {
+    const buckets = {};
+    for (const m of groupStageMatches) {
+      if (!buckets[m.group]) buckets[m.group] = {};
+      if (!buckets[m.group][m.homeTeam]) buckets[m.group][m.homeTeam] = initTeam(m.homeTeam);
+      if (!buckets[m.group][m.awayTeam]) buckets[m.group][m.awayTeam] = initTeam(m.awayTeam);
+      accumulate(buckets[m.group], m);
+    }
+    const groupedRows = Object.fromEntries(
+      Object.entries(buckets)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, teams]) => [key, toRows(teams)])
+    );
+    return { rows: [], groupedRows, sport: sport || 'football' };
   }
-  const rows = Object.values(teams).map(t => ({
-    ...t,
-    goalDiff: t.goalsFor - t.goalsAgainst,
-    points: t.won * 3 + t.drawn,
-  }));
-  rows.sort((a, b) => b.points - a.points || b.goalDiff - a.goalDiff || b.goalsFor - a.goalsFor);
-  rows.forEach((r, i) => r.rank = i + 1);
-  return rows;
+
+  // Regular flat standings (club leagues, qualifiers, etc.)
+  const teams = {};
+  for (const m of finished) {
+    if (!teams[m.homeTeam]) teams[m.homeTeam] = initTeam(m.homeTeam);
+    if (!teams[m.awayTeam]) teams[m.awayTeam] = initTeam(m.awayTeam);
+    accumulate(teams, m);
+  }
+  return { rows: toRows(teams), sport: sport || 'football' };
 }
 
 /** Render standings with tournament filter applied. */
 function renderStandingsFiltered() {
   const matches = currentLeagueData?.matches || [];
-  const data = buildStandings(matches);
+  const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
+  const sport = leagueCfg?.sport || 'football';
+  const data = buildStandings(matches, sport);
   const el = document.getElementById('standings-container');
   if (!el) return;
   const banner = currentTournamentFilter !== 'all'
@@ -1122,12 +1177,12 @@ function renderAnalysisFromApi(apiResponse, context) {
   renderScoreMatrix(matrix, homeName, awayName, score, outcomes);
   renderMatchOutcome(outcomes, bookProbs1x2, homeName, awayName);
 
-  // Over/Under
-  const ouLines = [
-    { line: 1.5, key: '1.5' },
-    { line: 2.5, key: '2.5' },
-    { line: 3.5, key: '3.5' },
-  ];
+  // Over/Under — use sport-specific lines
+  const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
+  const sportDefaults = getSportDefaults(leagueCfg?.sport);
+  const ouLines = sportDefaults.ouLines.map(line => ({
+    line, key: String(line),
+  }));
   const ouResults = [];
 
   for (const { line, key } of ouLines) {
@@ -1248,15 +1303,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateMarketTrustDefault(matchCount);
     updatePrevSeasonDefault(matchCount);
 
-    // Reset rho + form-boost to HTML defaults
+    // Reset rho + form-boost to sport-appropriate defaults
+    const resetLeagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
+    const resetSportDefaults = getSportDefaults(resetLeagueCfg?.sport);
     const rhoSlider = document.getElementById('rho-slider');
     const rhoLabel = document.getElementById('rho-value');
     const fpRho = document.getElementById('fp-rho-slider');
     const fpRhoLabel = document.getElementById('fp-rho-value');
-    rhoSlider.value = -0.13;
-    if (rhoLabel) rhoLabel.textContent = '-0.13';
-    if (fpRho) fpRho.value = -0.13;
-    if (fpRhoLabel) fpRhoLabel.textContent = '-0.13';
+    rhoSlider.value = resetSportDefaults.rho;
+    if (rhoLabel) rhoLabel.textContent = String(resetSportDefaults.rho);
+    if (fpRho) fpRho.value = resetSportDefaults.rho;
+    if (fpRhoLabel) fpRhoLabel.textContent = String(resetSportDefaults.rho);
 
     const fbSlider = document.getElementById('form-boost-slider');
     const fbLabel = document.getElementById('form-boost-value');
