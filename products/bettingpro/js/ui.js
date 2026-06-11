@@ -1849,7 +1849,7 @@ export function renderStandings(data, containerId) {
   if (data && data.groupedRows) {
     const groups = data.groupedRows;
     if (Object.keys(groups).length === 0) {
-      container.innerHTML = '<p class="muted">No match data available</p>';
+      container.innerHTML = '<p class="muted">Group stage hasn\'t started yet</p>';
       return;
     }
     let html = '<div class="standings-groups">';

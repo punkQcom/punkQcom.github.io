@@ -3,19 +3,19 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1781097002';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1781097002';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1781097002';
+import { shinProbabilities } from './shin.js?v=1781169926';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1781169926';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1781169926';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1781097002';
-import { getSportDefaults } from './sport-config.js?v=1781097002';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1781169926';
+import { getSportDefaults } from './sport-config.js?v=1781169926';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings
-} from './ui.js?v=1781097002';
+} from './ui.js?v=1781169926';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -556,7 +556,7 @@ function activeTournamentLabel() {
 }
 
 /** Build standings table from finished matches. */
-function buildStandings(matches, sport) {
+function buildStandings(matches, sport, upcoming = []) {
   const sd = getSportDefaults(sport || 'football');
   const isHockey = sport === 'ice_hockey';
   const finished = filterByTournament(
@@ -590,9 +590,16 @@ function buildStandings(matches, sport) {
     return rows;
   };
 
-  // WC-style group stage: split into per-group tables (matches carry a group field)
-  const groupStageMatches = finished.filter(m => m.group);
-  if (groupStageMatches.length > 0) {
+  // Detect group-stage tournament: check finished AND upcoming for group field.
+  // This prevents falling back to flat standings when no results exist yet.
+  const filteredUpcoming = filterByTournament(upcoming || []);
+  const isGroupTournament = finished.some(m => m.group) || filteredUpcoming.some(m => m.group);
+
+  if (isGroupTournament) {
+    const groupStageMatches = finished.filter(m => m.group);
+    if (groupStageMatches.length === 0) {
+      return { rows: [], groupedRows: {}, sport: sport || 'football' };
+    }
     const buckets = {};
     for (const m of groupStageMatches) {
       if (!buckets[m.group]) buckets[m.group] = {};
@@ -621,9 +628,10 @@ function buildStandings(matches, sport) {
 /** Render standings with tournament filter applied. */
 function renderStandingsFiltered() {
   const matches = currentLeagueData?.matches || [];
+  const upcoming = currentLeagueData?.upcoming || [];
   const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
   const sport = leagueCfg?.sport || 'football';
-  const data = buildStandings(matches, sport);
+  const data = buildStandings(matches, sport, upcoming);
   const el = document.getElementById('standings-container');
   if (!el) return;
   const banner = currentTournamentFilter !== 'all'
