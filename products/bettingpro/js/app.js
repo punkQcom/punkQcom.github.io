@@ -3,19 +3,19 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1781169926';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1781169926';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1781169926';
+import { shinProbabilities } from './shin.js?v=1781637337';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1781637337';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1781637337';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1781169926';
-import { getSportDefaults } from './sport-config.js?v=1781169926';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1781637337';
+import { getSportDefaults } from './sport-config.js?v=1781637337';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings
-} from './ui.js?v=1781169926';
+} from './ui.js?v=1781637337';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -661,7 +661,17 @@ function renderTrackerFiltered() {
   const tracker = precomputedData.tracker;
   let data = tracker;
   if (currentTournamentFilter !== 'all') {
-    const records = (tracker.records || []).filter(r => r.tournamentId === currentTournamentFilter);
+    // Find the earliest date in the current season's finished matches for this tournament.
+    // This prevents tracker records from previous tournament cycles (e.g. WC 2022 in WC26 data)
+    // from appearing when the filter is active.
+    const seasonMatches = (currentLeagueData?.matches || [])
+      .filter(m => m.tournamentId === currentTournamentFilter);
+    const minDate = seasonMatches.length > 0
+      ? seasonMatches.reduce((min, m) => (m.date < min ? m.date : min), seasonMatches[0].date)
+      : null;
+    const records = (tracker.records || []).filter(r =>
+      r.tournamentId === currentTournamentFilter && (!minDate || r.date >= minDate)
+    );
     data = { ...tracker, records };
   }
   const banner = currentTournamentFilter !== 'all'
