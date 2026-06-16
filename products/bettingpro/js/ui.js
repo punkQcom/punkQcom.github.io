@@ -1717,25 +1717,31 @@ export function renderTracker(trackerData, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  const { records, summary } = trackerData;
+  const { records } = trackerData;
 
   if (records.length === 0) {
     container.innerHTML = '<p class="muted">No finished matches to track yet</p>';
     return;
   }
 
+  // Recompute summary from (possibly filtered) records
+  const correct1x2 = records.filter(r => r.is1x2Correct).length;
+  const correctScore = records.filter(r => r.isScoreCorrect).length;
+  const total = records.length;
+  const avgBrierScore = records.reduce((s, r) => s + (r.brierScore ?? 0), 0) / total;
+
   // Summary cards
   let html = '<div class="tracker-summary">';
   html += `<div class="tracker-stat">
-    <div class="tracker-stat-value">${(summary.accuracy1x2 * 100).toFixed(1)}%</div>
-    <div class="tracker-stat-label">1X2 Accuracy (${summary.correct1x2}/${summary.total})</div>
+    <div class="tracker-stat-value">${((correct1x2 / total) * 100).toFixed(1)}%</div>
+    <div class="tracker-stat-label">1X2 Accuracy (${correct1x2}/${total})</div>
   </div>`;
   html += `<div class="tracker-stat">
-    <div class="tracker-stat-value">${(summary.accuracyScore * 100).toFixed(1)}%</div>
-    <div class="tracker-stat-label">Exact Score (${summary.correctScore}/${summary.total})</div>
+    <div class="tracker-stat-value">${((correctScore / total) * 100).toFixed(1)}%</div>
+    <div class="tracker-stat-label">Exact Score (${correctScore}/${total})</div>
   </div>`;
   html += `<div class="tracker-stat">
-    <div class="tracker-stat-value">${summary.avgBrierScore.toFixed(3)}</div>
+    <div class="tracker-stat-value">${avgBrierScore.toFixed(3)}</div>
     <div class="tracker-stat-label">Avg Brier Score</div>
   </div>`;
   html += '</div>';
