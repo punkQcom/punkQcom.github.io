@@ -3,19 +3,19 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1781637337';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1781637337';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1781637337';
+import { shinProbabilities } from './shin.js?v=1781639627';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1781639627';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1781639627';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1781637337';
-import { getSportDefaults } from './sport-config.js?v=1781637337';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1781639627';
+import { getSportDefaults } from './sport-config.js?v=1781639627';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings
-} from './ui.js?v=1781637337';
+} from './ui.js?v=1781639627';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -661,17 +661,17 @@ function renderTrackerFiltered() {
   const tracker = precomputedData.tracker;
   let data = tracker;
   if (currentTournamentFilter !== 'all') {
-    // Find the earliest date in the current season's finished matches for this tournament.
-    // This prevents tracker records from previous tournament cycles (e.g. WC 2022 in WC26 data)
-    // from appearing when the filter is active.
-    const seasonMatches = (currentLeagueData?.matches || [])
-      .filter(m => m.tournamentId === currentTournamentFilter);
-    const minDate = seasonMatches.length > 0
-      ? seasonMatches.reduce((min, m) => (m.date < min ? m.date : min), seasonMatches[0].date)
-      : null;
-    const records = (tracker.records || []).filter(r =>
-      r.tournamentId === currentTournamentFilter && (!minDate || r.date >= minDate)
-    );
+    // For WC26, also include qualifier records since they're part of the same cycle.
+    const relatedIds = currentTournamentFilter === 'wc26'
+      ? ['wc26', 'wc_qual']
+      : [currentTournamentFilter];
+    const records = (tracker.records || []).filter(r => {
+      if (!relatedIds.includes(r.tournamentId)) return false;
+      // Exclude pre-2026 wc26 records — historical WC finals (e.g. WC22 final) were
+      // incorrectly tagged as wc26 by football-data.org before the season filter was added.
+      if (r.tournamentId === 'wc26' && r.date < '2026-01-01') return false;
+      return true;
+    });
     data = { ...tracker, records };
   }
   const banner = currentTournamentFilter !== 'all'
