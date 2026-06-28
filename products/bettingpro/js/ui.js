@@ -1858,7 +1858,11 @@ export function renderStandings(data, containerId) {
       container.innerHTML = '<p class="muted">Group stage hasn\'t started yet</p>';
       return;
     }
-    let html = '<div class="standings-groups">';
+    let html = '';
+    if (data.groupStageComplete) {
+      html += '<div class="group-stage-complete-banner">Group Stage Complete — Final Standings</div>';
+    }
+    html += '<div class="standings-groups">';
     for (const [key, rows] of Object.entries(groups)) {
       const label = key.replace('GROUP_', 'Group ');
       html += `<div class="standings-group"><h4 class="standings-group-header">${esc(label)}</h4>`;

@@ -3,19 +3,19 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1782635570';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1782635570';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1782635570';
+import { shinProbabilities } from './shin.js?v=1782636162';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1782636162';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1782636162';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1782635570';
-import { getSportDefaults } from './sport-config.js?v=1782635570';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1782636162';
+import { getSportDefaults } from './sport-config.js?v=1782636162';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings
-} from './ui.js?v=1782635570';
+} from './ui.js?v=1782636162';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -528,6 +528,17 @@ function filterByTournament(matches) {
   return (matches || []).filter(m => m.tournamentId === currentTournamentFilter);
 }
 
+/** Human-readable label for knockout stage values from football-data.org. */
+function stageLabel(stage) {
+  return {
+    LAST_32: 'Round of 32',
+    LAST_16: 'Round of 16',
+    QUARTER_FINAL: 'Quarter-Final',
+    SEMI_FINAL: 'Semi-Final',
+    FINAL: 'Final',
+  }[stage] || stage.replace(/_/g, ' ');
+}
+
 /** Short label used for tournament tags on match rows. */
 function tournamentShortLabel(id) {
   return {
@@ -612,7 +623,8 @@ function buildStandings(matches, sport, upcoming = []) {
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([key, teams]) => [key, toRows(teams)])
     );
-    return { rows: [], groupedRows, sport: sport || 'football' };
+    const groupStageComplete = filteredUpcoming.filter(m => m.group).length === 0;
+    return { rows: [], groupedRows, sport: sport || 'football', groupStageComplete };
   }
 
   // Regular flat standings (club leagues, qualifiers, etc.)
@@ -833,9 +845,17 @@ function renderDateView({ skipAutoScroll = false } = {}) {
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
+  let lastKnockoutStage = null;
   for (let i = visibleRange.start; i <= visibleRange.end && i < allDates.length; i++) {
     const date = allDates[i];
     const matches = dateGroups[date] || [];
+
+    // Inject knockout stage section header when the stage changes
+    const dateStage = matches.find(m => m.stage && m.stage !== 'GROUP_STAGE')?.stage;
+    if (dateStage && dateStage !== lastKnockoutStage) {
+      lastKnockoutStage = dateStage;
+      html += `<div class="knockout-stage-header">${esc(stageLabel(dateStage))}</div>`;
+    }
 
     const allFinished = matches.every(m => m.status === 'finished');
     const allUpcoming = matches.every(m => m.status === 'upcoming');
