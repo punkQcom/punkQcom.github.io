@@ -602,13 +602,14 @@ const helpContent = {
       <p><strong>Higher values (70-100%):</strong> Rely more on the betting market. Bookmaker odds reflect massive amounts of data, sharp money, and insider knowledge. Best choice <strong>early in the season</strong> when few matches have been played and our model has limited data.</p>
       <p><strong>Lower values (0-30%):</strong> Rely more on our Poisson/Elo model. As the season progresses and more match results accumulate, our model becomes more accurate and can spot edges the market may miss.</p>
       <div class="help-section">
-        <p><strong>How it works under the hood:</strong></p>
+        <p><strong>How it works under the hood (club leagues):</strong></p>
         <ul>
           <li>The slider maps to a "trust threshold" — at 50%, the model needs ~30 played matches to reach equal weight with the market</li>
           <li>Formula: <code>model weight = matches / (matches + threshold)</code></li>
           <li>At 0% market trust (threshold=5), even a few matches make the model dominant</li>
           <li>At 100% market trust (threshold=200), the model needs 200 matches to reach 50% weight</li>
         </ul>
+        <p><strong>Internationals:</strong> the match pool spans thousands of games across every tournament and year, which would saturate the formula above and ignore the market entirely. So internationals use the slider as a <em>direct</em> weight — 70% Market Trust means the prediction is 70% bookmaker odds, 30% model. This keeps sharp tournament markets influential despite the huge history.</p>
       </div>
       <div class="help-section">
         <p><strong>Auto-adjustment:</strong> The default value automatically changes as the season progresses — starts high (trust market) and decreases as more matches are played. You can override it manually at any time.</p>
