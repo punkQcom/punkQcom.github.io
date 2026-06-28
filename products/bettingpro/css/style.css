@@ -1661,3 +1661,10 @@ details.card[open] summary h2::before {
   border-bottom: 1px solid rgba(255,255,255,0.08);
   margin-bottom: 0.25rem;
 }
+
+.knockout-stage-inline {
+  padding: 0.9rem 0.75rem 0.3rem 0.75rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  border-bottom: none;
+  margin-top: 0.25rem;
+}
