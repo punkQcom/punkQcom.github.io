@@ -1638,10 +1638,12 @@ const helpContent = {
     body: `
       <p><strong>Standings</strong> shows the league table calculated from finished match results. Teams are ranked by points (3 for a win, 1 for a draw), then goal difference, then goals scored.</p>
       <p>The table respects the active tournament filter. For group-stage tournaments like the World Cup, standings are shown as separate group tables (Group A, Group B, …) automatically.</p>
+      <p><strong>Internationals:</strong> a league table is only shown when you select a single group-stage tournament (e.g. the World Cup). For "All", friendlies, qualifiers, Nations League and similar, the section is hidden — a flat table mixing unrelated teams or separate groups wouldn't be meaningful.</p>
       <hr>
       <p><strong>Suomeksi:</strong></p>
       <p><strong>Sarjataulukko</strong> näyttää sarjatilanteen pelattujen otteluiden perusteella. Joukkueet järjestetään pisteiden mukaan (3 voitosta, 1 tasapelistä), sitten maalieron ja tehtyjen maalien perusteella.</p>
       <p>Taulukko noudattaa aktiivista turnaussuodatinta. Lohkovaiheturnauksissa, kuten MM-kisoissa, sarjatilanne näytetään automaattisesti erillisinä lohkotaulukoina (Lohko A, Lohko B, …).</p>
+      <p><strong>Maaotteluissa:</strong> sarjataulukko näytetään vain, kun valitset yksittäisen lohkovaiheturnauksen (esim. MM-kisat). Vaihtoehdoille "Kaikki", maaottelut, karsinnat, Kansojen liiga ja vastaavat osio piilotetaan — taulukko, joka sekoittaisi toisiinsa liittymättömiä joukkueita tai eri lohkoja, ei olisi mielekäs.</p>
     `,
   },
 
