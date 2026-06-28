@@ -3,19 +3,19 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1782639109';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1782639109';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1782639109';
+import { shinProbabilities } from './shin.js?v=1782639959';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1782639959';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1782639959';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1782639109';
-import { getSportDefaults } from './sport-config.js?v=1782639109';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1782639959';
+import { getSportDefaults } from './sport-config.js?v=1782639959';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings
-} from './ui.js?v=1782639109';
+} from './ui.js?v=1782639959';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -643,7 +643,19 @@ function renderStandingsFiltered() {
   const upcoming = currentLeagueData?.upcoming || [];
   const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
   const sport = leagueCfg?.sport || 'football';
+  const isIntl = !!leagueCfg?.isInternational;
   const data = buildStandings(matches, sport, upcoming);
+
+  // For internationals, a league table is only meaningful for a single group-stage
+  // tournament (e.g. the World Cup). Hide the section for "All" and for non-group tags
+  // (friendlies, qualifiers, Nations League, continental cups without group data),
+  // where a flat table mixing unrelated teams/groups would just be noise.
+  const hasGroups = !!data.groupedRows && Object.keys(data.groupedRows).length > 0;
+  const showStandings = isIntl ? (currentTournamentFilter !== 'all' && hasGroups) : true;
+  const section = document.getElementById('standings-section');
+  if (section) section.style.display = showStandings ? '' : 'none';
+  if (!showStandings) return;
+
   const el = document.getElementById('standings-container');
   if (!el) return;
   const banner = currentTournamentFilter !== 'all'
