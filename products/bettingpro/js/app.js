@@ -3,19 +3,19 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1782636162';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1782636162';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1782636162';
+import { shinProbabilities } from './shin.js?v=1782637162';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1782637162';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1782637162';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1782636162';
-import { getSportDefaults } from './sport-config.js?v=1782636162';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1782637162';
+import { getSportDefaults } from './sport-config.js?v=1782637162';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings
-} from './ui.js?v=1782636162';
+} from './ui.js?v=1782637162';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -850,11 +850,13 @@ function renderDateView({ skipAutoScroll = false } = {}) {
     const date = allDates[i];
     const matches = dateGroups[date] || [];
 
-    // Inject knockout stage section header when the stage changes
-    const dateStage = matches.find(m => m.stage && m.stage !== 'GROUP_STAGE')?.stage;
-    if (dateStage && dateStage !== lastKnockoutStage) {
-      lastKnockoutStage = dateStage;
-      html += `<div class="knockout-stage-header">${esc(stageLabel(dateStage))}</div>`;
+    // If the date opens with a knockout stage (no group-stage matches first),
+    // put the stage header before the date header. Otherwise inject inline.
+    const firstMatchStage = matches[0]?.stage;
+    const dateOpensKnockout = firstMatchStage && firstMatchStage !== 'GROUP_STAGE';
+    if (dateOpensKnockout && firstMatchStage !== lastKnockoutStage) {
+      lastKnockoutStage = firstMatchStage;
+      html += `<div class="knockout-stage-header">${esc(stageLabel(firstMatchStage))}</div>`;
     }
 
     const allFinished = matches.every(m => m.status === 'finished');
@@ -873,7 +875,18 @@ function renderDateView({ skipAutoScroll = false } = {}) {
     </div>`;
     html += `<div class="match-date-group" data-date-group="${date}">`;
 
+    let inlineStageTracked = null;
     for (const m of matches) {
+      // For mixed dates (group stage + knockout on same day), inject stage header inline
+      // between the last group match and the first knockout match.
+      if (!dateOpensKnockout) {
+        const mStage = m.stage && m.stage !== 'GROUP_STAGE' ? m.stage : null;
+        if (mStage && mStage !== inlineStageTracked) {
+          inlineStageTracked = mStage;
+          lastKnockoutStage = mStage;
+          html += `<div class="knockout-stage-header knockout-stage-inline">${esc(stageLabel(mStage))}</div>`;
+        }
+      }
       const isFinished = m.status === 'finished';
       const pred = predictMatch(m.homeTeam, m.awayTeam);
       const selOdds = getSelectedOdds(m.odds);
