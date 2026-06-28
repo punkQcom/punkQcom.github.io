@@ -1639,3 +1639,25 @@ details.card[open] summary h2::before {
   color: var(--text-muted);
   margin: 0 0 0.4rem 0;
 }
+
+.group-stage-complete-banner {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 0.4rem 0 0.9rem 0;
+  opacity: 0.7;
+}
+
+.knockout-stage-header {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 1.1rem 0 0.3rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 0.25rem;
+}
