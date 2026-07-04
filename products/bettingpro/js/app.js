@@ -3,19 +3,19 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1782639959';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1782639959';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1782639959';
+import { shinProbabilities } from './shin.js?v=1783193224';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1783193224';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1783193224';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1782639959';
-import { getSportDefaults } from './sport-config.js?v=1782639959';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1783193224';
+import { getSportDefaults } from './sport-config.js?v=1783193224';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
-  renderMatchContext, renderStandings
-} from './ui.js?v=1782639959';
+  renderMatchContext, renderStandings, renderKnockoutResults
+} from './ui.js?v=1783193224';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -535,6 +535,7 @@ function stageLabel(stage) {
     LAST_16: 'Round of 16',
     QUARTER_FINAL: 'Quarter-Final',
     SEMI_FINAL: 'Semi-Final',
+    THIRD_PLACE: 'Third-Place Play-off',
     FINAL: 'Final',
   }[stage] || stage.replace(/_/g, ' ');
 }
@@ -637,6 +638,69 @@ function buildStandings(matches, sport, upcoming = []) {
   return { rows: toRows(teams), sport: sport || 'football' };
 }
 
+/**
+ * Build knockout-round results for the active tournament, grouped by stage in
+ * bracket order, each match annotated with our prediction and whether it hit.
+ * Returns null when no knockout results exist (e.g. still in group stage).
+ */
+function buildKnockoutResults(matches) {
+  const finished = filterByTournament(
+    (matches || []).filter(m =>
+      m.homeGoals != null && m.awayGoals != null &&
+      m.stage && m.stage !== 'GROUP_STAGE')
+  );
+  if (finished.length === 0) return null;
+
+  const ROUND_ORDER = ['LAST_32', 'LAST_16', 'QUARTER_FINAL', 'SEMI_FINAL', 'THIRD_PLACE', 'FINAL'];
+  const ROUND_LABEL = {
+    LAST_32: 'Round of 32',
+    LAST_16: 'Round of 16',
+    QUARTER_FINAL: 'Quarter-Finals',
+    SEMI_FINAL: 'Semi-Finals',
+    THIRD_PLACE: 'Third-Place Play-off',
+    FINAL: 'Final',
+  };
+
+  const buckets = {};
+  for (const m of finished) {
+    const pred = predictMatch(m.homeTeam, m.awayTeam);
+    let correct = null;
+    if (pred) {
+      const predOutcome = pred.home >= pred.draw && pred.home >= pred.away ? '1'
+        : pred.away >= pred.home && pred.away >= pred.draw ? '2' : 'X';
+      const actual = m.homeGoals > m.awayGoals ? '1' : m.homeGoals === m.awayGoals ? 'X' : '2';
+      correct = predOutcome === actual;
+    }
+    if (!buckets[m.stage]) buckets[m.stage] = [];
+    buckets[m.stage].push({
+      date: m.date,
+      homeTeam: m.homeTeam,
+      awayTeam: m.awayTeam,
+      homeGoals: m.homeGoals,
+      awayGoals: m.awayGoals,
+      predScore: pred ? pred.score : null,
+      correct,
+    });
+  }
+
+  const rounds = [];
+  for (const stage of ROUND_ORDER) {
+    if (!buckets[stage]) continue;
+    rounds.push({
+      stage,
+      label: ROUND_LABEL[stage] || stageLabel(stage),
+      matches: buckets[stage].sort((a, b) => (a.date || '').localeCompare(b.date || '')),
+    });
+  }
+  // Append any stages not in the known bracket order (defensive)
+  for (const stage of Object.keys(buckets)) {
+    if (!ROUND_ORDER.includes(stage)) {
+      rounds.push({ stage, label: stageLabel(stage), matches: buckets[stage] });
+    }
+  }
+  return rounds.length > 0 ? rounds : null;
+}
+
 /** Render standings with tournament filter applied. */
 function renderStandingsFiltered() {
   const matches = currentLeagueData?.matches || [];
@@ -663,6 +727,9 @@ function renderStandingsFiltered() {
     : '';
   renderStandings(data, 'standings-container');
   if (banner) el.insertAdjacentHTML('afterbegin', banner);
+
+  // Knockout results below the group tables (WC-style tournaments)
+  renderKnockoutResults(buildKnockoutResults(matches), 'knockout-results-container');
 }
 
 /** Re-render everything that depends on the tournament filter. */
