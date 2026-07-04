@@ -1648,6 +1648,31 @@ const helpContent = {
     `,
   },
 
+  'knockout-results': {
+    title: 'Knockout Results',
+    body: `
+      <p><strong>Knockout Results</strong> lists finished knockout-stage matches, grouped by round in bracket order (Round of 32 → Round of 16 → Quarter-Finals → Semi-Finals → Final).</p>
+      <p>Each row shows:</p>
+      <ul>
+        <li><strong>Winner in bold</strong> — the team that advanced. The final score is in the middle (home–away).</li>
+        <li><strong>Predicted score</strong> — the model's most likely scoreline for that match, shown in grey on the right.</li>
+        <li><span style="display:inline-block;font-size:0.7rem;font-weight:700;padding:1px 5px;border-radius:3px;color:#4ade80;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);">OK</span> — our <strong>1X2 prediction was correct</strong> (we picked the right outcome: home win, draw, or away win).</li>
+        <li><span style="display:inline-block;font-size:0.7rem;font-weight:700;padding:1px 5px;border-radius:3px;color:#f87171;background:rgba(248,113,113,0.15);border:1px solid rgba(248,113,113,0.4);">X</span> — our 1X2 prediction <strong>missed</strong> (the actual result went the other way).</li>
+      </ul>
+      <p>The OK/X badge is based on the <strong>1X2 outcome</strong> (who won), not the exact score — so a match can be marked OK even if the predicted scoreline differs from the final one. Knockout scores reflect the result as recorded by the data source (after extra time / penalties where applicable).</p>
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p><strong>Pudotuspelien tulokset</strong> listaa pelatut pudotuspeliottelut kierroksittain (16. finaali → 8. finaali → puolivälierät → välierät → finaali).</p>
+      <ul>
+        <li><strong>Voittaja lihavoituna</strong> — jatkoon mennyt joukkue. Lopputulos keskellä (koti–vieras).</li>
+        <li><strong>Ennustettu tulos</strong> — mallin todennäköisin tulos, harmaalla oikealla.</li>
+        <li><span style="display:inline-block;font-size:0.7rem;font-weight:700;padding:1px 5px;border-radius:3px;color:#4ade80;background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);">OK</span> — <strong>1X2-ennuste osui oikein</strong> (oikea lopputulos: koti, tasan tai vieras).</li>
+        <li><span style="display:inline-block;font-size:0.7rem;font-weight:700;padding:1px 5px;border-radius:3px;color:#f87171;background:rgba(248,113,113,0.15);border:1px solid rgba(248,113,113,0.4);">X</span> — <strong>1X2-ennuste meni pieleen</strong>.</li>
+      </ul>
+      <p>OK/X-merkintä perustuu <strong>1X2-lopputulokseen</strong> (kumpi voitti), ei tarkkaan tulokseen — ottelu voi siis olla OK vaikka ennustettu tulos poikkeaisi lopullisesta. Pudotuspeliottelujen tulokset ovat datalähteen mukaisia (jatkoajan / rangaistuspotkujen jälkeen tarvittaessa).</p>
+    `,
+  },
+
   'league_veikkausliiga': {
     title: 'Veikkausliiga',
     body: `
@@ -1901,7 +1926,7 @@ export function renderKnockoutResults(rounds, containerId) {
   }
 
   let html = '<div class="knockout-results">';
-  html += '<h3 class="knockout-results-title">Knockout Results</h3>';
+  html += '<h3 class="knockout-results-title">Knockout Results <button type="button" class="help-tip" data-help="knockout-results">?</button></h3>';
   for (const round of rounds) {
     html += '<div class="knockout-round">';
     html += `<h4 class="knockout-round-header">${esc(round.label)}</h4>`;
