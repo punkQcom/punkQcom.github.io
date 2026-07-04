@@ -1639,6 +1639,7 @@ const helpContent = {
       <p><strong>Standings</strong> shows the league table calculated from finished match results. Teams are ranked by points (3 for a win, 1 for a draw), then goal difference, then goals scored.</p>
       <p>The table respects the active tournament filter. For group-stage tournaments like the World Cup, standings are shown as separate group tables (Group A, Group B, …) automatically.</p>
       <p><strong>Internationals:</strong> a league table is only shown when you select a single group-stage tournament (e.g. the World Cup). For "All", friendlies, qualifiers, Nations League and similar, the section is hidden — a flat table mixing unrelated teams or separate groups wouldn't be meaningful.</p>
+      <p><strong>Knockout results:</strong> once a group-stage tournament reaches its knockout phase, results appear below the group tables, grouped by round (Round of 32 → Final). Each tie shows the final score, the winner in bold, our predicted score, and an OK/X badge for whether our 1X2 pick was right.</p>
       <hr>
       <p><strong>Suomeksi:</strong></p>
       <p><strong>Sarjataulukko</strong> näyttää sarjatilanteen pelattujen otteluiden perusteella. Joukkueet järjestetään pisteiden mukaan (3 voitosta, 1 tasapelistä), sitten maalieron ja tehtyjen maalien perusteella.</p>
@@ -1885,6 +1886,48 @@ export function renderStandings(data, containerId) {
     return;
   }
   container.innerHTML = buildStandingsTable(rows, sport);
+}
+
+/**
+ * Render knockout-round results (bracket order), each tie annotated with our
+ * predicted score and a hit/miss badge. `rounds` is from buildKnockoutResults().
+ */
+export function renderKnockoutResults(rounds, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  if (!rounds || rounds.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  let html = '<div class="knockout-results">';
+  html += '<h3 class="knockout-results-title">Knockout Results</h3>';
+  for (const round of rounds) {
+    html += '<div class="knockout-round">';
+    html += `<h4 class="knockout-round-header">${esc(round.label)}</h4>`;
+    for (const m of round.matches) {
+      const homeWin = m.homeGoals > m.awayGoals;
+      const awayWin = m.awayGoals > m.homeGoals;
+      let predCell = '';
+      if (m.correct != null) {
+        const badge = m.correct
+          ? '<span class="ko-pred ko-pred-ok" title="Our 1X2 prediction was correct">OK</span>'
+          : '<span class="ko-pred ko-pred-miss" title="Our 1X2 prediction missed">X</span>';
+        const score = m.predScore
+          ? `<span class="ko-pred-score" title="Predicted score">${esc(m.predScore)}</span>` : '';
+        predCell = score + badge;
+      }
+      html += `<div class="knockout-tie">
+        <span class="ko-team ko-home${homeWin ? ' ko-winner' : ''}">${esc(m.homeTeam)}</span>
+        <span class="ko-score">${m.homeGoals}–${m.awayGoals}</span>
+        <span class="ko-team ko-away${awayWin ? ' ko-winner' : ''}">${esc(m.awayTeam)}</span>
+        <span class="ko-pred-cell">${predCell}</span>
+      </div>`;
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  container.innerHTML = html;
 }
 
 function buildStandingsTable(rows, sport) {

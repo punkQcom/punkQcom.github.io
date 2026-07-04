@@ -1668,3 +1668,112 @@ details.card[open] summary h2::before {
   border-bottom: none;
   margin-top: 0.25rem;
 }
+
+/* Knockout results view (below group standings) */
+.knockout-results {
+  margin-top: 1.75rem;
+}
+
+.knockout-results-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+  color: var(--text);
+}
+
+.knockout-round {
+  margin-bottom: 1.1rem;
+}
+
+.knockout-round-header {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.4rem 0;
+}
+
+.knockout-tie {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr 3.2rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.knockout-tie:last-child {
+  border-bottom: none;
+}
+
+.ko-team {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.ko-home {
+  text-align: right;
+}
+
+.ko-away {
+  text-align: left;
+}
+
+.ko-winner {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.ko-score {
+  font-family: monospace;
+  font-weight: 700;
+  color: var(--text);
+  padding: 1px 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.ko-pred-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+
+.ko-pred-score {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.ko-pred {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.ko-pred-ok {
+  color: #4ade80;
+  background: rgba(74,222,128,0.15);
+  border: 1px solid rgba(74,222,128,0.4);
+}
+
+.ko-pred-miss {
+  color: #f87171;
+  background: rgba(248,113,113,0.15);
+  border: 1px solid rgba(248,113,113,0.4);
+}
+
+@media (max-width: 560px) {
+  .knockout-tie {
+    grid-template-columns: 1fr auto 1fr;
+    row-gap: 0.15rem;
+  }
+  .ko-pred-cell {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+}
