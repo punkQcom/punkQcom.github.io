@@ -1,0 +1,9 @@
+{
+  "name": "punkQ Reservations",
+  "short_name": "Reservations",
+  "start_url": "/reservations/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4a90d9",
+  "icons": []
+}
