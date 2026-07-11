@@ -92,7 +92,7 @@
 
     /* ===== Device color palette ===== */
     .sim-bg-idle      { background-color: #1B5E20; }
-    .sim-bg-listening { background-color: #039BE5; }
+    .sim-bg-listening { background-color: #F5F5F5; }
     .sim-bg-thinking  { background-color: #FBC02D; }
     .sim-bg-speaking  { background-color: #7B1FA2; }
     .sim-bg-error     { background-color: #D32F2F; }
@@ -111,6 +111,66 @@
       pointer-events: none;
       z-index: 10000;
       transition: opacity 0.15s;
+    }
+
+    /* ===== Hint icons — bottom-left overlay ===== */
+    /* Matches physical device: hint_touch at x=8, mic_indicator at x=56 */
+    /* 2× scale: device pixels × 2 for 640×480 demo screen */
+    .hint-touch {
+      position: absolute; bottom: 28px; left: 16px;
+      width: 44px; height: 44px;
+      display: none; z-index: 20; pointer-events: none;
+    }
+    .hint-touch svg { width: 44px; height: 44px; }
+
+    /* Mic indicator — 2× scale: x=56 → 112px, bottom=14 → 28px */
+    .mic-indicator {
+      position: absolute; bottom: 28px; left: 112px;
+      width: 28px; height: 36px;
+      display: none; z-index: 20; pointer-events: none;
+    }
+    .mic-capsule {
+      width: 20px; height: 26px;
+      background: #E53935;
+      border-radius: 5px;
+      margin: 0 auto;
+      animation: mic-pulse 1.2s ease-in-out infinite;
+    }
+    .mic-post {
+      width: 4px; height: 6px;
+      background: #E53935;
+      margin: 0 auto;
+    }
+    .mic-base {
+      width: 20px; height: 4px;
+      background: #E53935;
+      border-radius: 2px;
+      margin: 0 auto;
+    }
+    @keyframes mic-pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+
+    /* ===== Interruption buttons ===== */
+    .interrupt-btns {
+      position: absolute; bottom: 60px; left: 50%;
+      transform: translateX(-50%);
+      display: none; gap: 10px; z-index: 30;
+    }
+    .interrupt-btns.show { display: flex; }
+    .int-btn {
+      padding: 6px 14px; border: none; border-radius: 20px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: transform 0.1s, opacity 0.1s;
+      white-space: nowrap;
+    }
+    .int-btn:active { transform: scale(0.95); }
+    .int-btn-touch {
+      background: rgba(255,255,255,0.92); color: #222;
+    }
+    .int-btn-voice {
+      background: rgba(229,57,53,0.9); color: #fff;
     }
 
     /* ===== Home screen ===== */
@@ -559,6 +619,41 @@
               <button class="mic-btn" id="mic-btn"
                       title="Aloita keskustelu / Start conversation"
                       aria-label="Aloita keskustelu">&#127908;&#65039;</button>
+
+              <!-- hint_touch: hand silhouette (visible during THINKING + SPEAKING) -->
+              <div class="hint-touch" id="hint-touch" aria-hidden="true">
+                <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <!-- thumb -->
+                  <rect x="0" y="9" width="3" height="9" rx="1.5" fill="white"/>
+                  <!-- index (tallest) -->
+                  <rect x="4" y="0" width="4" height="18" rx="2" fill="white"/>
+                  <!-- middle -->
+                  <rect x="9" y="5" width="3" height="13" rx="1.5" fill="white"/>
+                  <!-- ring -->
+                  <rect x="13" y="8" width="3" height="10" rx="1.5" fill="white"/>
+                  <!-- pinky -->
+                  <rect x="17" y="10" width="3" height="8" rx="1.5" fill="white"/>
+                  <!-- palm -->
+                  <rect x="0" y="18" width="21" height="4" rx="2" fill="white"/>
+                </svg>
+              </div>
+
+              <!-- mic_indicator: red pulsing mic (visible during SPEAKING) -->
+              <div class="mic-indicator" id="mic-indicator" aria-hidden="true">
+                <div class="mic-capsule"></div>
+                <div class="mic-post"></div>
+                <div class="mic-base"></div>
+              </div>
+
+              <!-- Interruption buttons: shown during THINKING/SPEAKING -->
+              <div class="interrupt-btns" id="interrupt-btns">
+                <button class="int-btn int-btn-touch" id="int-touch"
+                        title="Simulates tapping the screen to cancel"
+                        aria-label="Touch to cancel">&#128075; Touch cancel</button>
+                <button class="int-btn int-btn-voice" id="int-voice"
+                        title="Simulates speaking to interrupt playback"
+                        aria-label="Voice interrupt" style="display:none">&#127908; Voice interrupt</button>
+              </div>
             </div>
             <!-- Tab 1: Settings -->
             <div class="tab-screen sim-bg-dark" id="screen-settings">
@@ -987,17 +1082,62 @@ const stateLabel = document.getElementById('state-label');
 const pulseDot = document.getElementById('pulse-dot');
 const thinkingDots = document.getElementById('thinking-dots');
 
+// Match physical device colour palette exactly
 const stateColors = {
-  idle: '#1B5E20', listening: '#039BE5',
+  idle: '#1B5E20', listening: '#F5F5F5',
   thinking: '#FBC02D', speaking: '#7B1FA2',
   error: '#D32F2F'
 };
+// Text is dark on LISTENING (near-white bg), light everywhere else
+const stateTextColors = {
+  listening: '#000000'
+};
+
+const hintTouch   = document.getElementById('hint-touch');
+const micIndicator = document.getElementById('mic-indicator');
+const interruptBtns = document.getElementById('interrupt-btns');
+const intTouchBtn = document.getElementById('int-touch');
+const intVoiceBtn = document.getElementById('int-voice');
 
 function setState(state) {
   homeScreen.style.backgroundColor = stateColors[state] || stateColors.idle;
+  const textColor = stateTextColors[state] || '#FFFFFF';
+  stateLabel.style.color = textColor;
   stateLabel.textContent = state.charAt(0).toUpperCase() + state.slice(1);
   pulseDot.style.display = state === 'idle' ? '' : 'none';
   thinkingDots.style.display = state === 'thinking' ? 'flex' : 'none';
+
+  // hint_touch: visible during THINKING and SPEAKING
+  const showHint = (state === 'thinking' || state === 'speaking');
+  hintTouch.style.display = showHint ? '' : 'none';
+
+  // mic_indicator: visible during SPEAKING only
+  micIndicator.style.display = (state === 'speaking') ? '' : 'none';
+
+  // Interruption buttons
+  const canInterrupt = (state === 'thinking' || state === 'speaking');
+  interruptBtns.classList.toggle('show', canInterrupt);
+  // Voice interrupt only available during SPEAKING
+  intVoiceBtn.style.display = (state === 'speaking') ? '' : 'none';
+}
+
+// ===== Interruption simulation =====
+// Touch cancel: THINKING or SPEAKING → IDLE
+intTouchBtn.addEventListener('click', () => {
+  setState('idle');
+});
+
+// Voice interrupt: SPEAKING → brief THINKING visual → LISTENING
+intVoiceBtn.addEventListener('click', () => {
+  setState('thinking');  // brief flash to show interruption registered
+  setTimeout(() => setState('listening'), 300);
+});
+
+// Demo modal open: animate through LISTENING → THINKING → SPEAKING
+function runDemoAnimation() {
+  setState('listening');
+  setTimeout(() => setState('thinking'), 1000);
+  setTimeout(() => setState('speaking'), 3000);
 }
 
 // ===== Demo modal =====
