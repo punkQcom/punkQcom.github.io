@@ -207,6 +207,7 @@ a:focus-visible,
     display: flex;
     justify-content: center;
     padding: 12px 0 24px;
+    perspective: 1200px;
 }
 
 .widget-card {
@@ -214,9 +215,29 @@ a:focus-visible,
     border: 1px solid var(--border);
     border-radius: 16px;
     box-shadow: var(--shadow-lift);
-    transform: rotate(-2deg);
+    transform: rotate(-4deg);
+    transition: transform 0.35s ease;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
     padding: 24px;
     width: min(360px, 100%);
+}
+
+/* Edge-on midpoint of the auto-flip (content swaps here) */
+.widget-card.is-flipping {
+    transform: rotate(-4deg) rotateY(90deg);
+}
+
+/* Instant jump to the far side before flipping back in — no transition */
+.widget-card.is-flipped-back {
+    transition: none;
+    transform: rotate(-4deg) rotateY(-90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .widget-card {
+        transition: none;
+    }
 }
 
 .widget-head {

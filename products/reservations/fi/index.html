@@ -73,12 +73,12 @@
                 </div>
             </div>
             <div class="hero-visual" aria-hidden="true">
-                <div class="widget-card">
+                <div class="widget-card" id="widget-card">
                     <div class="widget-head">
-                        <div class="widget-title">Parturituoli &middot; tiistai</div>
-                        <div class="widget-date">ti 14.7.</div>
+                        <div class="widget-title" id="widget-title">Parturituoli &middot; tiistai</div>
+                        <div class="widget-date" id="widget-date">ti 14.7.</div>
                     </div>
-                    <div class="slot-grid">
+                    <div class="slot-grid" id="widget-slots">
                         <div class="slot">9:00</div>
                         <div class="slot slot-selected">9:30</div>
                         <div class="slot">10:00</div>
@@ -86,7 +86,7 @@
                         <div class="slot">11:00</div>
                         <div class="slot">11:30</div>
                     </div>
-                    <div class="confirm-bar">Vahvista ti 9:30 <span class="tick">&check;</span></div>
+                    <div class="confirm-bar" id="widget-confirm">Vahvista ti 9:30 <span class="tick">&check;</span></div>
                 </div>
             </div>
         </section>
@@ -208,5 +208,76 @@
             <a href="mailto:support@punkq.com">support@punkq.com</a>
         </p>
     </footer>
+
+    <script>
+        // Sankarialueen varauswidget vaihtaa esimerkkiresurssia automaattisesti.
+        (function () {
+            var card = document.getElementById('widget-card');
+            if (!card) return;
+
+            var examples = [
+                { title: 'Parturituoli', day: 'tiistai', date: 'ti 14.7.',
+                    slots: ['9:00', '9:30', '10:00', '10:30', '11:00', '11:30'], sel: 1, off: 3,
+                    confirm: 'Vahvista ti 9:30' },
+                { title: 'Sauna', day: 'perjantai', date: 'pe 17.7.',
+                    slots: ['16:00', '17:00', '18:00', '19:00', '20:00', '21:00'], sel: 3, off: 1,
+                    confirm: 'Vahvista pe 19:00' },
+                { title: 'Tenniskenttä', day: 'lauantai', date: 'la 18.7.',
+                    slots: ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00'], sel: 2, off: 4,
+                    confirm: 'Vahvista la 10:00' },
+                { title: 'Joogastudio', day: 'maanantai', date: 'ma 20.7.',
+                    slots: ['7:00', '8:30', '10:00', '12:00', '17:30', '19:00'], sel: 4, off: 0,
+                    confirm: 'Vahvista ma 17:30' },
+                { title: 'Hierontahuone', day: 'keskiviikko', date: 'ke 22.7.',
+                    slots: ['11:00', '11:45', '13:00', '14:15', '15:30', '16:45'], sel: 0, off: 3,
+                    confirm: 'Vahvista ke 11:00' }
+            ];
+
+            var title = document.getElementById('widget-title');
+            var date = document.getElementById('widget-date');
+            var slots = document.getElementById('widget-slots');
+            var confirm = document.getElementById('widget-confirm');
+            var index = 0;
+            var paused = false;
+
+            function render(ex) {
+                title.innerHTML = ex.title + ' &middot; ' + ex.day;
+                date.textContent = ex.date;
+                var html = '';
+                for (var i = 0; i < ex.slots.length; i++) {
+                    var cls = 'slot';
+                    if (i === ex.sel) cls += ' slot-selected';
+                    else if (i === ex.off) cls += ' slot-unavailable';
+                    html += '<div class="' + cls + '">' + ex.slots[i] + '</div>';
+                }
+                slots.innerHTML = html;
+                confirm.innerHTML = ex.confirm + ' <span class="tick">&check;</span>';
+            }
+
+            function flip() {
+                if (paused) return;
+                // Käännä reunaan (näkymättömiin)
+                card.classList.add('is-flipping');
+                setTimeout(function () {
+                    // Vaihda sisältö piilossa ja hyppää toiselle puolelle ilman animaatiota
+                    index = (index + 1) % examples.length;
+                    render(examples[index]);
+                    card.classList.remove('is-flipping');
+                    card.classList.add('is-flipped-back');
+                    // Pakota uudelleenladonta, jotta siirtymätön tila astuu voimaan
+                    void card.offsetWidth;
+                    // Käännä takaisin näkyviin
+                    card.classList.remove('is-flipped-back');
+                }, 350);
+            }
+
+            var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (!reduce) {
+                card.addEventListener('mouseenter', function () { paused = true; });
+                card.addEventListener('mouseleave', function () { paused = false; });
+                setInterval(flip, 3500);
+            }
+        })();
+    </script>
 </body>
 </html>
