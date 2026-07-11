@@ -150,6 +150,12 @@ a:focus-visible,
     border-bottom: 1px solid var(--border);
 }
 
+/* The header background is hardcoded (not a var) so it can stay frosted;
+   give dark mode its own translucent espresso instead of the cream. */
+html[data-theme="dark"] .site-header {
+    background: rgba(28, 23, 20, 0.82);
+}
+
 .nav {
     max-width: 1100px;
     margin: 0 auto;
@@ -191,12 +197,38 @@ a:focus-visible,
 
 .nav-actions {
     display: flex;
-    gap: 10px;
+    align-items: center;
+    gap: 12px;
 }
 
 .nav-actions .btn {
     padding: 8px 18px;
     font-size: 14px;
+}
+
+/* Utilities (theme + language) grouped and set apart from the auth actions. */
+.nav-utils {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-divider {
+    width: 1px;
+    height: 22px;
+    background: var(--border);
+}
+
+.nav-login {
+    color: var(--muted-strong);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.nav-login:hover {
+    color: var(--ink);
 }
 
 .theme-toggle {
@@ -636,11 +668,14 @@ html[data-theme="dark"] .theme-toggle .icon-moon {
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 7px 12px;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
     border: 1px solid var(--border);
     border-radius: 999px;
-    font-size: 14px;
+    font-size: 17px;
+    line-height: 1;
     color: var(--ink);
     background: var(--panel);
     user-select: none;
@@ -648,12 +683,6 @@ html[data-theme="dark"] .theme-toggle .icon-moon {
 
 .lang summary::-webkit-details-marker {
     display: none;
-}
-
-.lang summary::after {
-    content: "▾";
-    font-size: 11px;
-    color: var(--muted-strong);
 }
 
 .lang summary:hover,
