@@ -3,19 +3,20 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1783193712';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1783193712';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1783193712';
+import { shinProbabilities } from './shin.js?v=1785851457';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1785851457';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1785851457';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1783193712';
-import { getSportDefaults } from './sport-config.js?v=1783193712';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1785851457';
+import { getSportDefaults } from './sport-config.js?v=1785851457';
+import { computeSplitGroups } from './split-stage.js?v=1785851457';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults
-} from './ui.js?v=1783193712';
+} from './ui.js?v=1785851457';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -635,7 +636,18 @@ function buildStandings(matches, sport, upcoming = []) {
     if (!teams[m.awayTeam]) teams[m.awayTeam] = initTeam(m.awayTeam);
     accumulate(teams, m);
   }
-  return { rows: toRows(teams), sport: sport || 'football' };
+  const flatRows = toRows(teams);
+
+  // Split-stage detection (e.g. Veikkausliiga championship/relegation groups).
+  // Uses finished + upcoming fixtures to spot 3rd meetings; carried-over points
+  // are inherent because flatRows already span the whole season.
+  const seasonKey = `${currentLeagueId}:${currentMeta?.season ?? ''}`;
+  const splitMatches = filterByTournament([...(matches || []), ...(upcoming || [])]);
+  const splitGroups = computeSplitGroups(flatRows, splitMatches, seasonKey);
+
+  return splitGroups
+    ? { rows: flatRows, splitGroups, splitActive: true, sport: sport || 'football' }
+    : { rows: flatRows, sport: sport || 'football' };
 }
 
 /**
