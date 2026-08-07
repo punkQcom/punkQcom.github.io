@@ -1,4 +1,4 @@
-/* punkQ Reservations — landing page styles (self-contained) */
+/* punkQ Reservations - landing page styles (self-contained) */
 
 :root {
     --bg: #faf6f0;
@@ -8,7 +8,7 @@
     --muted: #8a7a64;        /* large text (>= 16px) only */
     --muted-strong: #6d5f4b; /* small muted text, 4.5:1 on cream */
     --accent: #c96f4a;
-    --accent-deep: #b0512e;  /* WCAG AA 4.5:1 on white — use for interactive text/controls */
+    --accent-deep: #b0512e;  /* WCAG AA 4.5:1 on white - use for interactive text/controls */
     --accent-hover: #b55e3b;
     --confirm: #2e7d4f;
     --radius: 14px;
@@ -19,7 +19,7 @@
     --font-body: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-/* Dark mode — warm espresso. Overrides the custom properties above; every
+/* Dark mode - warm espresso. Overrides the custom properties above; every
    component reads these vars, so nothing else needs to change. */
 html[data-theme="dark"] {
     --bg: #1c1714;
@@ -29,7 +29,7 @@ html[data-theme="dark"] {
     --muted: #a2937d;        /* large text (>= 16px) only */
     --muted-strong: #c3b5a1; /* small muted text, AA on espresso */
     --accent: #d98561;
-    --accent-deep: #e08a63;  /* AA on the dark surfaces — interactive text/controls */
+    --accent-deep: #e08a63;  /* AA on the dark surfaces - interactive text/controls */
     --accent-hover: #e6946f;
     --confirm: #3fa06a;
     --shadow-soft: 0 2px 6px rgba(0, 0, 0, 0.35);
@@ -328,7 +328,7 @@ html[data-theme="dark"] .theme-toggle .icon-moon {
     transform: rotate(-4deg) rotateY(90deg);
 }
 
-/* Instant jump to the far side before flipping back in — no transition */
+/* Instant jump to the far side before flipping back in - no transition */
 .widget-card.is-flipped-back {
     transition: none;
     transform: rotate(-4deg) rotateY(-90deg);
