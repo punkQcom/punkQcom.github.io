@@ -46,6 +46,31 @@
       outline-offset: 2px;
     }
 
+    /* Supported-languages flag row (language feature card) */
+    .lang-flags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.9rem;
+    }
+    .lang-flag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.2rem 0.65rem;
+      border-radius: 100px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+    .lang-flag-more {
+      color: var(--color-text-muted);
+      font-weight: 500;
+      border-style: dashed;
+    }
+
     /* Companion visual */
     .companion-visual {
       display: flex;
@@ -209,9 +234,9 @@
         </h1>
 
         <p class="hero-subtitle"
-           data-fi="Puhuu suomea luontevasti. Kuuntelee, vastaa, oppii ja pysyy turvallisena läheisesi lähellä."
-           data-en="Speaks Finnish naturally. Listens, responds, learns and stays safe by your loved one's side.">
-          Puhuu suomea luontevasti. Kuuntelee, vastaa, oppii ja pysyy turvallisena läheisesi lähellä.
+           data-fi="Puhuu suomea luontevasti. Kuuntelee, vastaa ja oppii, aina lähellä."
+           data-en="Speaks Finnish naturally. Listens, responds and learns, always close by.">
+          Puhuu suomea luontevasti. Kuuntelee, vastaa ja oppii, aina lähellä.
         </p>
 
         <div class="hero-cta">
@@ -232,7 +257,7 @@
           </div>
           <div class="stat-item">
             <div class="stat-number">24/7</div>
-            <div class="stat-label" data-fi="Aina läsnä" data-en="Always there">Aina läsnä</div>
+            <div class="stat-label" data-fi="Käytettävissä" data-en="Available">Käytettävissä</div>
           </div>
         </div>
       </div>
@@ -256,20 +281,25 @@
       <h2 data-fi="Aina läsnä, aina valmis juttelemaan"
           data-en="Always there, ready to talk">Aina läsnä, aina valmis juttelemaan</h2>
       <p class="text-muted" style="margin-top:0.75rem; max-width:54ch; margin-inline:auto;"
-         data-fi="Suunniteltu läheisillesi, helppo käyttää, lämmintä seuraa ja täysin turvallinen."
-         data-en="Designed for the people you love, easy to use, warm company, and completely safe.">
-        Suunniteltu läheisillesi, helppo käyttää, lämmintä seuraa ja täysin turvallinen.
+         data-fi="Suunniteltu läheisillesi, helppo käyttää, lämmintä seuraa ja yksityinen."
+         data-en="Designed for the people you love, easy to use, warm company, and private.">
+        Suunniteltu läheisillesi, helppo käyttää, lämmintä seuraa ja yksityinen.
       </p>
     </div>
 
     <div class="grid-3">
       <div class="glass card reveal reveal-delay-1">
-        <div class="benefit-icon">🇫🇮</div>
-        <h3 data-fi="Puhuu suomea" data-en="Speaks Finnish">Puhuu suomea</h3>
-        <p data-fi="Luonteva suomi, ei konemaisuutta, ei vierasta aksenttia. Läheinen voi jutella omalla äidinkielellään. Puhuu sujuvasti myös englantia, ja lisää kieliä on tulossa."
-           data-en="Natural Finnish, no robotic tone, no foreign accent. Your loved one can talk in their mother tongue. It speaks fluent English too, and more languages are on the way.">
-          Luonteva suomi, ei konemaisuutta, ei vierasta aksenttia. Läheinen voi jutella omalla äidinkielellään. Puhuu sujuvasti myös englantia, ja lisää kieliä on tulossa.
+        <div class="benefit-icon">🗣️</div>
+        <h3 data-fi="Puhuu eri kieliä" data-en="Speaks several languages">Puhuu eri kieliä</h3>
+        <p data-fi="Luonteva, luonnollinen puhe, ei konemaisuutta eikä vierasta aksenttia. Läheinen voi jutella omalla äidinkielellään."
+           data-en="Natural, fluent speech, no robotic tone or foreign accent. Your loved one can talk in their own language.">
+          Luonteva, luonnollinen puhe, ei konemaisuutta eikä vierasta aksenttia. Läheinen voi jutella omalla äidinkielellään.
         </p>
+        <div class="lang-flags" aria-label="Tuetut kielet / Supported languages">
+          <span class="lang-flag">🇫🇮 <span data-fi="suomi" data-en="Finnish">suomi</span></span>
+          <span class="lang-flag">🇬🇧 <span data-fi="englanti" data-en="English">englanti</span></span>
+          <span class="lang-flag lang-flag-more" data-fi="lisää tulossa" data-en="more coming">lisää tulossa</span>
+        </div>
       </div>
       <div class="glass card reveal reveal-delay-2">
         <div class="benefit-icon">🔒</div>
@@ -373,9 +403,9 @@
       <h2 data-fi="Katso demo tai tutustu tekniikkaan"
           data-en="Watch the demo or explore the tech">Katso demo tai tutustu tekniikkaan</h2>
       <p class="text-muted" style="max-width:50ch; margin-inline:auto; margin-bottom:2.5rem; margin-top:1rem; font-size:1.05rem;"
-         data-fi="AI Companion on rakennettu läheisille, aikuisille ja koko perheelle. Turvallinen, suomenkielinen ja aina kotona."
-         data-en="AI Companion is built for the people you love, adults and the whole family. Safe, Finnish-speaking, and always at home.">
-        AI Companion on rakennettu läheisille, aikuisille ja koko perheelle. Turvallinen, suomenkielinen ja aina kotona.
+         data-fi="AI Companion on rakennettu läheisille, aikuisille ja koko perheelle. Turvallinen, suomenkielinen ja aina saatavilla."
+         data-en="AI Companion is built for the people you love, adults and the whole family. Safe, Finnish-speaking, and always available.">
+        AI Companion on rakennettu läheisille, aikuisille ja koko perheelle. Turvallinen, suomenkielinen ja aina saatavilla.
       </p>
       <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
         <a href="demo.html" class="btn btn-primary btn-lg"
@@ -396,9 +426,9 @@
           <div class="logo-mark">AI</div>
           <span>AI Companion</span>
         </div>
-        <p data-fi="AI-kaveri läheisellesi, turvallinen, suomenkielinen, aina kotona."
-           data-en="An AI Companion for your loved one, safe, Finnish-speaking, always at home.">
-          AI-kaveri läheisellesi, turvallinen, suomenkielinen, aina kotona.
+        <p data-fi="AI-kaveri läheisellesi, turvallinen, suomenkielinen, aina saatavilla."
+           data-en="An AI Companion for your loved one, safe, Finnish-speaking, always available.">
+          AI-kaveri läheisellesi, turvallinen, suomenkielinen, aina saatavilla.
         </p>
       </div>
       <div class="footer-col">
@@ -415,8 +445,8 @@
     <div class="footer-bottom">
       <span data-fi="© 2026 punkQ. Kaikki oikeudet pidätetään."
             data-en="© 2026 punkQ. All rights reserved.">© 2026 punkQ. Kaikki oikeudet pidätetään.</span>
-      <span data-fi="Tehty rakkaudella perheiden puolesta"
-            data-en="Made with love for families">Tehty rakkaudella perheiden puolesta</span>
+      <span data-fi="Tehty läheisiä varten"
+            data-en="Made for the people you love">Tehty läheisiä varten</span>
     </div>
   </div>
 </footer>
