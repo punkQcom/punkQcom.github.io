@@ -12,23 +12,22 @@
   <link rel="stylesheet" href="assets/css/main.css">
   <style>
     .lang-switcher {
-      display: flex; align-items: center; gap: 0.15rem;
-      background: var(--color-surface);
+      display: inline-flex; align-items: center;
+    }
+    .lang-select {
+      appearance: none; -webkit-appearance: none; -moz-appearance: none;
+      padding: 0.34rem 1.7rem 0.34rem 0.7rem; border-radius: 100px;
       border: 1px solid var(--color-border);
-      border-radius: 100px; padding: 0.2rem;
+      background-color: var(--color-surface);
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+      background-repeat: no-repeat; background-position: right 0.6rem center; background-size: 0.7rem;
+      font-family: var(--font-sans); font-size: 0.78rem; font-weight: 700;
+      color: var(--color-text); cursor: pointer;
+      transition: border-color var(--transition), color var(--transition); letter-spacing: 0.03em;
       backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
     }
-    .lang-toggle {
-      padding: 0.28rem 0.7rem; border-radius: 100px; border: none;
-      background: transparent; font-family: var(--font-sans);
-      font-size: 0.78rem; font-weight: 700;
-      color: var(--color-text-muted); cursor: pointer;
-      transition: all var(--transition); letter-spacing: 0.04em;
-    }
-    .lang-toggle.active {
-      background: linear-gradient(135deg, var(--color-gradient-1), var(--color-gradient-2));
-      color: #fff;
-    }
+    .lang-select:hover { border-color: var(--color-accent); }
+    .lang-select:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
     /* --- Device frame --- */
     .device-wrapper {
@@ -520,9 +519,11 @@
     </ul>
 
     <div class="nav-actions">
-      <div class="lang-switcher" role="group" aria-label="Kielivalinta">
-        <button class="lang-toggle active" data-lang="fi" aria-pressed="true">FI</button>
-        <button class="lang-toggle" data-lang="en" aria-pressed="false">EN</button>
+      <div class="lang-switcher">
+        <select class="lang-select" aria-label="Kielivalinta / Language">
+          <option value="fi">🇫🇮 FI</option>
+          <option value="en">🇬🇧 EN</option>
+        </select>
       </div>
       <button class="theme-toggle" id="theme-toggle" aria-label="Vaihda teema">
         <span class="icon-sun" aria-hidden="true">&#9728;&#65039;</span>
@@ -544,9 +545,11 @@
      data-fi="Demo" data-en="Demo">Demo</a>
   <a href="tech.html" class="nav-link" data-page="tech"
      data-fi="Tekniikka" data-en="Tech">Tekniikka</a>
-  <div class="lang-switcher" style="margin-top:0.75rem;" role="group" aria-label="Kielivalinta">
-    <button class="lang-toggle active" data-lang="fi" aria-pressed="true">FI</button>
-    <button class="lang-toggle" data-lang="en" aria-pressed="false">EN</button>
+  <div class="lang-switcher" style="margin-top:0.75rem;">
+    <select class="lang-select" aria-label="Kielivalinta / Language">
+      <option value="fi">🇫🇮 FI</option>
+      <option value="en">🇬🇧 EN</option>
+    </select>
   </div>
 </div>
 

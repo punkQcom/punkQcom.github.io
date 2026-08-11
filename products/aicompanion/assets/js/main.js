@@ -1,6 +1,6 @@
 /* ===================================================
-   AI Companion — Main JS
-   Theme toggle, language toggle (FI/EN),
+   AI Companion Main JS
+   Theme toggle, language selector (FI/EN dropdown),
    navigation, scroll animations, interactivity
    =================================================== */
 
@@ -42,7 +42,7 @@ function setLang(lang) {
   localStorage.setItem(LANG_KEY, lang);
   document.documentElement.setAttribute('lang', lang);
   applyTranslations(lang);
-  updateLangToggle(lang);
+  updateLangSelect(lang);
 }
 
 function initLang() {
@@ -64,11 +64,10 @@ function applyTranslations(lang) {
   });
 }
 
-function updateLangToggle(lang) {
-  const toggles = document.querySelectorAll('.lang-toggle');
-  toggles.forEach(btn => {
-    btn.setAttribute('aria-pressed', btn.getAttribute('data-lang') === lang ? 'true' : 'false');
-    btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+function updateLangSelect(lang) {
+  // Keep every language dropdown (desktop + mobile nav) in sync with the active lang.
+  document.querySelectorAll('.lang-select').forEach(sel => {
+    if (sel.value !== lang) sel.value = lang;
   });
 }
 
@@ -106,10 +105,10 @@ function initNav() {
     themeToggle.addEventListener('click', toggleTheme);
   }
 
-  // Language toggles
-  document.querySelectorAll('.lang-toggle').forEach(btn => {
-    btn.addEventListener('click', () => {
-      setLang(btn.getAttribute('data-lang'));
+  // Language selector (dropdown, scales to more languages)
+  document.querySelectorAll('.lang-select').forEach(sel => {
+    sel.addEventListener('change', () => {
+      setLang(sel.value);
     });
   });
 
