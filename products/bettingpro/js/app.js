@@ -3,21 +3,21 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1786887858';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1786887858';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1786887858';
+import { shinProbabilities } from './shin.js?v=1786889225';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1786889225';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1786889225';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1786887858';
-import { getSportDefaults } from './sport-config.js?v=1786887858';
-import { computeSplitGroups } from './split-stage.js?v=1786887858';
-import { computeNhlGroups } from './nhl-structure.js?v=1786887858';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1786889225';
+import { getSportDefaults } from './sport-config.js?v=1786889225';
+import { computeSplitGroups } from './split-stage.js?v=1786889225';
+import { computeNhlGroups } from './nhl-structure.js?v=1786889225';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults
-} from './ui.js?v=1786887858';
+} from './ui.js?v=1786889225';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -631,12 +631,14 @@ function buildStandings(matches, sport, upcoming = []) {
   }
 
   // Regular flat standings (club leagues, qualifiers, etc.)
+  // Seed every team that appears this season (finished OR upcoming) so the full
+  // table shows from kickoff; only finished matches contribute stats.
   const teams = {};
-  for (const m of finished) {
-    if (!teams[m.homeTeam]) teams[m.homeTeam] = initTeam(m.homeTeam);
-    if (!teams[m.awayTeam]) teams[m.awayTeam] = initTeam(m.awayTeam);
-    accumulate(teams, m);
+  for (const m of [...finished, ...filteredUpcoming]) {
+    if (m.homeTeam && !teams[m.homeTeam]) teams[m.homeTeam] = initTeam(m.homeTeam);
+    if (m.awayTeam && !teams[m.awayTeam]) teams[m.awayTeam] = initTeam(m.awayTeam);
   }
+  for (const m of finished) accumulate(teams, m);
   const flatRows = toRows(teams);
 
   // NHL: group the flat standings by conference → division.
