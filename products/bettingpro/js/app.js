@@ -3,20 +3,21 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1785851457';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1785851457';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1785851457';
+import { shinProbabilities } from './shin.js?v=1786887858';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1786887858';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1786887858';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1785851457';
-import { getSportDefaults } from './sport-config.js?v=1785851457';
-import { computeSplitGroups } from './split-stage.js?v=1785851457';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1786887858';
+import { getSportDefaults } from './sport-config.js?v=1786887858';
+import { computeSplitGroups } from './split-stage.js?v=1786887858';
+import { computeNhlGroups } from './nhl-structure.js?v=1786887858';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults
-} from './ui.js?v=1785851457';
+} from './ui.js?v=1786887858';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -637,6 +638,11 @@ function buildStandings(matches, sport, upcoming = []) {
     accumulate(teams, m);
   }
   const flatRows = toRows(teams);
+
+  // NHL: group the flat standings by conference → division.
+  if (currentLeagueId === 'nhl') {
+    return { rows: flatRows, nhlGroups: computeNhlGroups(flatRows), sport: sport || 'football' };
+  }
 
   // Split-stage detection (e.g. Veikkausliiga championship/relegation groups).
   // Uses finished + upcoming fixtures to spot 3rd meetings; carried-over points

@@ -1641,12 +1641,14 @@ const helpContent = {
       <p><strong>Internationals:</strong> a league table is only shown when you select a single group-stage tournament (e.g. the World Cup). For "All", friendlies, qualifiers, Nations League and similar, the section is hidden — a flat table mixing unrelated teams or separate groups wouldn't be meaningful.</p>
       <p><strong>Knockout results:</strong> once a group-stage tournament reaches its knockout phase, results appear below the group tables, grouped by round (Round of 32 → Final). Each tie shows the final score, the winner in bold, our predicted score, and an OK/X badge for whether our 1X2 pick was right.</p>
       <p><strong>Split stage:</strong> when a league divides into a championship group (top six) and a relegation group (bottom six), the standings show both group tables — with points carried over from the regular season — followed by the full league table.</p>
+      <p><strong>NHL:</strong> standings are grouped by conference (Eastern, Western), each split into its two divisions (Atlantic/Metropolitan, Central/Pacific).</p>
       <hr>
       <p><strong>Suomeksi:</strong></p>
       <p><strong>Sarjataulukko</strong> näyttää sarjatilanteen pelattujen otteluiden perusteella. Joukkueet järjestetään pisteiden mukaan (3 voitosta, 1 tasapelistä), sitten maalieron ja tehtyjen maalien perusteella.</p>
       <p>Taulukko noudattaa aktiivista turnaussuodatinta. Lohkovaiheturnauksissa, kuten MM-kisoissa, sarjatilanne näytetään automaattisesti erillisinä lohkotaulukoina (Lohko A, Lohko B, …).</p>
       <p><strong>Maaotteluissa:</strong> sarjataulukko näytetään vain, kun valitset yksittäisen lohkovaiheturnauksen (esim. MM-kisat). Vaihtoehdoille "Kaikki", maaottelut, karsinnat, Kansojen liiga ja vastaavat osio piilotetaan — taulukko, joka sekoittaisi toisiinsa liittymättömiä joukkueita tai eri lohkoja, ei olisi mielekäs.</p>
       <p><strong>Jakovaihe:</strong> kun sarja jakautuu mestaruuslohkoon (kuusi parasta) ja putoamislohkoon (kuusi heikointa), sarjatilanne näytetään molempina lohkotaulukoina — runkosarjan pisteet mukana kannettuina — ja niiden alla koko sarjan taulukko.</p>
+      <p><strong>NHL:</strong> sarjataulukko ryhmitellään konferensseittain (Eastern, Western), jotka jakautuvat kahteen divisioonaan (Atlantic/Metropolitan, Central/Pacific).</p>
     `,
   },
 
@@ -1917,6 +1919,23 @@ export function renderStandings(data, containerId) {
     html += `<div class="standings-full"><h4 class="standings-group-header">Full Table</h4>`;
     html += buildStandingsTable(data.rows || [], data.sport);
     html += '</div>';
+    container.innerHTML = html;
+    return;
+  }
+
+  // NHL mode: conference → division nested tables.
+  if (data && data.nhlGroups) {
+    let html = '';
+    for (const [conf, divs] of Object.entries(data.nhlGroups)) {
+      html += `<div class="standings-conference"><h3 class="standings-conference-header">${esc(conf)} Conference</h3>`;
+      html += '<div class="standings-groups">';
+      for (const [div, rows] of Object.entries(divs)) {
+        html += `<div class="standings-group"><h4 class="standings-group-header">${esc(div)}</h4>`;
+        html += buildStandingsTable(rows, data.sport);
+        html += '</div>';
+      }
+      html += '</div></div>';
+    }
     container.innerHTML = html;
     return;
   }
