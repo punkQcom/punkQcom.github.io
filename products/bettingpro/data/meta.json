@@ -1,5 +1,5 @@
 {
-  "lastUpdate": "2026-08-16T06:33:12.500Z",
+  "lastUpdate": "2026-08-16T11:32:13.164Z",
   "leagues": [
     {
       "id": "veikkausliiga",
@@ -11,11 +11,74 @@
       "tournaments": null
     },
     {
+      "id": "epl",
+      "name": "Premier League",
+      "sport": "football",
+      "country": "England",
+      "season": "2026-2027",
+      "isInternational": false,
+      "tournaments": null
+    },
+    {
+      "id": "efl_championship",
+      "name": "EFL Championship",
+      "sport": "football",
+      "country": "England",
+      "season": "2026-2027",
+      "isInternational": false,
+      "tournaments": null
+    },
+    {
+      "id": "bundesliga",
+      "name": "Bundesliga",
+      "sport": "football",
+      "country": "Germany",
+      "season": "2026-2027",
+      "isInternational": false,
+      "tournaments": null
+    },
+    {
+      "id": "bundesliga2",
+      "name": "2. Bundesliga",
+      "sport": "football",
+      "country": "Germany",
+      "season": "2026-2027",
+      "isInternational": false,
+      "tournaments": null
+    },
+    {
+      "id": "serie_a",
+      "name": "Serie A",
+      "sport": "football",
+      "country": "Italy",
+      "season": "2026-2027",
+      "isInternational": false,
+      "tournaments": null
+    },
+    {
+      "id": "la_liga",
+      "name": "La Liga",
+      "sport": "football",
+      "country": "Spain",
+      "season": "2026-2027",
+      "isInternational": false,
+      "tournaments": null
+    },
+    {
       "id": "liiga",
       "name": "Liiga",
       "sport": "ice_hockey",
       "country": "Finland",
       "season": 2027,
+      "isInternational": false,
+      "tournaments": null
+    },
+    {
+      "id": "nhl",
+      "name": "NHL",
+      "sport": "ice_hockey",
+      "country": "USA",
+      "season": "2026-2027",
       "isInternational": false,
       "tournaments": null
     },
@@ -241,7 +304,28 @@
     "veikkausliiga": [
       2025
     ],
+    "epl": [
+      "2025-2026"
+    ],
+    "efl_championship": [
+      "2025-2026"
+    ],
+    "bundesliga": [
+      "2025-2026"
+    ],
+    "bundesliga2": [
+      "2025-2026"
+    ],
+    "serie_a": [
+      "2025-2026"
+    ],
+    "la_liga": [
+      "2025-2026"
+    ],
     "liiga": [],
+    "nhl": [
+      "2025-2026"
+    ],
     "mens_international": []
   }
 }
