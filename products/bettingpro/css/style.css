@@ -23,6 +23,7 @@ body {
 header {
   text-align: center;
   margin-bottom: 24px;
+  position: relative;
 }
 
 header h1 {
@@ -33,6 +34,55 @@ header h1 {
 .subtitle {
   color: #9ca3af;
   font-size: 0.9rem;
+}
+
+/* === Language switch === */
+.lang-switch {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+  border-radius: 8px;
+}
+
+.lang-switch button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.lang-switch button:hover {
+  color: #e5e7eb;
+}
+
+.lang-switch button.active {
+  background: #60a5fa;
+  color: #0f0f1a;
+}
+
+.lang-switch .flag {
+  font-size: 0.95rem;
+}
+
+@media (max-width: 520px) {
+  .lang-switch {
+    position: static;
+    justify-content: center;
+    margin: 0 auto 12px;
+  }
 }
 
 /* === Cards === */

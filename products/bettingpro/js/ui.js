@@ -2,6 +2,8 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
+import { pickHelp, getLang, setLang, onLangChange } from './i18n.js?v=1787559929';
+
 /** Escape HTML to prevent XSS when inserting into innerHTML. */
 function esc(str) {
   const d = document.createElement('div');
@@ -479,9 +481,10 @@ function setupFloatingPanel() {
 
 /* === Help Modal System === */
 
-const helpContent = {
+export const helpContent = {
   'about': {
     title: 'About BettingPro',
+    titleFi: 'Tietoja BettingProsta',
     body: `
 <p><strong>BettingPro</strong> is a sports betting probability calculator that uses statistical modelling to find value bets — situations where the bookmaker's odds are higher than our model suggests they should be.</p>
 
@@ -597,6 +600,7 @@ const helpContent = {
   },
   'market-trust': {
     title: 'Market Trust',
+    titleFi: 'Markkinoiden luottamus',
     body: `
       <p><strong>What it does:</strong> Controls the balance between bookmaker odds and our statistical model (Poisson + Elo) when calculating predictions.</p>
       <p><strong>Higher values (70-100%):</strong> Rely more on the betting market. Bookmaker odds reflect massive amounts of data, sharp money, and insider knowledge. Best choice <strong>early in the season</strong> when few matches have been played and our model has limited data.</p>
@@ -633,6 +637,7 @@ const helpContent = {
   },
   'prev-season': {
     title: 'Previous Season Weight',
+    titleFi: 'Edellisen kauden painotus',
     body: `
       <p><strong>What it does:</strong> Controls how much last season's Elo ratings carry over to the current season. Teams that performed well last year start with higher ratings, giving them a head start in predictions.</p>
       <p><strong>Higher values (70-100%):</strong> Strong carryover — last season's top teams are clearly favored in early-season predictions. Useful at the start of the season when current data is scarce.</p>
@@ -679,6 +684,7 @@ const helpContent = {
   },
   'rho': {
     title: 'Low-Score Correction (Dixon-Coles)',
+    titleFi: 'Vähämaalisten korjaus (Dixon-Coles)',
     body: `
       <p><strong>What it does:</strong> Adjusts the probability of low-scoring results (0-0, 1-0, 0-1, 1-1) which the basic Poisson model tends to get wrong.</p>
       <p><strong>The problem:</strong> A standard Poisson model assumes home and away goals are independent. In reality, they're correlated in low-scoring games — when one team sits back defensively, both teams tend to score fewer goals. This means 0-0 draws and 1-0 results happen more often than pure Poisson predicts.</p>
@@ -723,6 +729,7 @@ const helpContent = {
   },
   'form-boost': {
     title: 'Form Boost',
+    titleFi: 'Virekorotus',
     body: `
       <p><strong>What it does:</strong> Adjusts predicted goal expectancy for teams on hot or cold streaks (3+ consecutive wins or losses).</p>
       <p><strong>The problem:</strong> Early in the season, Bayesian shrinkage weights priors heavily because there's limited match data. Teams on form streaks (e.g. a promoted team winning their first 3 games) aren't reflected quickly enough in the base model.</p>
@@ -774,6 +781,7 @@ const helpContent = {
   },
   'prior-weight': {
     title: 'Bayesian Prior Weight',
+    titleFi: 'Bayesiläinen prioripainotus',
     body: `
       <p><strong>What it does:</strong> Controls how much team attack/defense estimates are pulled toward the league average when data is limited. Higher values = stronger pull toward average (safer, less extreme); lower values = trust raw data more (riskier, sharper).</p>
       <div class="help-section">
@@ -832,6 +840,7 @@ const helpContent = {
   },
   'season-only': {
     title: 'Current Season Only',
+    titleFi: 'Vain kuluva kausi',
     body: `
       <p><strong>What it does:</strong> Overrides the prediction model to use <em>only</em> current season match data — no bookmaker odds, no previous season Elo carry, and no Bayesian shrinkage toward league averages.</p>
       <div class="help-section">
@@ -879,6 +888,7 @@ const helpContent = {
   },
   'match-depth': {
     title: 'Match Depth',
+    titleFi: 'Otteluhistorian syvyys',
     body: `
       <p><strong>What it does:</strong> Controls how many recent matches are used to build team statistics when <em>Current Season Only</em> is active. Only available for international leagues.</p>
       <div class="help-section">
@@ -903,6 +913,7 @@ const helpContent = {
   },
   'kelly': {
     title: 'Kelly Fraction',
+    titleFi: 'Kelly-osuus',
     body: `
       <p><strong>What it does:</strong> Controls how aggressively you bet when a value bet is found. Determines what percentage of the mathematically optimal Kelly stake to actually wager.</p>
       <p><strong>The Kelly Criterion:</strong> A formula that calculates the mathematically optimal bet size to maximize long-term bankroll growth: <code>f* = (b*p - q) / b</code> where b = decimal odds - 1, p = your probability of winning, q = 1 - p.</p>
@@ -945,6 +956,7 @@ const helpContent = {
   },
   'bankroll': {
     title: 'Bankroll',
+    titleFi: 'Pelikassa',
     body: `
       <p><strong>What it does:</strong> Your total betting budget in euros. Used exclusively to calculate the suggested stake amount for each bet.</p>
       <p><strong>Important:</strong> This setting only affects the "Stake" column in the value bets and all bets tables. It does <strong>not</strong> change any probabilities, edges, or Kelly percentages.</p>
@@ -991,6 +1003,7 @@ const helpContent = {
   },
   'edge-threshold': {
     title: 'Minimum Edge Threshold',
+    titleFi: 'Vähimmäisedun raja-arvo',
     body: `
 <p><strong>What it does:</strong> Filters the Value Bets table to only show bets where the edge exceeds this minimum percentage. Helps you focus on the strongest opportunities and ignore marginal edges that may be noise.</p>
 <p><strong>How it works:</strong></p>
@@ -1019,6 +1032,7 @@ const helpContent = {
   },
   'settings': {
     title: 'Settings',
+    titleFi: 'Asetukset',
     body: `
 <p>All sliders update predictions <strong>dynamically</strong> — the match list and analysis panel refresh in real-time as you drag. No need to press any button.</p>
 <p><strong>Sliders:</strong></p>
@@ -1051,6 +1065,7 @@ const helpContent = {
   },
   'matches': {
     title: 'Matches',
+    titleFi: 'Ottelut',
     body: `
 <p>The match list shows all matches for the selected season, grouped by date. Each match row has three columns:</p>
 <p><strong>Prediction</strong> — our model's predicted most likely scoreline for the match. For finished matches, the prediction is color-coded:</p>
@@ -1198,6 +1213,7 @@ const helpContent = {
   },
   'score-matrix': {
     title: 'Score Matrix',
+    titleFi: 'Tulosmatriisi',
     body: `
 <p>A 7x7 grid showing the predicted probability of every possible scoreline from 0-0 to 6-6.</p>
 <p><strong>How it's built:</strong></p>
@@ -1242,6 +1258,7 @@ const helpContent = {
   },
   'match-outcome': {
     title: 'Match Outcome',
+    titleFi: 'Ottelun lopputulos',
     body: `
 <p>Shows the predicted probability for each match result: <strong>Home Win (1)</strong>, <strong>Draw (X)</strong>, and <strong>Away Win (2)</strong>.</p>
 <p><strong>Colored bar</strong> = our model's predicted probability (blended Poisson + Elo + market odds).</p>
@@ -1270,6 +1287,7 @@ const helpContent = {
   },
   'over-under': {
     title: 'Over/Under',
+    titleFi: 'Yli/Alle',
     body: `
 <p>Predicts whether the total goals in the match will be over or under a specific line (1.5, 2.5, 3.5 goals).</p>
 <p><strong>How it works:</strong></p>
@@ -1304,6 +1322,7 @@ const helpContent = {
   },
   'value-bets': {
     title: 'Value Bets',
+    titleFi: 'Arvovedot',
     body: `
 <p>A <strong>value bet</strong> exists when our model's predicted probability for an outcome is higher than the bookmaker's fair probability. This means the odds are in your favor — the bookmaker is offering better odds than they should.</p>
 <p><strong>Columns:</strong></p>
@@ -1346,6 +1365,7 @@ const helpContent = {
   },
   'all-bets': {
     title: 'All Bets Overview',
+    titleFi: 'Kaikki vedot -yhteenveto',
     body: `
 <p>Shows every possible bet for this match — including both value bets and overvalued outcomes — sorted by edge.</p>
 <p><strong>Reading the table:</strong></p>
@@ -1370,6 +1390,7 @@ const helpContent = {
   },
   'fades': {
     title: 'Fades (Overvalued by Bookmaker)',
+    titleFi: 'Fadet (vedonvälittäjän yliarvostamat)',
     body: `
 <p><strong>Fades</strong> are outcomes where the bookmaker's implied probability is significantly higher than our model's estimate — the bookmaker is <em>overconfident</em> about that outcome.</p>
 <p>When the book overvalues one outcome, the opposite outcomes are likely undervalued — creating value betting opportunities. Each fade shows the overvalued outcome and suggests counter-bets on the opposite side.</p>
@@ -1396,6 +1417,7 @@ const helpContent = {
   },
   'bookmaker-comparison': {
     title: 'Bookmaker Comparison',
+    titleFi: 'Vedonvälittäjävertailu',
     body: `
 <p>Compares each bookmaker's implied probabilities against <strong>Pinnacle</strong> (the sharpest bookmaker with the lowest margins). When Pinnacle odds are unavailable, falls back to consensus (average). The "Compared against" label shows which benchmark is active.</p>
 <p><strong>Why Pinnacle?</strong> Pinnacle accepts large bets from professional syndicates and doesn't limit winners, so their odds are closest to the true probabilities. When another bookmaker offers significantly better odds than Pinnacle, it's likely a mispriced line.</p>
@@ -1438,6 +1460,7 @@ const helpContent = {
   },
   'elo-ratings': {
     title: 'Elo Ratings',
+    titleFi: 'Elo-luvut',
     body: `
       <p><strong>What it is:</strong> A power ranking system that rates every team based on their match results. Teams gain points for wins and lose points for losses, with the amount depending on how surprising the result was.</p>
       <div class="help-section">
@@ -1494,6 +1517,7 @@ const helpContent = {
   },
   'prediction-tracker': {
     title: 'Prediction Tracker',
+    titleFi: 'Ennusteseuranta',
     body: `
       <p><strong>What it is:</strong> A walk-forward evaluation that measures how accurate the model's predictions have been throughout the season — without cheating by using future data.</p>
       <div class="help-section">
@@ -1546,6 +1570,7 @@ const helpContent = {
   },
   'pl-simulation': {
     title: 'Season P/L Simulation',
+    titleFi: 'Kauden tuottosimulaatio',
     body: `
       <p><strong>What it is:</strong> A simulated betting season that shows what would have happened if you had followed the model's value bets with Kelly staking from the start of the season.</p>
       <div class="help-section">
@@ -1605,6 +1630,7 @@ const helpContent = {
 
   'tournament_filter': {
     title: 'Tournament Filter',
+    titleFi: 'Turnaussuodatin',
     body: `
       <p><strong>Tournament filter:</strong> Limits the match list, tracker, and P&amp;L to one competition. "All" is the default and recommended when you want the whole picture, since Elo updates use every international match regardless of filter.</p>
       <hr>
@@ -1615,6 +1641,7 @@ const helpContent = {
 
   'fifa_prior': {
     title: 'FIFA-based Prior',
+    titleFi: 'FIFA-pohjainen priori',
     body: `
       <p><strong>FIFA-based prior:</strong> For men's international football, team strength is seeded from FIFA rankings. Top-ranked teams start with higher expected goals for and lower expected goals against. This balances the problem of teams that only play a handful of matches per year.</p>
       <hr>
@@ -1625,6 +1652,7 @@ const helpContent = {
 
   'neutral_venue': {
     title: 'Neutral Venue',
+    titleFi: 'Neutraali kenttä',
     body: `
       <p><strong>Neutral venue:</strong> At tournaments like the World Cup, most matches are played at neutral stadiums. When a match is marked as neutral, the usual home-advantage bonus (+50 Elo, +10% expected goals) is turned off.</p>
       <hr>
@@ -1635,6 +1663,7 @@ const helpContent = {
 
   'standings': {
     title: 'Standings',
+    titleFi: 'Sarjataulukko',
     body: `
       <p><strong>Standings</strong> shows the league table calculated from finished match results. Teams are ranked by points (3 for a win, 1 for a draw), then goal difference, then goals scored.</p>
       <p>The table respects the active tournament filter. For group-stage tournaments like the World Cup, standings are shown as separate group tables (Group A, Group B, …) automatically.</p>
@@ -1654,6 +1683,7 @@ const helpContent = {
 
   'knockout-results': {
     title: 'Knockout Results',
+    titleFi: 'Pudotuspelien tulokset',
     body: `
       <p><strong>Knockout Results</strong> lists finished knockout-stage matches, grouped by round in bracket order (Round of 32 → Round of 16 → Quarter-Finals → Semi-Finals → Final).</p>
       <p>Each row shows:</p>
@@ -1679,6 +1709,7 @@ const helpContent = {
 
   'league_veikkausliiga': {
     title: 'Veikkausliiga',
+    titleFi: 'Veikkausliiga',
     body: `
       <p><strong>Veikkausliiga</strong> is the top division of Finnish football. 12 teams play 22 rounds (132 matches per season).</p>
       <p><strong>Odds:</strong> Veikkaus odds plus ~15 international bookmakers via The Odds API, updated twice daily. The <strong>Consensus</strong> view averages implied probabilities across all available bookmakers.</p>
@@ -1693,6 +1724,7 @@ const helpContent = {
 
   'league_mens_international': {
     title: "Men's International League",
+    titleFi: 'Miesten maaottelut',
     body: `
       <p><strong>Men's International:</strong> Combines friendlies, WC qualifiers, UEFA Nations League, and the World Cup into one league so national teams share Elo ratings across all competitions. The model uses a longer time-decay (730 days instead of 60) because international matches are rarer.</p>
       <hr>
@@ -1709,16 +1741,26 @@ export function setupHelpModal() {
   const closeBtn = document.getElementById('help-modal-close');
   const backdrop = modal.querySelector('.help-modal-backdrop');
 
-  function open(key) {
+  let currentKey = null;
+
+  function render(key) {
     const content = helpContent[key];
     if (!content) return;
-    title.textContent = content.title;
-    body.innerHTML = content.body;
+    const { title: t, body: b } = pickHelp(content, getLang());
+    title.textContent = t;
+    body.innerHTML = b;
+  }
+
+  function open(key) {
+    if (!helpContent[key]) return;
+    currentKey = key;
+    render(key);
     modal.classList.remove('hidden');
   }
 
   function close() {
     modal.classList.add('hidden');
+    currentKey = null;
   }
 
   // Event delegation so dynamically-rendered help tips (e.g. inside the
@@ -1731,10 +1773,17 @@ export function setupHelpModal() {
     open(btn.dataset.help);
   });
 
-  // Accessibility labels for tips present at load time.
-  document.querySelectorAll('.help-tip[data-help]').forEach(btn => {
-    const content = helpContent[btn.dataset.help];
-    if (content) btn.setAttribute('aria-label', `Help: ${content.title}`);
+  // Re-render an open modal + refresh aria-labels when the language changes.
+  const refreshAriaLabels = () => {
+    document.querySelectorAll('.help-tip[data-help]').forEach(btn => {
+      const content = helpContent[btn.dataset.help];
+      if (content) btn.setAttribute('aria-label', `Help: ${pickHelp(content, getLang()).title}`);
+    });
+  };
+  refreshAriaLabels();
+  onLangChange(() => {
+    if (currentKey) render(currentKey);
+    refreshAriaLabels();
   });
 
   closeBtn.addEventListener('click', close);
@@ -1742,6 +1791,32 @@ export function setupHelpModal() {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !modal.classList.contains('hidden')) close();
   });
+}
+
+/**
+ * Wire the header language switcher (flag + text buttons). Reflects the current
+ * language as the active button and persists the choice on click. Help modals
+ * subscribe to the change via onLangChange (see setupHelpModal).
+ */
+export function setupLangSwitch() {
+  const sw = document.getElementById('lang-switch');
+  if (!sw) return;
+  const buttons = sw.querySelectorAll('button[data-lang]');
+
+  const paint = () => {
+    const lang = getLang();
+    buttons.forEach(btn => {
+      const active = btn.dataset.lang === lang;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  };
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => setLang(btn.dataset.lang));
+  });
+  onLangChange(paint);
+  paint();
 }
 
 /* === Prediction Tracker Renderer === */

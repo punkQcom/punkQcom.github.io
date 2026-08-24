@@ -3,21 +3,21 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1786889225';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1786889225';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1786889225';
+import { shinProbabilities } from './shin.js?v=1787559929';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787559929';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1787559929';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1786889225';
-import { getSportDefaults } from './sport-config.js?v=1786889225';
-import { computeSplitGroups } from './split-stage.js?v=1786889225';
-import { computeNhlGroups } from './nhl-structure.js?v=1786889225';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1787559929';
+import { getSportDefaults } from './sport-config.js?v=1787559929';
+import { computeSplitGroups } from './split-stage.js?v=1787559929';
+import { computeNhlGroups } from './nhl-structure.js?v=1787559929';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
-  renderBookmakerComparison, setupSliders, setupHelpModal,
+  renderBookmakerComparison, setupSliders, setupHelpModal, setupLangSwitch,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults
-} from './ui.js?v=1786889225';
+} from './ui.js?v=1787559929';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -1422,6 +1422,7 @@ function updateLastUpdateDisplay(isoString) {
 document.addEventListener('DOMContentLoaded', async () => {
   setupSliders();
   setupHelpModal();
+  setupLangSwitch();
 
   // Model sliders — only trigger re-analysis of current match (API call)
   for (const id of ['rho-slider', 'market-trust-slider', 'form-boost-slider', 'prior-weight-slider']) {
