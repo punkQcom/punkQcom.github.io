@@ -3,23 +3,23 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1787728654';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787728654';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1787728654';
+import { shinProbabilities } from './shin.js?v=1787729102';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787729102';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1787729102';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1787728654';
-import { getSportDefaults } from './sport-config.js?v=1787728654';
-import { computeSplitGroups } from './split-stage.js?v=1787728654';
-import { computeNhlGroups } from './nhl-structure.js?v=1787728654';
-import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1787728654';
-import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1787728654';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1787729102';
+import { getSportDefaults } from './sport-config.js?v=1787729102';
+import { computeSplitGroups } from './split-stage.js?v=1787729102';
+import { computeNhlGroups } from './nhl-structure.js?v=1787729102';
+import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1787729102';
+import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1787729102';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal, setupLangSwitch,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults
-} from './ui.js?v=1787728654';
+} from './ui.js?v=1787729102';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {

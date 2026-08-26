@@ -166,7 +166,7 @@ export const TRANSLATIONS = {
   'track.predictedScore': { fi: 'Ennustettu tulos', en: 'Predicted score' },
 
   // P/L simulation
-  'pl.noBets': { fi: 'Ei simuloitavia vetoja (tarvitaan päättyneitä otteluita kertoimineen)', en: 'No bets to simulate (need finished matches with odds)' },
+  'pl.noBets': { fi: 'Ei arvovetoja vielä — simulaatio alkaa 10 päättyneen ottelun jälkeen ja huomioi vain positiivisen edun vedot.', en: 'No value bets yet — the simulation starts after 10 finished matches and only counts positive-edge picks.' },
   'pl.totalPL': { fi: 'Kokonaistulos', en: 'Total P/L' },
   'pl.roi': { fi: 'ROI', en: 'ROI' },
   'pl.maxDrawdown': { fi: 'Suurin pudotus', en: 'Max Drawdown' },
