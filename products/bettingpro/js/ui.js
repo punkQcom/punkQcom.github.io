@@ -2,9 +2,9 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1787773225';
-import { confidenceLevel } from './suggested-bets-format.js?v=1787773225';
-import { TRANSLATIONS } from './translations.js?v=1787773225';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1787773416';
+import { confidenceLevel } from './suggested-bets-format.js?v=1787773416';
+import { TRANSLATIONS } from './translations.js?v=1787773416';
 
 /**
  * Translate a bet/outcome label for display. Labels stay English internally

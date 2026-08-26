@@ -3,16 +3,16 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1787773225';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787773225';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1787773225';
+import { shinProbabilities } from './shin.js?v=1787773416';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787773416';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1787773416';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1787773225';
-import { getSportDefaults } from './sport-config.js?v=1787773225';
-import { computeSplitGroups } from './split-stage.js?v=1787773225';
-import { computeNhlGroups } from './nhl-structure.js?v=1787773225';
-import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1787773225';
-import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1787773225';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1787773416';
+import { getSportDefaults } from './sport-config.js?v=1787773416';
+import { computeSplitGroups } from './split-stage.js?v=1787773416';
+import { computeNhlGroups } from './nhl-structure.js?v=1787773416';
+import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1787773416';
+import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1787773416';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
@@ -20,7 +20,7 @@ import {
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults,
   renderSuggestedBets
-} from './ui.js?v=1787773225';
+} from './ui.js?v=1787773416';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -1249,6 +1249,14 @@ function rerenderAnalysis() {
 
 // ── Detailed analysis via backend API ────────────────────────────────
 
+/** Match-depth setting from the slider (null = all matches). Module-level so both
+ * analyzeMatch and the init-scope helpers can use it. */
+function getMatchDepth() {
+  const slider = document.getElementById('match-depth-slider');
+  const val = slider ? parseInt(slider.value) : 200;
+  return val >= 200 ? null : val;
+}
+
 async function analyzeMatch(homeName, awayName, { scroll = true } = {}) {
   currentAnalyzedMatch = { home: homeName, away: awayName };
 
@@ -1336,8 +1344,7 @@ async function analyzeMatch(homeName, awayName, { scroll = true } = {}) {
     const pred = predictMatch(homeName, awayName);
     if (pred) {
       document.getElementById('score-matrix').innerHTML =
-        `<p class="muted">Detailed analysis unavailable — showing precomputed prediction</p>
-         <p class="muted" style="font-size:0.75rem;opacity:0.7;">(${esc(String(err?.message || err))})</p>`;
+        `<p class="muted">Detailed analysis unavailable — showing precomputed prediction</p>`;
       renderMatchOutcome(
         { home: pred.home, draw: pred.draw, away: pred.away },
         oddsData.home > 0 ? shinProbabilities([oddsData.home, oddsData.draw, oddsData.away]) : [0, 0, 0],
@@ -1603,12 +1610,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (mt) mt.disabled = disabled;
     if (pw) pw.disabled = disabled;
     if (ps) ps.disabled = disabled;
-  }
-
-  function getMatchDepth() {
-    const slider = document.getElementById('match-depth-slider');
-    const val = slider ? parseInt(slider.value) : 200;
-    return val >= 200 ? null : val; // null = all matches
   }
 
   function updateMatchDepthLabel() {
