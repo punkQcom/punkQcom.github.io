@@ -3,16 +3,16 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1787770580';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787770580';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1787770580';
+import { shinProbabilities } from './shin.js?v=1787771723';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787771723';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1787771723';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1787770580';
-import { getSportDefaults } from './sport-config.js?v=1787770580';
-import { computeSplitGroups } from './split-stage.js?v=1787770580';
-import { computeNhlGroups } from './nhl-structure.js?v=1787770580';
-import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1787770580';
-import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1787770580';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1787771723';
+import { getSportDefaults } from './sport-config.js?v=1787771723';
+import { computeSplitGroups } from './split-stage.js?v=1787771723';
+import { computeNhlGroups } from './nhl-structure.js?v=1787771723';
+import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1787771723';
+import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1787771723';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
@@ -20,7 +20,7 @@ import {
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults,
   renderSuggestedBets
-} from './ui.js?v=1787770580';
+} from './ui.js?v=1787771723';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -305,7 +305,7 @@ function populateLeagueDropdown(sport) {
 
   if (leagues.length > 0) {
     populateSeasonSelect(leagues[0]);
-    loadAndShowLeague(leagues[0].id, leagues[0].season);
+    return loadAndShowLeague(leagues[0].id, leagues[0].season);
   }
 }
 
@@ -1755,5 +1755,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Populate selectors and load first league
   populateSportDropdown();
-  populateLeagueDropdown(document.getElementById('sport-select').value);
+  await populateLeagueDropdown(document.getElementById('sport-select').value);
+  // Default to the current-season-only view (toggle off to see other seasons).
+  await handleSeasonOnlyToggle(true);
 });
