@@ -2,9 +2,9 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1787772102';
-import { confidenceLevel } from './suggested-bets-format.js?v=1787772102';
-import { TRANSLATIONS } from './translations.js?v=1787772102';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1787772315';
+import { confidenceLevel } from './suggested-bets-format.js?v=1787772315';
+import { TRANSLATIONS } from './translations.js?v=1787772315';
 
 /**
  * Translate a bet/outcome label for display. Labels stay English internally
@@ -437,7 +437,7 @@ function setupFloatingPanel() {
   const COLLAPSE_KEY = 'bettingpro_sliderPanelCollapsed';
   if (localStorage.getItem(COLLAPSE_KEY) === 'true') {
     body.classList.add('collapsed');
-    toggle.innerHTML = '&#9660;';
+    toggle.innerHTML = '&#9650;'; // collapsed: click to expand upward
   }
 
   // Collapse / expand
@@ -445,7 +445,9 @@ function setupFloatingPanel() {
   header.addEventListener('click', () => {
     body.classList.toggle('collapsed');
     const collapsed = body.classList.contains('collapsed');
-    toggle.innerHTML = collapsed ? '&#9660;' : '&#9650;';
+    // Panel is bottom-anchored: expanding grows upward. Collapsed -> point up
+    // (click to expand up); expanded -> point down (click to collapse down).
+    toggle.innerHTML = collapsed ? '&#9650;' : '&#9660;';
     localStorage.setItem(COLLAPSE_KEY, collapsed);
   });
 
