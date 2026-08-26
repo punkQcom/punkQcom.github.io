@@ -38,7 +38,7 @@ export const TRANSLATIONS = {
   // Model slider panel
   'panel.model': { fi: 'Malli', en: 'Model' },
   'panel.reset': { fi: 'Nollaa', en: 'Reset' },
-  'panel.seasonOnly': { fi: 'Vain kausi', en: 'Season Only' },
+  'panel.seasonOnly': { fi: 'Kuluva kausi', en: 'Season Only' },
 
   // Settings + slider labels
   'set.marketTrust': { fi: 'Markkinoiden luottamus', en: 'Market Trust' },
