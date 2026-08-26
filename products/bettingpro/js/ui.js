@@ -2,9 +2,9 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1787768250';
-import { confidenceLevel } from './suggested-bets-format.js?v=1787768250';
-import { TRANSLATIONS } from './translations.js?v=1787768250';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1787769672';
+import { confidenceLevel } from './suggested-bets-format.js?v=1787769672';
+import { TRANSLATIONS } from './translations.js?v=1787769672';
 
 /**
  * Translate a bet/outcome label for display. Labels stay English internally
@@ -1985,11 +1985,14 @@ export function renderSuggestedBets(data, containerId) {
     html += `<p class="muted">${t('sb.empty')}</p>`;
   } else {
     html += '<div class="tracker-scroll"><table class="results-table tracker-table">';
-    html += `<thead><tr><th>${t('col.date')}</th><th>${t('sb.colLeague')}</th><th>${t('col.match')}</th><th>${t('col.bet')}</th><th>${t('col.odds')}</th><th>${t('col.edge')}</th><th>${t('sb.colConfidence')}</th></tr></thead><tbody>`;
+    html += `<thead><tr><th>${t('col.date')}</th><th>${t('sb.colLeague')}</th><th>${t('col.match')}</th><th>${t('col.bet')}</th><th>${t('col.odds')}</th><th>${t('sb.colBook')}</th><th>${t('col.edge')}</th><th>${t('sb.colConfidence')}</th></tr></thead><tbody>`;
     for (const p of picks) {
       const lvl = confidenceLevel(p.matchesPlayed);
-      html += `<tr><td>${p.date}</td><td>${esc(p.leagueName)}</td><td>${esc(p.homeTeam)} - ${esc(p.awayTeam)}</td>
+      const book = p.bestBook ? `${esc(formatBookmaker(p.bestBook))} @${p.bestOdds.toFixed(2)}` : '—';
+      html += `<tr class="suggested-bet-row" data-league="${esc(p.leagueId)}" data-home="${esc(p.homeTeam)}" data-away="${esc(p.awayTeam)}" tabindex="0" role="button">
+        <td>${p.date}</td><td>${esc(p.leagueName)}</td><td>${esc(p.homeTeam)} - ${esc(p.awayTeam)}</td>
         <td>${translateBetLabel(p.bet)}</td><td>${p.odds.toFixed(2)}</td>
+        <td>${book}</td>
         <td class="value-positive">+${(p.edge * 100).toFixed(1)}%</td>
         <td><span class="conf-dot conf-${lvl}"></span>${t('sb.conf' + lvl[0].toUpperCase() + lvl.slice(1))}</td></tr>`;
     }

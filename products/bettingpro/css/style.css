@@ -1350,6 +1350,10 @@ details.card[open] summary h2::before {
 .conf-warming { background: #fbbf24; }
 .conf-warm { background: #f87171; }
 
+.suggested-bet-row { cursor: pointer; }
+.suggested-bet-row:hover,
+.suggested-bet-row:focus { background: rgba(96, 165, 250, 0.12); outline: none; }
+
 /* === Elo Table === */
 .elo-table td, .elo-table th {
   text-align: center;

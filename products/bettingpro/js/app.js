@@ -3,16 +3,16 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1787768250';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787768250';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1787768250';
+import { shinProbabilities } from './shin.js?v=1787769672';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787769672';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1787769672';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1787768250';
-import { getSportDefaults } from './sport-config.js?v=1787768250';
-import { computeSplitGroups } from './split-stage.js?v=1787768250';
-import { computeNhlGroups } from './nhl-structure.js?v=1787768250';
-import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1787768250';
-import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1787768250';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1787769672';
+import { getSportDefaults } from './sport-config.js?v=1787769672';
+import { computeSplitGroups } from './split-stage.js?v=1787769672';
+import { computeNhlGroups } from './nhl-structure.js?v=1787769672';
+import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1787769672';
+import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1787769672';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
@@ -20,7 +20,7 @@ import {
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults,
   renderSuggestedBets
-} from './ui.js?v=1787768250';
+} from './ui.js?v=1787769672';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -525,6 +525,37 @@ async function loadAndShowLeague(leagueId, season) {
   renderTrackerFiltered();
   renderPLSimulationFiltered();
   renderStandingsFiltered();
+}
+
+/**
+ * Open a Suggested Bet's detailed analysis: switch the whole view to the pick's
+ * league (like picking it from the dropdowns), then analyze the match.
+ */
+async function openSuggestedBet(leagueId, home, away) {
+  const league = (currentMeta?.leagues || []).find(l => l.id === leagueId);
+  if (!league) return;
+  const sportSel = document.getElementById('sport-select');
+  if (sportSel && league.sport && sportSel.value !== league.sport) {
+    sportSel.value = league.sport;
+    populateLeagueDropdown(league.sport);
+  }
+  const leagueSel = document.getElementById('league-select');
+  if (leagueSel) leagueSel.value = String(leagueId);
+  populateSeasonSelect(league);
+  await loadAndShowLeague(league.id, league.season);
+  analyzeMatch(home, away);
+}
+
+/** Render the cross-league Suggested Bets section and wire clickable rows. */
+function refreshSuggestedBets() {
+  renderSuggestedBets(sbCache, 'suggested-bets-container');
+  document.querySelectorAll('.suggested-bet-row').forEach(row => {
+    const open = () => openSuggestedBet(row.dataset.league, row.dataset.home, row.dataset.away);
+    row.addEventListener('click', open);
+    row.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+    });
+  });
 }
 
 // ── Date-based match list ────────────────────────────────────────────
@@ -1444,7 +1475,7 @@ function applyLanguage() {
   applyStaticTranslations();
   retranslateSelects();
   updateLastUpdateDisplay();
-  renderSuggestedBets(sbCache, 'suggested-bets-container');
+  refreshSuggestedBets();
   if (currentLeagueData) {
     if (allDates.length) renderDateView({ skipAutoScroll: true });
     renderStandingsFiltered();
@@ -1720,7 +1751,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Cross-league suggested bets (standalone section)
   sbCache = await loadSuggestedBets();
-  renderSuggestedBets(sbCache, 'suggested-bets-container');
+  refreshSuggestedBets();
 
   // Populate selectors and load first league
   populateSportDropdown();

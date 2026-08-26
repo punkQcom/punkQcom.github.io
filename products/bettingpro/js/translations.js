@@ -180,6 +180,7 @@ export const TRANSLATIONS = {
   'sb.empty': { fi: 'Ei ehdotuksia vielä — päivittyy torstaisin.', en: 'No suggestions yet — updates on Thursdays.' },
   'sb.colLeague': { fi: 'Sarja', en: 'League' },
   'sb.colConfidence': { fi: 'Luottamus', en: 'Confidence' },
+  'sb.colBook': { fi: 'Paras kerroin', en: 'Best book' },
   'sb.confCold': { fi: 'Kylmä', en: 'Cold' },
   'sb.confWarming': { fi: 'Lämpenee', en: 'Warming' },
   'sb.confWarm': { fi: 'Lämmin', en: 'Warm' },
