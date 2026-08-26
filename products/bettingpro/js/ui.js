@@ -2,7 +2,7 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1787729102';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1787729345';
 
 /**
  * Translate a bet/outcome label for display. Labels stay English internally
@@ -1930,8 +1930,9 @@ export function renderPLSimulation(plData, containerId) {
     html += '</div>';
   }
 
-  // Last 20 bets table
-  const recent = bets.slice(-20).reverse();
+  // All bets table (newest first, scrollable)
+  const recent = [...bets].reverse();
+  html += '<div class="tracker-scroll">';
   html += '<table class="results-table tracker-table">';
   html += `<thead><tr><th>${t('col.date')}</th><th>${t('col.match')}</th><th>${t('col.bet')}</th><th>${t('col.odds')}</th><th>${t('col.stake')}</th><th>${t('col.pl')}</th></tr></thead>`;
   html += '<tbody>';
@@ -1950,6 +1951,7 @@ export function renderPLSimulation(plData, containerId) {
   }
 
   html += '</tbody></table>';
+  html += '</div>';
   container.innerHTML = html;
 }
 
