@@ -3,22 +3,23 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1787727861';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787727861';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1787727861';
+import { shinProbabilities } from './shin.js?v=1787728654';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787728654';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1787728654';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1787727861';
-import { getSportDefaults } from './sport-config.js?v=1787727861';
-import { computeSplitGroups } from './split-stage.js?v=1787727861';
-import { computeNhlGroups } from './nhl-structure.js?v=1787727861';
-import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1787727861';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1787728654';
+import { getSportDefaults } from './sport-config.js?v=1787728654';
+import { computeSplitGroups } from './split-stage.js?v=1787728654';
+import { computeNhlGroups } from './nhl-structure.js?v=1787728654';
+import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1787728654';
+import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1787728654';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal, setupLangSwitch,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults
-} from './ui.js?v=1787727861';
+} from './ui.js?v=1787728654';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -534,8 +535,7 @@ function filterByTournament(matches) {
 
 /** Human-readable label for knockout stage values from football-data.org. */
 function stageLabel(stage) {
-  const KNOWN = ['LAST_32', 'LAST_16', 'QUARTER_FINAL', 'SEMI_FINAL', 'THIRD_PLACE', 'FINAL'];
-  return KNOWN.includes(stage) ? t(`stage.${stage}`) : stage.replace(/_/g, ' ');
+  return isKnockoutStage(stage) ? t(`stage.${stage}`) : stage.replace(/_/g, ' ');
 }
 
 /** Short label used for tournament tags on match rows. */
@@ -663,11 +663,11 @@ function buildKnockoutResults(matches) {
   const finished = filterByTournament(
     (matches || []).filter(m =>
       m.homeGoals != null && m.awayGoals != null &&
-      m.stage && m.stage !== 'GROUP_STAGE')
+      isKnockoutStage(m.stage))
   );
   if (finished.length === 0) return null;
 
-  const ROUND_ORDER = ['LAST_32', 'LAST_16', 'QUARTER_FINAL', 'SEMI_FINAL', 'THIRD_PLACE', 'FINAL'];
+  const ROUND_ORDER = KNOCKOUT_STAGE_ORDER;
   const ROUND_LABEL = {
     LAST_32: 'Round of 32',
     LAST_16: 'Round of 16',
@@ -949,7 +949,7 @@ function renderDateView({ skipAutoScroll = false } = {}) {
     // If the date opens with a knockout stage (no group-stage matches first),
     // put the stage header before the date header. Otherwise inject inline.
     const firstMatchStage = matches[0]?.stage;
-    const dateOpensKnockout = firstMatchStage && firstMatchStage !== 'GROUP_STAGE';
+    const dateOpensKnockout = isKnockoutStage(firstMatchStage);
     if (dateOpensKnockout && firstMatchStage !== lastKnockoutStage) {
       lastKnockoutStage = firstMatchStage;
       html += `<div class="knockout-stage-header">${esc(stageLabel(firstMatchStage))}</div>`;
@@ -976,7 +976,7 @@ function renderDateView({ skipAutoScroll = false } = {}) {
       // For mixed dates (group stage + knockout on same day), inject stage header inline
       // between the last group match and the first knockout match.
       if (!dateOpensKnockout) {
-        const mStage = m.stage && m.stage !== 'GROUP_STAGE' ? m.stage : null;
+        const mStage = isKnockoutStage(m.stage) ? m.stage : null;
         if (mStage && mStage !== inlineStageTracked) {
           inlineStageTracked = mStage;
           lastKnockoutStage = mStage;
