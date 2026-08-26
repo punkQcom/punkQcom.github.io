@@ -2,7 +2,9 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1787729345';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1787753933';
+import { confidenceLevel } from './suggested-bets-format.js?v=1787753933';
+import { TRANSLATIONS } from './translations.js?v=1787753933';
 
 /**
  * Translate a bet/outcome label for display. Labels stay English internally
@@ -1681,6 +1683,17 @@ export const helpContent = {
     `,
   },
 
+  'suggested-bets': {
+    title: 'Suggested Bets',
+    titleFi: 'Ehdotetut vedot',
+    body: `
+      <p>${TRANSLATIONS['sb.help'].en}</p>
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      <p>${TRANSLATIONS['sb.help'].fi}</p>
+    `,
+  },
+
   'knockout-results': {
     title: 'Knockout Results',
     titleFi: 'Pudotuspelien tulokset',
@@ -1953,6 +1966,54 @@ export function renderPLSimulation(plData, containerId) {
   html += '</tbody></table>';
   html += '</div>';
   container.innerHTML = html;
+}
+
+/* === Suggested Bets Renderer === */
+
+export function renderSuggestedBets(data, containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const picks = (data && data.currentWeek) || [];
+  const history = (data && data.history) || [];
+  const summary = (data && data.summary) || {};
+
+  let html = `<h3>${t('sb.title')} <button type="button" class="help-tip" data-help="suggested-bets">?</button></h3>`;
+
+  // This week's picks
+  html += `<h4>${t('sb.thisWeek')}</h4>`;
+  if (picks.length === 0) {
+    html += `<p class="muted">${t('sb.empty')}</p>`;
+  } else {
+    html += '<div class="tracker-scroll"><table class="results-table tracker-table">';
+    html += `<thead><tr><th>${t('col.date')}</th><th>${t('sb.colLeague')}</th><th>${t('col.match')}</th><th>${t('col.bet')}</th><th>${t('col.odds')}</th><th>${t('col.edge')}</th><th>${t('sb.colConfidence')}</th></tr></thead><tbody>`;
+    for (const p of picks) {
+      const lvl = confidenceLevel(p.matchesPlayed);
+      html += `<tr><td>${p.date}</td><td>${esc(p.leagueName)}</td><td>${esc(p.homeTeam)} - ${esc(p.awayTeam)}</td>
+        <td>${translateBetLabel(p.bet)}</td><td>${p.odds.toFixed(2)}</td>
+        <td class="value-positive">+${(p.edge * 100).toFixed(1)}%</td>
+        <td><span class="conf-dot conf-${lvl}"></span>${t('sb.conf' + lvl[0].toUpperCase() + lvl.slice(1))}</td></tr>`;
+    }
+    html += '</tbody></table></div>';
+  }
+
+  // Track record (settled history) — reuse P/L summary-card look
+  if (history.length > 0) {
+    const plCls = (summary.totalPL || 0) >= 0 ? 'value-positive' : 'value-negative';
+    html += `<h4>${t('sb.trackRecord')}</h4><div class="tracker-summary">
+      <div class="tracker-stat"><div class="tracker-stat-value ${plCls}">${(summary.totalPL||0) >= 0 ? '+' : ''}${(summary.totalPL||0).toFixed(2)}</div><div class="tracker-stat-label">${t('pl.totalPL')}</div></div>
+      <div class="tracker-stat"><div class="tracker-stat-value ${plCls}">${((summary.roi||0)*100 >= 0 ? '+' : '')}${((summary.roi||0)*100).toFixed(1)}%</div><div class="tracker-stat-label">${t('pl.roi')}</div></div>
+      <div class="tracker-stat"><div class="tracker-stat-value">${((summary.winRate||0)*100).toFixed(1)}%</div><div class="tracker-stat-label">${t('pl.winRate')} (${summary.wins||0}/${summary.settled||0})</div></div>
+    </div>`;
+    html += '<div class="tracker-scroll"><table class="results-table tracker-table">';
+    html += `<thead><tr><th>${t('col.date')}</th><th>${t('col.match')}</th><th>${t('col.bet')}</th><th>${t('col.odds')}</th><th>${t('col.pl')}</th></tr></thead><tbody>`;
+    for (const h of [...history].reverse()) {
+      const cls = h.profit >= 0 ? 'value-positive' : 'value-negative';
+      html += `<tr><td>${h.date}</td><td>${esc(h.homeTeam)} - ${esc(h.awayTeam)}</td><td>${translateBetLabel(h.bet)}</td><td>${h.odds.toFixed(2)}</td><td class="${cls}">${h.profit >= 0 ? '+' : ''}${h.profit.toFixed(2)}</td></tr>`;
+    }
+    html += '</tbody></table></div>';
+  }
+
+  el.innerHTML = html;
 }
 
 /* === Standings Table Renderer === */

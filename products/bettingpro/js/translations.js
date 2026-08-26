@@ -173,6 +173,20 @@ export const TRANSLATIONS = {
   'pl.winRate': { fi: 'Voitto-%', en: 'Win Rate' },
   'pl.betN': { fi: 'Veto #{n}: {val}', en: 'Bet #{n}: {val}' },
 
+  // Suggested Bets (cross-league)
+  'sb.title': { fi: 'Ehdotetut vedot', en: 'Suggested Bets' },
+  'sb.thisWeek': { fi: 'Tämän viikon ehdotukset', en: "This week's picks" },
+  'sb.trackRecord': { fi: 'Tulokset', en: 'Track record' },
+  'sb.empty': { fi: 'Ei ehdotuksia vielä — päivittyy torstaisin.', en: 'No suggestions yet — updates on Thursdays.' },
+  'sb.colLeague': { fi: 'Sarja', en: 'League' },
+  'sb.colConfidence': { fi: 'Luottamus', en: 'Confidence' },
+  'sb.confCold': { fi: 'Kylmä', en: 'Cold' },
+  'sb.confWarming': { fi: 'Lämpenee', en: 'Warming' },
+  'sb.confWarm': { fi: 'Lämmin', en: 'Warm' },
+  'sb.record': { fi: 'Osumat', en: 'Record' },
+  'sb.help': { fi: 'Mallin suosikkivedot tulevista otteluista, koottuna kaikista sarjoista ja seurattuna tasapanoksin (1 yksikkö/veto). Ei tuottotakuuta — urheiluvedonlyöntiä.',
+               en: "The model's favourite bets on upcoming fixtures, gathered across all leagues and tracked at level stakes (1 unit/bet). Not a profit guarantee — this is sports betting." },
+
   // Standings tables
   'st.groupNotStarted': { fi: 'Lohkovaihe ei ole vielä alkanut', en: "Group stage hasn't started yet" },
   'st.groupComplete': { fi: 'Lohkovaihe valmis — lopulliset sijoitukset', en: 'Group Stage Complete — Final Standings' },

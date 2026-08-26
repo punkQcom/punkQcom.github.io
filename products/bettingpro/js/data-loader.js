@@ -122,3 +122,14 @@ export async function loadPredictions(leagueId, season) {
     return null;
   }
 }
+
+/** Load the cross-league suggested-bets feed. Returns null if unavailable. */
+export async function loadSuggestedBets() {
+  try {
+    const data = await fetchJSON(`${DATA_BASE}/suggested-bets.json`);
+    lsSet('suggestedBets', data);
+    return data;
+  } catch {
+    return lsGet('suggestedBets');
+  }
+}
