@@ -3,16 +3,16 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1787771723';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787771723';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1787771723';
+import { shinProbabilities } from './shin.js?v=1787772102';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787772102';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1787772102';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1787771723';
-import { getSportDefaults } from './sport-config.js?v=1787771723';
-import { computeSplitGroups } from './split-stage.js?v=1787771723';
-import { computeNhlGroups } from './nhl-structure.js?v=1787771723';
-import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1787771723';
-import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1787771723';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1787772102';
+import { getSportDefaults } from './sport-config.js?v=1787772102';
+import { computeSplitGroups } from './split-stage.js?v=1787772102';
+import { computeNhlGroups } from './nhl-structure.js?v=1787772102';
+import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1787772102';
+import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1787772102';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
@@ -20,7 +20,7 @@ import {
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults,
   renderSuggestedBets
-} from './ui.js?v=1787771723';
+} from './ui.js?v=1787772102';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -62,6 +62,9 @@ let lastAnalysisContext = null;
 
 // Cached season-only bulk predictions (when toggle is on)
 let seasonOnlyData = null;
+// Reference to the season-only apply function (assigned during init) so module-level
+// code (e.g. loadAndShowLeague) can re-apply the mode when it's toggled on.
+let applySeasonOnly = null;
 
 // Cached cross-league suggested-bets feed (re-rendered on language switch)
 let sbCache = null;
@@ -525,6 +528,12 @@ async function loadAndShowLeague(leagueId, season) {
   renderTrackerFiltered();
   renderPLSimulationFiltered();
   renderStandingsFiltered();
+
+  // Keep "current season only" sticky: re-apply it for the newly loaded league
+  // whenever the toggle is on (covers initial load and every league switch).
+  if (applySeasonOnly && document.getElementById('bar-season-only')?.checked) {
+    await applySeasonOnly(true);
+  }
 }
 
 /**
@@ -1689,6 +1698,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // Expose to module-level code (loadAndShowLeague) so the mode stays sticky.
+  applySeasonOnly = handleSeasonOnlyToggle;
+
   document.getElementById('fp-season-only')?.addEventListener('change', (e) => {
     handleSeasonOnlyToggle(e.target.checked);
   });
@@ -1755,7 +1767,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Populate selectors and load first league
   populateSportDropdown();
+  // loadAndShowLeague auto-applies "current season only" because the toggle
+  // defaults checked; it stays sticky across league switches too.
   await populateLeagueDropdown(document.getElementById('sport-select').value);
-  // Default to the current-season-only view (toggle off to see other seasons).
-  await handleSeasonOnlyToggle(true);
 });
