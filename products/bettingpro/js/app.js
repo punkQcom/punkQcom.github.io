@@ -3,21 +3,22 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1787559929';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787559929';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1787559929';
+import { shinProbabilities } from './shin.js?v=1787727387';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787727387';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1787727387';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1787559929';
-import { getSportDefaults } from './sport-config.js?v=1787559929';
-import { computeSplitGroups } from './split-stage.js?v=1787559929';
-import { computeNhlGroups } from './nhl-structure.js?v=1787559929';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, API_BASE } from './data-loader.js?v=1787727387';
+import { getSportDefaults } from './sport-config.js?v=1787727387';
+import { computeSplitGroups } from './split-stage.js?v=1787727387';
+import { computeNhlGroups } from './nhl-structure.js?v=1787727387';
+import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1787727387';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
   renderBookmakerComparison, setupSliders, setupHelpModal, setupLangSwitch,
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults
-} from './ui.js?v=1787559929';
+} from './ui.js?v=1787727387';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -264,7 +265,7 @@ function populateBookmakerDropdown(data) {
 
   let html = '';
   if (bookmakers.size > 1) {
-    html += '<option value="consensus">Consensus (avg)</option>';
+    html += `<option value="consensus">${t('bk.consensus')}</option>`;
   }
   html += '<option value="veikkaus">Veikkaus</option>';
   for (const key of sorted) {
@@ -283,9 +284,10 @@ const SPORT_LABELS = { football: 'Football', ice_hockey: 'Ice Hockey' };
 function populateSportDropdown() {
   const select = document.getElementById('sport-select');
   const sports = [...new Set((currentMeta?.leagues || []).map(l => l.sport))];
-  select.innerHTML = sports.map(s =>
-    `<option value="${s}">${SPORT_LABELS[s] || s}</option>`
-  ).join('');
+  select.innerHTML = sports.map(s => {
+    const label = ['football', 'ice_hockey'].includes(s) ? t(`sport.${s}`) : (SPORT_LABELS[s] || s);
+    return `<option value="${s}">${label}</option>`;
+  }).join('');
 }
 
 function populateLeagueDropdown(sport) {
@@ -293,7 +295,7 @@ function populateLeagueDropdown(sport) {
   const leagues = (currentMeta?.leagues || []).filter(l => l.sport === sport);
 
   select.innerHTML = leagues.map(l =>
-    `<option value="${l.id}">${l.name} (${l.country})</option>`
+    `<option value="${l.id}">${translateCountrySuffix(`${l.name} (${l.country})`)}</option>`
   ).join('');
 
   if (leagues.length > 0) {
@@ -532,14 +534,8 @@ function filterByTournament(matches) {
 
 /** Human-readable label for knockout stage values from football-data.org. */
 function stageLabel(stage) {
-  return {
-    LAST_32: 'Round of 32',
-    LAST_16: 'Round of 16',
-    QUARTER_FINAL: 'Quarter-Final',
-    SEMI_FINAL: 'Semi-Final',
-    THIRD_PLACE: 'Third-Place Play-off',
-    FINAL: 'Final',
-  }[stage] || stage.replace(/_/g, ' ');
+  const KNOWN = ['LAST_32', 'LAST_16', 'QUARTER_FINAL', 'SEMI_FINAL', 'THIRD_PLACE', 'FINAL'];
+  return KNOWN.includes(stage) ? t(`stage.${stage}`) : stage.replace(/_/g, ' ');
 }
 
 /** Short label used for tournament tags on match rows. */
@@ -891,10 +887,11 @@ function formatDate(dateStr) {
 
   const isSameDay = (a, b) => a.toDateString() === b.toDateString();
 
-  let label = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-  if (isSameDay(d, today)) label = 'Today — ' + label;
-  else if (isSameDay(d, yesterday)) label = 'Yesterday — ' + label;
-  else if (isSameDay(d, tomorrow)) label = 'Tomorrow — ' + label;
+  const locale = getLang() === 'fi' ? 'fi-FI' : 'en-GB';
+  let label = d.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' });
+  if (isSameDay(d, today)) label = `${t('date.today')} — ` + label;
+  else if (isSameDay(d, yesterday)) label = `${t('date.yesterday')} — ` + label;
+  else if (isSameDay(d, tomorrow)) label = `${t('date.tomorrow')} — ` + label;
   return label;
 }
 
@@ -916,7 +913,7 @@ function initDateView(data) {
     .sort();
 
   if (allDates.length === 0) {
-    document.getElementById('match-list').innerHTML = '<p class="muted">No match data available</p>';
+    document.getElementById('match-list').innerHTML = `<p class="muted">${t('elo.noMatchData')}</p>`;
     return;
   }
 
@@ -930,7 +927,7 @@ function renderDateView({ skipAutoScroll = false } = {}) {
   let html = '';
 
   if (visibleRange.start > 0) {
-    html += '<button class="round-nav-btn" id="show-earlier">Show earlier dates</button>';
+    html += `<button class="round-nav-btn" id="show-earlier">${t('list.showEarlier')}</button>`;
   }
 
   const streaks = computeStreaks(currentLeagueData?.matches || []);
@@ -938,7 +935,7 @@ function renderDateView({ skipAutoScroll = false } = {}) {
   const canHideLater = visibleRange.end > defaultDateRange.end;
 
   if (canHideEarlier) {
-    html += '<button class="round-nav-btn hide-nav-btn" id="hide-earlier">Hide earlier dates</button>';
+    html += `<button class="round-nav-btn hide-nav-btn" id="hide-earlier">${t('list.hideEarlier')}</button>`;
   }
 
   const now = new Date();
@@ -960,15 +957,15 @@ function renderDateView({ skipAutoScroll = false } = {}) {
 
     const allFinished = matches.every(m => m.status === 'finished');
     const allUpcoming = matches.every(m => m.status === 'upcoming');
-    const statusLabel = allFinished ? 'Results' : allUpcoming ? 'Upcoming' : 'In Progress';
+    const statusLabel = allFinished ? t('list.statusResults') : allUpcoming ? t('list.statusUpcoming') : t('list.statusInProgress');
     const isToday = date === today;
 
     if (isToday) html += '<div class="today-wrapper">';
     html += `<div class="match-round-header${isToday ? ' today-group' : ''}" data-date="${date}"${isToday ? ' id="today-header"' : ''} tabindex="0" role="button" aria-expanded="true">
       <span class="round-title">${formatDate(date)}</span>
       <span class="col-headers">
-        <span class="col-h">Prediction</span>
-        <span class="col-h">1 X 2</span>
+        <span class="col-h">${t('list.colPrediction')}</span>
+        <span class="col-h">${t('list.col1x2')}</span>
         <span class="col-h">${statusLabel} <span class="toggle-icon">&#x25BE;</span></span>
       </span>
     </div>`;
@@ -1058,8 +1055,8 @@ function renderDateView({ skipAutoScroll = false } = {}) {
       // Streak badges for upcoming matches
       const homeStreak = !isFinished && streaks[m.homeTeam]?.count >= 3 ? streaks[m.homeTeam] : null;
       const awayStreak = !isFinished && streaks[m.awayTeam]?.count >= 3 ? streaks[m.awayTeam] : null;
-      const homeBadge = homeStreak ? ` <span class="streak-badge streak-${homeStreak.type}">${homeStreak.type}${homeStreak.count}</span>` : '';
-      const awayBadge = awayStreak ? ` <span class="streak-badge streak-${awayStreak.type}">${awayStreak.type}${awayStreak.count}</span>` : '';
+      const homeBadge = homeStreak ? ` <span class="streak-badge streak-${homeStreak.type}">${t(`streak.${homeStreak.type}`)}${homeStreak.count}</span>` : '';
+      const awayBadge = awayStreak ? ` <span class="streak-badge streak-${awayStreak.type}">${t(`streak.${awayStreak.type}`)}${awayStreak.count}</span>` : '';
 
       // Tournament tag (internationals only — regular leagues have no tournamentId)
       const tagHtml = m.tournamentId
@@ -1069,7 +1066,7 @@ function renderDateView({ skipAutoScroll = false } = {}) {
       // Significant odds movement badge
       const steam = !isFinished ? detectOddsMovement(m.odds, m.initialOdds || m.previousOdds) : null;
       const steamBadge = steam
-        ? ` <span class="steam-badge" title="${esc(steam.summary)}">\u26A1 ODDS MOVING</span>`
+        ? ` <span class="steam-badge" title="${esc(steam.summary)}">\u26A1 ${t('list.oddsMoving')}</span>`
         : '';
 
       html += `<div class="match-row${isFinished ? ' finished' : ' upcoming'}" data-home="${esc(m.homeTeam)}" data-away="${esc(m.awayTeam)}" tabindex="0" role="button">
@@ -1086,11 +1083,11 @@ function renderDateView({ skipAutoScroll = false } = {}) {
   }
 
   if (canHideLater) {
-    html += '<button class="round-nav-btn hide-nav-btn" id="hide-later">Hide later dates</button>';
+    html += `<button class="round-nav-btn hide-nav-btn" id="hide-later">${t('list.hideLater')}</button>`;
   }
 
   if (visibleRange.end < allDates.length - 1) {
-    html += '<button class="round-nav-btn" id="show-later">Show later dates</button>';
+    html += `<button class="round-nav-btn" id="show-later">${t('list.showLater')}</button>`;
   }
 
   listEl.innerHTML = html;
@@ -1408,21 +1405,65 @@ function renderAnalysisFromApi(apiResponse, context) {
   renderAllBets(allBets);
 }
 
+let lastUpdateIso = null;
 function updateLastUpdateDisplay(isoString) {
+  if (isoString !== undefined) lastUpdateIso = isoString;
   const el = document.getElementById('last-update');
-  if (isoString) {
-    el.textContent = `Last updated: ${new Date(isoString).toLocaleString('en-GB', { hour12: false })}`;
+  const locale = getLang() === 'fi' ? 'fi-FI' : 'en-GB';
+  if (lastUpdateIso) {
+    el.textContent = `${t('nav.lastUpdated')} ${new Date(lastUpdateIso).toLocaleString(locale, { hour12: false })}`;
   } else {
-    el.textContent = 'No data yet';
+    el.textContent = t('nav.noDataYet');
+  }
+}
+
+// ── Language ─────────────────────────────────────────────────────────
+
+/** Re-translate the option labels of the sport/league/bookmaker selects in
+ *  place (preserving selection and avoiding data reloads). */
+function retranslateSelects() {
+  const leagues = currentMeta?.leagues || [];
+  document.querySelectorAll('#sport-select option').forEach(o => {
+    o.textContent = ['football', 'ice_hockey'].includes(o.value) ? t(`sport.${o.value}`) : (SPORT_LABELS[o.value] || o.value);
+  });
+  document.querySelectorAll('#league-select option').forEach(o => {
+    const l = leagues.find(x => String(x.id) === o.value);
+    if (l) o.textContent = translateCountrySuffix(`${l.name} (${l.country})`);
+  });
+  const cons = document.querySelector('#bookmaker-select option[value="consensus"]');
+  if (cons) cons.textContent = t('bk.consensus');
+}
+
+/** Re-render all localized UI when the language changes. */
+function applyLanguage() {
+  document.documentElement.lang = getLang();
+  applyStaticTranslations();
+  retranslateSelects();
+  updateLastUpdateDisplay();
+  if (currentLeagueData) {
+    if (allDates.length) renderDateView({ skipAutoScroll: true });
+    renderStandingsFiltered();
+    renderTrackerFiltered();
+    renderPLSimulationFiltered();
+    updateEloTable();
+  }
+  if (lastApiResponse) rerenderAnalysis();
+  else if (!currentAnalyzedMatch) {
+    const titleEl = document.getElementById('selected-match-title');
+    if (titleEl) titleEl.textContent = t('sec.matchAnalysis');
   }
 }
 
 // ── Initialize ──────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
+  document.documentElement.lang = getLang();
+  applyStaticTranslations();
+  document.getElementById('selected-match-title').textContent = t('sec.matchAnalysis');
   setupSliders();
   setupHelpModal();
   setupLangSwitch();
+  onLangChange(applyLanguage);
 
   // Model sliders — only trigger re-analysis of current match (API call)
   for (const id of ['rho-slider', 'market-trust-slider', 'form-boost-slider', 'prior-weight-slider']) {

@@ -2,6 +2,8 @@
  * Elo Ratings Display — builds and renders an Elo ratings table.
  */
 
+import { t } from './i18n.js?v=1787727387';
+
 const DEFAULT_RATING = 1500;
 const K_FACTOR = 32;
 const HOME_ADVANTAGE = 50;
@@ -107,12 +109,12 @@ export function renderEloTable(eloData, containerId, options = {}) {
   }
 
   if (entries.length === 0) {
-    container.innerHTML = '<p class="muted">No match data available</p>';
+    container.innerHTML = `<p class="muted">${t('elo.noMatchData')}</p>`;
     return;
   }
 
   let html = '<table class="results-table elo-table">';
-  html += '<thead><tr><th>#</th><th>Team</th><th>Rating</th><th>Change</th><th>Form</th><th>P</th></tr></thead>';
+  html += `<thead><tr><th>#</th><th>${t('elo.team')}</th><th>${t('elo.rating')}</th><th>${t('elo.change')}</th><th>${t('elo.form')}</th><th title="${t('st.played')}">${t('elo.played')}</th></tr></thead>`;
   html += '<tbody>';
 
   for (const row of entries) {
@@ -138,8 +140,8 @@ export function renderEloTable(eloData, containerId, options = {}) {
   // "Show all (N)" / "Show top {cap}" toggle when capping applies (unscoped view only).
   if (capApplies && total > cap) {
     html += showAll
-      ? `<button class="elo-toggle" data-action="show-top">Show top ${cap}</button>`
-      : `<button class="elo-toggle" data-action="show-all">Show all (${total})</button>`;
+      ? `<button class="elo-toggle" data-action="show-top">${t('elo.showTop', { cap })}</button>`
+      : `<button class="elo-toggle" data-action="show-all">${t('elo.showAllN', { n: total })}</button>`;
   }
 
   container.innerHTML = html;

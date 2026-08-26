@@ -2,7 +2,22 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange } from './i18n.js?v=1787559929';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1787727387';
+
+/**
+ * Translate a bet/outcome label for display. Labels stay English internally
+ * (they drive logic like `label.includes('Home Win')`); this only localizes
+ * the text shown to the user, preserving the "(Team)" and line-number parts.
+ */
+function translateBetLabel(label) {
+  if (label === 'Draw') return t('outcome.draw');
+  let m;
+  if ((m = label.match(/^Home Win(.*)$/))) return t('outcome.homeWin') + m[1];
+  if ((m = label.match(/^Away Win(.*)$/))) return t('outcome.awayWin') + m[1];
+  if ((m = label.match(/^Over (.+)$/))) return `${t('label.over')} ${m[1]}`;
+  if ((m = label.match(/^Under (.+)$/))) return `${t('label.under')} ${m[1]}`;
+  return label;
+}
 
 /** Escape HTML to prevent XSS when inserting into innerHTML. */
 function esc(str) {
@@ -36,7 +51,7 @@ export function renderTournamentFilter(tournaments, activeId, onChange) {
   container.hidden = false;
 
   const buttons = [
-    { id: 'all', label: 'All' },
+    { id: 'all', label: t('list.all') },
     ...tournaments.map(t => ({ id: t.id, label: t.label })),
   ];
 
@@ -70,7 +85,7 @@ export function renderMatchContext(match, tournaments) {
     return;
   }
   const label = tournaments?.find(t => t.id === match.tournamentId)?.label || match.tournamentId;
-  const venueLabel = match.neutralVenue ? ' · Neutral venue' : '';
+  const venueLabel = match.neutralVenue ? ` · ${t('ctx.neutralVenue')}` : '';
   el.hidden = false;
   el.innerHTML = `${esc(label)}${esc(venueLabel)} <button type="button" class="help-tip" data-help="${match.neutralVenue ? 'neutral_venue' : 'league_mens_international'}">?</button>`;
 }
@@ -98,39 +113,24 @@ export function renderScoreMatrix(matrix, homeName, awayName, predictedScore, ou
     const [pH, pA] = predictedScore.split('-').map(Number);
     const predOutcome = pH > pA ? 'home' : pH < pA ? 'away' : 'draw';
     const mlOutcome = maxI > maxJ ? 'home' : maxI < maxJ ? 'away' : 'draw';
-    const outcomeLabels = {
-      home: `Home Win (${(outcomes.home * 100).toFixed(0)}%)`,
-      draw: `Draw (${(outcomes.draw * 100).toFixed(0)}%)`,
-      away: `Away Win (${(outcomes.away * 100).toFixed(0)}%)`,
-    };
-    const outcomeLabelsfi = {
-      home: `Kotivoitto (${(outcomes.home * 100).toFixed(0)}%)`,
-      draw: `Tasapeli (${(outcomes.draw * 100).toFixed(0)}%)`,
-      away: `Vierasvoitto (${(outcomes.away * 100).toFixed(0)}%)`,
-    };
-    const outcomeSumFi = { home: 'kotivoitto', draw: 'tasapeli', away: 'vierasvoitto' };
+    const outKey = { home: 'outcome.homeWin', draw: 'outcome.draw', away: 'outcome.awayWin' };
+    const pctOf = { home: outcomes.home, draw: outcomes.draw, away: outcomes.away };
+    const label = `${t(outKey[predOutcome])} (${(pctOf[predOutcome] * 100).toFixed(0)}%)`;
+    // "adding up all X scorelines" fragment — differs per language
+    const sum = getLang() === 'fi'
+      ? { home: 'kotivoitto', draw: 'tasapeli', away: 'vierasvoitto' }[predOutcome]
+      : { home: 'home win', draw: 'draw', away: 'away win' }[predOutcome];
 
-    let explanation;
-    if (predOutcome !== mlOutcome) {
-      explanation = `The prediction is the most likely score for the predicted outcome (${outcomeLabels[predOutcome]}). `
-        + `${maxI}-${maxJ} has the highest individual probability, but adding up all ${predOutcome === 'home' ? 'home win' : predOutcome === 'away' ? 'away win' : 'draw'} scorelines gives a higher total. `
-        + `For <strong>1X2 bets</strong>, follow the outcome probabilities below. For <strong>exact score bets</strong>, use the matrix.`
-        + `<br>Ennuste on todennäköisin tulos ennustetulle lopputulokselle (${outcomeLabelsfi[predOutcome]}). `
-        + `${maxI}-${maxJ}:llä on korkein yksittäinen todennäköisyys, mutta kaikkien ${outcomeSumFi[predOutcome]}tulosten summa on suurempi. `
-        + `<strong>1X2-vedoissa</strong> seuraa lopputulostodennäköisyyksiä alla. <strong>Täsmätulosvedoissa</strong> käytä matriisia.`;
-    } else {
-      explanation = `Both scores belong to the same outcome (${outcomeLabels[predOutcome]}), but ${mostLikely} has the highest individual probability across all scorelines. `
-        + `For <strong>1X2 bets</strong>, follow the outcome probabilities below. For <strong>exact score bets</strong>, use the matrix.`
-        + `<br>Molemmat tulokset kuuluvat samaan lopputulokseen (${outcomeLabelsfi[predOutcome]}), mutta ${mostLikely}:llä on korkein yksittäinen todennäköisyys. `
-        + `<strong>1X2-vedoissa</strong> seuraa lopputulostodennäköisyyksiä alla. <strong>Täsmätulosvedoissa</strong> käytä matriisia.`;
-    }
+    const explanation = (predOutcome !== mlOutcome)
+      ? t('sm.explainDiff', { label, ml: `${maxI}-${maxJ}`, sum })
+      : t('sm.explainSame', { label, ml: mostLikely });
 
     el.innerHTML =
-      `Prediction: ${esc(homeName)} <strong>${predictedScore}</strong> ${esc(awayName)} &nbsp;·&nbsp; Most likely scoreline: ${maxI} - ${maxJ} (${(maxProb * 100).toFixed(1)}%)`
+      `${t('sm.prediction')} ${esc(homeName)} <strong>${predictedScore}</strong> ${esc(awayName)} &nbsp;·&nbsp; ${t('sm.mostLikelyScoreline')} ${maxI} - ${maxJ} (${(maxProb * 100).toFixed(1)}%)`
       + `<br><small class="score-matrix-note">${explanation}</small>`;
   } else {
     el.textContent =
-      `Most likely: ${homeName} ${maxI} - ${maxJ} ${awayName} (${(maxProb * 100).toFixed(1)}%)`;
+      `${t('sm.mostLikely')} ${homeName} ${maxI} - ${maxJ} ${awayName} (${(maxProb * 100).toFixed(1)}%)`;
   }
 
   // Away team name spanning the top
@@ -164,9 +164,9 @@ export function renderScoreMatrix(matrix, homeName, awayName, predictedScore, ou
 export function renderMatchOutcome(outcomes, bookmakerProbs, homeName, awayName) {
   const container = document.getElementById('match-outcome');
   const data = [
-    { label: `Home (${homeName})`, pct: outcomes.home, bookPct: bookmakerProbs[0], cls: 'home' },
-    { label: 'Draw', pct: outcomes.draw, bookPct: bookmakerProbs[1], cls: 'draw' },
-    { label: `Away (${awayName})`, pct: outcomes.away, bookPct: bookmakerProbs[2], cls: 'away' },
+    { label: `${t('outcome.home')} (${homeName})`, pct: outcomes.home, bookPct: bookmakerProbs[0], cls: 'home' },
+    { label: t('outcome.draw'), pct: outcomes.draw, bookPct: bookmakerProbs[1], cls: 'draw' },
+    { label: `${t('outcome.away')} (${awayName})`, pct: outcomes.away, bookPct: bookmakerProbs[2], cls: 'away' },
   ];
 
   container.innerHTML = data.map(d => {
@@ -176,7 +176,7 @@ export function renderMatchOutcome(outcomes, bookmakerProbs, homeName, awayName)
     <div class="outcome-row">
       <div class="outcome-label">
         <span>${d.label}</span>
-        <span>${(d.pct * 100).toFixed(1)}% <span class="outcome-odds" title="Model fair odds">${modelOdds}</span> (book: ${(d.bookPct * 100).toFixed(1)}% <span class="outcome-odds book" title="Bookmaker implied odds">${bookOdds}</span>)</span>
+        <span>${(d.pct * 100).toFixed(1)}% <span class="outcome-odds" title="${t('outcome.modelFairOdds')}">${modelOdds}</span> (${t('outcome.book')}: ${(d.bookPct * 100).toFixed(1)}% <span class="outcome-odds book" title="${t('outcome.bookImpliedOdds')}">${bookOdds}</span>)</span>
       </div>
       <div class="outcome-bar-track">
         <div class="outcome-bar-fill ${d.cls}" style="width:${(d.pct * 100).toFixed(1)}%"></div>
@@ -188,13 +188,13 @@ export function renderMatchOutcome(outcomes, bookmakerProbs, homeName, awayName)
 
 export function renderOverUnder(ouResults) {
   const table = document.getElementById('ou-results');
-  let html = '<thead><tr><th>Line</th><th>Your %</th><th>Bookmaker %</th><th>Edge</th></tr></thead><tbody>';
+  let html = `<thead><tr><th>${t('col.line')}</th><th>${t('col.yourPct')}</th><th>${t('col.bookmakerPct')}</th><th>${t('col.edge')}</th></tr></thead><tbody>`;
 
   for (const row of ouResults) {
     const edgeClass = row.edge > 0 ? 'value-positive' : 'value-negative';
     const edgeSign = row.edge > 0 ? '+' : '';
     html += `<tr>
-      <td>${row.label}</td>
+      <td>${translateBetLabel(row.label)}</td>
       <td>${(row.yourProb * 100).toFixed(1)}%</td>
       <td>${(row.bookProb * 100).toFixed(1)}%</td>
       <td class="${edgeClass}">${edgeSign}${(row.edge * 100).toFixed(1)}%</td>
@@ -212,11 +212,11 @@ export function renderValueBets(bets, minEdge = 0, bestOdds = {}) {
   const belowThreshold = bets.filter(b => b.edge > 0 && b.edge <= minEdgeFrac).length;
 
   if (valueBets.length === 0 && belowThreshold === 0) {
-    table.innerHTML = '<tbody><tr><td colspan="6" style="text-align:center;color:#9ca3af;">No value bets found</td></tr></tbody>';
+    table.innerHTML = `<tbody><tr><td colspan="6" style="text-align:center;color:#9ca3af;">${t('bets.noValueBets')}</td></tr></tbody>`;
     return;
   }
 
-  let html = '<thead><tr><th>Bet</th><th>Your %</th><th>Book %</th><th>Edge</th><th>Kelly %</th><th>Stake</th></tr></thead><tbody>';
+  let html = `<thead><tr><th>${t('col.bet')}</th><th>${t('col.yourPct')}</th><th>${t('col.bookPct')}</th><th>${t('col.edge')}</th><th>${t('col.kelly')}</th><th>${t('col.stake')}</th></tr></thead><tbody>`;
 
   valueBets.sort((a, b) => b.edge - a.edge);
   for (const bet of valueBets) {
@@ -225,10 +225,10 @@ export function renderValueBets(bets, minEdge = 0, bestOdds = {}) {
     const bo = bet.label.includes('Home Win') ? bestOdds.home
       : bet.label === 'Draw' ? bestOdds.draw
       : bet.label.includes('Away Win') ? bestOdds.away : null;
-    if (bo?.book) bestInfo = `<span class="best-odds-info">Best: ${formatBookmaker(bo.book)} @ ${bo.odds.toFixed(2)}</span>`;
+    if (bo?.book) bestInfo = `<span class="best-odds-info">${t('bets.best')} ${formatBookmaker(bo.book)} @ ${bo.odds.toFixed(2)}</span>`;
 
     html += `<tr>
-      <td>${bet.label}${bestInfo}</td>
+      <td>${translateBetLabel(bet.label)}${bestInfo}</td>
       <td class="value-positive">${(bet.yourProb * 100).toFixed(1)}%</td>
       <td>${(bet.bookProb * 100).toFixed(1)}%</td>
       <td class="value-positive">+${(bet.edge * 100).toFixed(1)}%</td>
@@ -238,7 +238,7 @@ export function renderValueBets(bets, minEdge = 0, bestOdds = {}) {
   }
 
   if (belowThreshold > 0) {
-    html += `<tr><td colspan="6" style="text-align:center;color:#9ca3af;font-size:0.85rem;">${belowThreshold} more bet${belowThreshold > 1 ? 's' : ''} below ${minEdge}% edge threshold</td></tr>`;
+    html += `<tr><td colspan="6" style="text-align:center;color:#9ca3af;font-size:0.85rem;">${t('bets.moreBelowThreshold', { n: belowThreshold, edge: minEdge })}</td></tr>`;
   }
 
   html += '</tbody>';
@@ -247,7 +247,7 @@ export function renderValueBets(bets, minEdge = 0, bestOdds = {}) {
 
 export function renderAllBets(bets) {
   const table = document.getElementById('all-bets');
-  let html = '<thead><tr><th>Bet</th><th>Your %</th><th>Book %</th><th>Edge</th><th>Kelly %</th><th>Stake</th></tr></thead><tbody>';
+  let html = `<thead><tr><th>${t('col.bet')}</th><th>${t('col.yourPct')}</th><th>${t('col.bookPct')}</th><th>${t('col.edge')}</th><th>${t('col.kelly')}</th><th>${t('col.stake')}</th></tr></thead><tbody>`;
 
   const sorted = [...bets].sort((a, b) => b.edge - a.edge);
   for (const bet of sorted) {
@@ -255,7 +255,7 @@ export function renderAllBets(bets) {
     const edgeClass = bet.edge > 0 ? 'value-positive' : 'value-negative';
     const edgeSign = bet.edge > 0 ? '+' : '';
     html += `<tr>
-      <td>${bet.label}</td>
+      <td>${translateBetLabel(bet.label)}</td>
       <td>${(bet.yourProb * 100).toFixed(1)}%</td>
       <td>${hasBook ? (bet.bookProb * 100).toFixed(1) + '%' : '—'}</td>
       <td class="${hasBook ? edgeClass : ''}">${hasBook ? edgeSign + (bet.edge * 100).toFixed(1) + '%' : '—'}${hasBook && bet.edge < -0.03 ? ' <span class="overvalued-tag">OV</span>' : ''}</td>
@@ -272,15 +272,15 @@ export function renderFades(fades) {
   const table = document.getElementById('fades-table');
 
   if (fades.length === 0) {
-    table.innerHTML = '<tbody><tr><td colspan="4" style="text-align:center;color:#9ca3af;">No overvalued outcomes found</td></tr></tbody>';
+    table.innerHTML = `<tbody><tr><td colspan="4" style="text-align:center;color:#9ca3af;">${t('fades.noOvervalued')}</td></tr></tbody>`;
     return;
   }
 
-  let html = '<thead><tr><th>Overvalued Outcome</th><th>Book %</th><th>Model %</th><th>Overvalued By</th></tr></thead><tbody>';
+  let html = `<thead><tr><th>${t('fades.overvaluedOutcome')}</th><th>${t('col.bookPct')}</th><th>${t('col.modelPct')}</th><th>${t('fades.overvaluedBy')}</th></tr></thead><tbody>`;
 
   for (const fade of fades) {
     html += `<tr>
-      <td>${fade.label}</td>
+      <td>${translateBetLabel(fade.label)}</td>
       <td>${(fade.bookProb * 100).toFixed(1)}%</td>
       <td>${(fade.yourProb * 100).toFixed(1)}%</td>
       <td class="value-negative">${(fade.overvaluedBy * 100).toFixed(1)}%</td>
@@ -289,9 +289,9 @@ export function renderFades(fades) {
     // Show counter-bets (value bets on opposite outcomes)
     for (const cb of fade.counterBets) {
       html += `<tr class="counter-bet-row">
-        <td>&nbsp;&nbsp;&#8627; ${cb.label}</td>
-        <td colspan="2" class="value-positive">Edge +${(cb.edge * 100).toFixed(1)}%</td>
-        <td>Stake ${cb.stake.toFixed(2)}</td>
+        <td>&nbsp;&nbsp;&#8627; ${translateBetLabel(cb.label)}</td>
+        <td colspan="2" class="value-positive">${t('fades.edge')} +${(cb.edge * 100).toFixed(1)}%</td>
+        <td>${t('fades.stake')} ${cb.stake.toFixed(2)}</td>
       </tr>`;
     }
   }
@@ -304,25 +304,25 @@ export function renderBookmakerComparison(rows, homeName, awayName, modelOutcome
   const container = document.getElementById('bookmaker-comparison');
 
   if (rows.length === 0) {
-    container.innerHTML = '<p class="muted" style="text-align:center;">No multi-bookmaker odds available</p>';
+    container.innerHTML = `<p class="muted" style="text-align:center;">${t('comp.noMultiOdds')}</p>`;
     return;
   }
 
   const isPinnacle = benchmarkSource === 'pinnacle';
-  const benchLabel = isPinnacle ? 'Pinnacle (sharp)' : 'Consensus (avg)';
+  const benchLabel = isPinnacle ? t('comp.benchPinnacle') : t('bk.consensus');
 
-  let html = `<p class="benchmark-label">Compared against: <strong>${benchLabel}</strong></p>`;
+  let html = `<p class="benchmark-label">${t('comp.comparedAgainst')} <strong>${benchLabel}</strong></p>`;
   html += `<table class="results-table"><thead><tr>
-    <th>Bookmaker</th>
+    <th>${t('col.bookmaker')}</th>
     <th>1 ${homeName}</th>
-    <th>X Draw</th>
+    <th>X ${t('outcome.draw')}</th>
     <th>2 ${awayName}</th>
   </tr></thead><tbody>`;
 
   // Model row — our predicted probabilities as reference
   if (modelOutcomes) {
     html += `<tr class="model-row">
-      <td><strong>Our Model</strong></td>
+      <td><strong>${t('comp.ourModel')}</strong></td>
       <td><strong>${(modelOutcomes.home * 100).toFixed(1)}%</strong></td>
       <td><strong>${(modelOutcomes.draw * 100).toFixed(1)}%</strong></td>
       <td><strong>${(modelOutcomes.away * 100).toFixed(1)}%</strong></td>
@@ -354,14 +354,14 @@ function comparisonCell(data, isBest = false, isPinnacleBenchmark = false, prevO
   // Positive diff = bookmaker thinks outcome more likely than benchmark = worse odds for bettor
   // Negative diff = bookmaker thinks outcome less likely = better odds for bettor
   const cls = data.diff < -0.02 ? 'comp-value' : data.diff > 0.02 ? 'comp-overvalued' : '';
-  const bestTag = isBest ? ' <span class="best-odds-badge">BEST</span>' : '';
+  const bestTag = isBest ? ` <span class="best-odds-badge">${t('comp.badgeBest')}</span>` : '';
   const sharpTag = (isPinnacleBenchmark && data.diff < -0.03)
-    ? ' <span class="sharp-value-badge">SHARP VALUE</span>' : '';
+    ? ` <span class="sharp-value-badge">${t('comp.badgeSharpValue')}</span>` : '';
   let arrow = '', prevAttr = '';
   if (prevOddsValue != null && Math.abs(data.odds - prevOddsValue) >= 0.03) {
-    let tip = 'was ' + prevOddsValue.toFixed(2);
+    let tip = t('comp.was') + ' ' + prevOddsValue.toFixed(2);
     if (initOddsValue != null && initOddsValue.toFixed(2) !== prevOddsValue.toFixed(2)) {
-      tip += ' (opened ' + initOddsValue.toFixed(2) + ')';
+      tip += ` (${t('comp.opened')} ` + initOddsValue.toFixed(2) + ')';
     }
     prevAttr = ` data-prev="${tip}"`;
     arrow = data.odds > prevOddsValue
@@ -1828,7 +1828,7 @@ export function renderTracker(trackerData, containerId) {
   const { records } = trackerData;
 
   if (records.length === 0) {
-    container.innerHTML = '<p class="muted">No finished matches to track yet</p>';
+    container.innerHTML = `<p class="muted">${t('track.noFinished')}</p>`;
     return;
   }
 
@@ -1842,28 +1842,28 @@ export function renderTracker(trackerData, containerId) {
   let html = '<div class="tracker-summary">';
   html += `<div class="tracker-stat">
     <div class="tracker-stat-value">${((correct1x2 / total) * 100).toFixed(1)}%</div>
-    <div class="tracker-stat-label">1X2 Accuracy (${correct1x2}/${total})</div>
+    <div class="tracker-stat-label">${t('track.1x2Accuracy')} (${correct1x2}/${total})</div>
   </div>`;
   html += `<div class="tracker-stat">
     <div class="tracker-stat-value">${((correctScore / total) * 100).toFixed(1)}%</div>
-    <div class="tracker-stat-label">Exact Score (${correctScore}/${total})</div>
+    <div class="tracker-stat-label">${t('track.exactScore')} (${correctScore}/${total})</div>
   </div>`;
   html += `<div class="tracker-stat">
     <div class="tracker-stat-value">${avgBrierScore.toFixed(3)}</div>
-    <div class="tracker-stat-label">Avg Brier Score</div>
+    <div class="tracker-stat-label">${t('track.avgBrier')}</div>
   </div>`;
   html += '</div>';
 
   // All predictions table (chronological, scrollable)
   html += '<div class="tracker-scroll">';
   html += '<table class="results-table tracker-table">';
-  html += '<thead><tr><th>Date</th><th>Match</th><th>Pred</th><th>Actual</th><th>1X2</th><th>Score</th></tr></thead>';
+  html += `<thead><tr><th>${t('col.date')}</th><th>${t('col.match')}</th><th>${t('track.pred')}</th><th>${t('track.actual')}</th><th>${t('track.1x2')}</th><th>${t('track.score')}</th></tr></thead>`;
   html += '<tbody>';
 
   const sorted = [...records].reverse();
   for (const r of sorted) {
-    const ok1x2 = r.is1x2Correct ? '<span class="value-positive">OK</span>' : '<span class="value-negative">X</span>';
-    const okScore = r.isScoreCorrect ? '<span class="value-positive">OK</span>' : '<span class="value-negative">X</span>';
+    const ok1x2 = r.is1x2Correct ? `<span class="value-positive">${t('track.ok')}</span>` : `<span class="value-negative">${t('track.miss')}</span>`;
+    const okScore = r.isScoreCorrect ? `<span class="value-positive">${t('track.ok')}</span>` : `<span class="value-negative">${t('track.miss')}</span>`;
     html += `<tr>
       <td>${r.date}</td>
       <td>${r.homeTeam} - ${r.awayTeam}</td>
@@ -1888,7 +1888,7 @@ export function renderPLSimulation(plData, containerId) {
   const { bets, cumulative, summary } = plData;
 
   if (bets.length === 0) {
-    container.innerHTML = '<p class="muted">No bets to simulate (need finished matches with odds)</p>';
+    container.innerHTML = `<p class="muted">${t('pl.noBets')}</p>`;
     return;
   }
 
@@ -1899,19 +1899,19 @@ export function renderPLSimulation(plData, containerId) {
   let html = '<div class="tracker-summary">';
   html += `<div class="tracker-stat">
     <div class="tracker-stat-value ${plClass}">${summary.totalPL >= 0 ? '+' : ''}${summary.totalPL.toFixed(2)}</div>
-    <div class="tracker-stat-label">Total P/L</div>
+    <div class="tracker-stat-label">${t('pl.totalPL')}</div>
   </div>`;
   html += `<div class="tracker-stat">
     <div class="tracker-stat-value ${roiClass}">${summary.roi >= 0 ? '+' : ''}${summary.roi.toFixed(1)}%</div>
-    <div class="tracker-stat-label">ROI</div>
+    <div class="tracker-stat-label">${t('pl.roi')}</div>
   </div>`;
   html += `<div class="tracker-stat">
     <div class="tracker-stat-value">${(summary.winRate * 100).toFixed(1)}%</div>
-    <div class="tracker-stat-label">Win Rate (${summary.wins}/${summary.totalBets})</div>
+    <div class="tracker-stat-label">${t('pl.winRate')} (${summary.wins}/${summary.totalBets})</div>
   </div>`;
   html += `<div class="tracker-stat">
     <div class="tracker-stat-value value-negative">${summary.maxDrawdown.toFixed(2)}</div>
-    <div class="tracker-stat-label">Max Drawdown</div>
+    <div class="tracker-stat-label">${t('pl.maxDrawdown')}</div>
   </div>`;
   html += '</div>';
 
@@ -1925,7 +1925,7 @@ export function renderPLSimulation(plData, containerId) {
       const val = cumulative[i];
       const heightPct = Math.abs(val) / maxAbs * 100;
       const cls = val >= 0 ? 'pl-bar-pos' : 'pl-bar-neg';
-      html += `<div class="pl-bar ${cls}" style="height:${Math.max(2, heightPct)}%" title="Bet #${i + 1}: ${val >= 0 ? '+' : ''}${val.toFixed(2)}"></div>`;
+      html += `<div class="pl-bar ${cls}" style="height:${Math.max(2, heightPct)}%" title="${t('pl.betN', { n: i + 1, val: (val >= 0 ? '+' : '') + val.toFixed(2) })}"></div>`;
     }
     html += '</div>';
   }
@@ -1933,7 +1933,7 @@ export function renderPLSimulation(plData, containerId) {
   // Last 20 bets table
   const recent = bets.slice(-20).reverse();
   html += '<table class="results-table tracker-table">';
-  html += '<thead><tr><th>Date</th><th>Match</th><th>Bet</th><th>Odds</th><th>Stake</th><th>P/L</th></tr></thead>';
+  html += `<thead><tr><th>${t('col.date')}</th><th>${t('col.match')}</th><th>${t('col.bet')}</th><th>${t('col.odds')}</th><th>${t('col.stake')}</th><th>${t('col.pl')}</th></tr></thead>`;
   html += '<tbody>';
 
   for (const b of recent) {
@@ -1942,7 +1942,7 @@ export function renderPLSimulation(plData, containerId) {
     html += `<tr>
       <td>${b.date}</td>
       <td>${b.homeTeam} - ${b.awayTeam}</td>
-      <td>${b.bet}</td>
+      <td>${translateBetLabel(b.bet)}</td>
       <td>${b.odds.toFixed(2)}</td>
       <td>${b.stake.toFixed(2)}</td>
       <td class="${plCls}">${sign}${b.profit.toFixed(2)}</td>
@@ -1963,16 +1963,16 @@ export function renderStandings(data, containerId) {
   if (data && data.groupedRows) {
     const groups = data.groupedRows;
     if (Object.keys(groups).length === 0) {
-      container.innerHTML = '<p class="muted">Group stage hasn\'t started yet</p>';
+      container.innerHTML = `<p class="muted">${t('st.groupNotStarted')}</p>`;
       return;
     }
     let html = '';
     if (data.groupStageComplete) {
-      html += '<div class="group-stage-complete-banner">Group Stage Complete — Final Standings</div>';
+      html += `<div class="group-stage-complete-banner">${t('st.groupComplete')}</div>`;
     }
     html += '<div class="standings-groups">';
     for (const [key, rows] of Object.entries(groups)) {
-      const label = key.replace('GROUP_', 'Group ');
+      const label = key.replace('GROUP_', `${t('st.group')} `);
       html += `<div class="standings-group"><h4 class="standings-group-header">${esc(label)}</h4>`;
       html += buildStandingsTable(rows, data.sport);
       html += '</div>';
@@ -1984,14 +1984,16 @@ export function renderStandings(data, containerId) {
 
   // Split-stage mode (Veikkausliiga-style): two carried-over group tables + full table.
   if (data && data.splitGroups) {
+    const splitKey = { 'Championship Group': 'st.championshipGroup', 'Relegation Group': 'st.relegationGroup' };
     let html = '<div class="standings-groups">';
     for (const [label, rows] of Object.entries(data.splitGroups)) {
-      html += `<div class="standings-group"><h4 class="standings-group-header">${esc(label)}</h4>`;
+      const shown = splitKey[label] ? t(splitKey[label]) : label;
+      html += `<div class="standings-group"><h4 class="standings-group-header">${esc(shown)}</h4>`;
       html += buildStandingsTable(rows, data.sport);
       html += '</div>';
     }
     html += '</div>';
-    html += `<div class="standings-full"><h4 class="standings-group-header">Full Table</h4>`;
+    html += `<div class="standings-full"><h4 class="standings-group-header">${t('st.fullTable')}</h4>`;
     html += buildStandingsTable(data.rows || [], data.sport);
     html += '</div>';
     container.innerHTML = html;
@@ -2002,7 +2004,7 @@ export function renderStandings(data, containerId) {
   if (data && data.nhlGroups) {
     let html = '';
     for (const [conf, divs] of Object.entries(data.nhlGroups)) {
-      html += `<div class="standings-conference"><h3 class="standings-conference-header">${esc(conf)} Conference</h3>`;
+      html += `<div class="standings-conference"><h3 class="standings-conference-header">${esc(conf)} ${t('st.conference')}</h3>`;
       html += '<div class="standings-groups">';
       for (const [div, rows] of Object.entries(divs)) {
         html += `<div class="standings-group"><h4 class="standings-group-header">${esc(div)}</h4>`;
@@ -2019,7 +2021,7 @@ export function renderStandings(data, containerId) {
   const rows = Array.isArray(data) ? data : (data?.rows || []);
   const sport = Array.isArray(data) ? 'football' : (data?.sport || 'football');
   if (!rows || rows.length === 0) {
-    container.innerHTML = '<p class="muted">No match data available</p>';
+    container.innerHTML = `<p class="muted">${t('elo.noMatchData')}</p>`;
     return;
   }
   container.innerHTML = buildStandingsTable(rows, sport);
@@ -2038,7 +2040,7 @@ export function renderKnockoutResults(rounds, containerId) {
   }
 
   let html = '<div class="knockout-results">';
-  html += '<h3 class="knockout-results-title">Knockout Results <button type="button" class="help-tip" data-help="knockout-results">?</button></h3>';
+  html += `<h3 class="knockout-results-title">${t('st.knockoutResults')} <button type="button" class="help-tip" data-help="knockout-results">?</button></h3>`;
   for (const round of rounds) {
     html += '<div class="knockout-round">';
     html += `<h4 class="knockout-round-header">${esc(round.label)}</h4>`;
@@ -2048,10 +2050,10 @@ export function renderKnockoutResults(rounds, containerId) {
       let predCell = '';
       if (m.correct != null) {
         const badge = m.correct
-          ? '<span class="ko-pred ko-pred-ok" title="Our 1X2 prediction was correct">OK</span>'
-          : '<span class="ko-pred ko-pred-miss" title="Our 1X2 prediction missed">X</span>';
+          ? `<span class="ko-pred ko-pred-ok" title="${t('track.predCorrect')}">${t('track.ok')}</span>`
+          : `<span class="ko-pred ko-pred-miss" title="${t('track.predMissed')}">${t('track.miss')}</span>`;
         const score = m.predScore
-          ? `<span class="ko-pred-score" title="Predicted score">${esc(m.predScore)}</span>` : '';
+          ? `<span class="ko-pred-score" title="${t('track.predictedScore')}">${esc(m.predScore)}</span>` : '';
         predCell = score + badge;
       }
       html += `<div class="knockout-tie">
@@ -2070,10 +2072,13 @@ export function renderKnockoutResults(rounds, containerId) {
 function buildStandingsTable(rows, sport) {
   const isHockey = sport === 'ice_hockey';
   let html = '<table class="results-table standings-table">';
+  const h = (titleKey, abbrKey) => `<th title="${t(titleKey)}">${t(abbrKey)}</th>`;
+  const rankTh = `<th title="${t('st.rank')}">#</th>`;
+  const teamTh = `<th>${t('st.team')}</th>`;
   if (isHockey) {
-    html += '<thead><tr><th title="Rank">#</th><th>Team</th><th title="Played">P</th><th title="Won">W</th><th title="OT Win">OTW</th><th title="OT Loss">OTL</th><th title="Lost">L</th><th title="Goals For">GF</th><th title="Goals Against">GA</th><th title="Goal Difference">GD</th><th title="Points">Pts</th></tr></thead>';
+    html += `<thead><tr>${rankTh}${teamTh}${h('st.played','st.playedAbbr')}${h('st.won','st.wonAbbr')}${h('st.otWin','st.otWinAbbr')}${h('st.otLoss','st.otLossAbbr')}${h('st.lost','st.lostAbbr')}${h('st.goalsFor','st.goalsForAbbr')}${h('st.goalsAgainst','st.goalsAgainstAbbr')}${h('st.goalDiff','st.goalDiffAbbr')}${h('st.points','st.pointsAbbr')}</tr></thead>`;
   } else {
-    html += '<thead><tr><th title="Rank">#</th><th>Team</th><th title="Played">P</th><th title="Won">W</th><th title="Drawn">D</th><th title="Lost">L</th><th title="Goals For">GF</th><th title="Goals Against">GA</th><th title="Goal Difference">GD</th><th title="Points">Pts</th></tr></thead>';
+    html += `<thead><tr>${rankTh}${teamTh}${h('st.played','st.playedAbbr')}${h('st.won','st.wonAbbr')}${h('st.drawn','st.drawnAbbr')}${h('st.lost','st.lostAbbr')}${h('st.goalsFor','st.goalsForAbbr')}${h('st.goalsAgainst','st.goalsAgainstAbbr')}${h('st.goalDiff','st.goalDiffAbbr')}${h('st.points','st.pointsAbbr')}</tr></thead>`;
   }
   html += '<tbody>';
   for (const row of rows) {
