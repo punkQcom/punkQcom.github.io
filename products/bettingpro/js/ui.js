@@ -2,9 +2,9 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1787773416';
-import { confidenceLevel } from './suggested-bets-format.js?v=1787773416';
-import { TRANSLATIONS } from './translations.js?v=1787773416';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1787855696';
+import { confidenceLevel } from './suggested-bets-format.js?v=1787855696';
+import { TRANSLATIONS } from './translations.js?v=1787855696';
 
 /**
  * Translate a bet/outcome label for display. Labels stay English internally
@@ -1980,6 +1980,15 @@ export function renderSuggestedBets(data, containerId) {
   const summary = (data && data.summary) || {};
 
   let html = `<h3>${t('sb.title')} <button type="button" class="help-tip" data-help="suggested-bets">?</button></h3>`;
+
+  // Last generated timestamp (from the pipeline's Thursday run)
+  if (data && data.generatedAt) {
+    const d = new Date(data.generatedAt);
+    if (!isNaN(d)) {
+      const stamp = d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+      html += `<p class="muted sb-updated">${t('sb.lastUpdated')}: ${esc(stamp)}</p>`;
+    }
+  }
 
   // This week's picks
   html += `<h4>${t('sb.thisWeek')}</h4>`;

@@ -178,6 +178,7 @@ export const TRANSLATIONS = {
   'sb.thisWeek': { fi: 'Tämän viikon ehdotukset', en: "This week's picks" },
   'sb.trackRecord': { fi: 'Tulokset', en: 'Track record' },
   'sb.empty': { fi: 'Ei ehdotuksia vielä — päivittyy torstaisin.', en: 'No suggestions yet — updates on Thursdays.' },
+  'sb.lastUpdated': { fi: 'Päivitetty', en: 'Updated' },
   'sb.colLeague': { fi: 'Sarja', en: 'League' },
   'sb.colConfidence': { fi: 'Luottamus', en: 'Confidence' },
   'sb.colBook': { fi: 'Paras kerroin', en: 'Best book' },

@@ -3,16 +3,16 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1787773416';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787773416';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1787773416';
+import { shinProbabilities } from './shin.js?v=1787855696';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1787855696';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1787855696';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1787773416';
-import { getSportDefaults } from './sport-config.js?v=1787773416';
-import { computeSplitGroups } from './split-stage.js?v=1787773416';
-import { computeNhlGroups } from './nhl-structure.js?v=1787773416';
-import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1787773416';
-import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1787773416';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1787855696';
+import { getSportDefaults } from './sport-config.js?v=1787855696';
+import { computeSplitGroups } from './split-stage.js?v=1787855696';
+import { computeNhlGroups } from './nhl-structure.js?v=1787855696';
+import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1787855696';
+import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1787855696';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
@@ -20,7 +20,7 @@ import {
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults,
   renderSuggestedBets
-} from './ui.js?v=1787773416';
+} from './ui.js?v=1787855696';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
