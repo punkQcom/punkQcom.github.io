@@ -1333,6 +1333,20 @@ details.card[open] summary h2::before {
 .tracker-scroll {
   max-height: 360px;
   overflow-y: auto;
+  overflow-x: auto;
+}
+
+/* Suggested Bets: keep short columns on a single line (dates like 2026-08-29 and league
+   names were wrapping mid-value); let the Match column absorb any remaining width. */
+.sb-table td:nth-child(1),
+.sb-table th:nth-child(1),
+.sb-table td:nth-child(2),
+.sb-table th:nth-child(2),
+.sb-table td:nth-child(6),
+.sb-table th:nth-child(6),
+.sb-table td:nth-child(8),
+.sb-table th:nth-child(8) {
+  white-space: nowrap;
 }
 
 .tracker-scroll thead {

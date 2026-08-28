@@ -2,9 +2,9 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1787855696';
-import { confidenceLevel } from './suggested-bets-format.js?v=1787855696';
-import { TRANSLATIONS } from './translations.js?v=1787855696';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1787902226';
+import { confidenceLevel } from './suggested-bets-format.js?v=1787902226';
+import { TRANSLATIONS } from './translations.js?v=1787902226';
 
 /**
  * Translate a bet/outcome label for display. Labels stay English internally
@@ -1995,7 +1995,7 @@ export function renderSuggestedBets(data, containerId) {
   if (picks.length === 0) {
     html += `<p class="muted">${t('sb.empty')}</p>`;
   } else {
-    html += '<div class="tracker-scroll"><table class="results-table tracker-table">';
+    html += '<div class="tracker-scroll"><table class="results-table tracker-table sb-table">';
     html += `<thead><tr><th>${t('col.date')}</th><th>${t('sb.colLeague')}</th><th>${t('col.match')}</th><th>${t('col.bet')}</th><th>${t('col.odds')}</th><th>${t('sb.colBook')}</th><th>${t('col.edge')}</th><th>${t('sb.colConfidence')}</th></tr></thead><tbody>`;
     for (const p of picks) {
       const lvl = confidenceLevel(p.matchesPlayed);
