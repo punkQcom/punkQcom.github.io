@@ -2,9 +2,9 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1787902226';
-import { confidenceLevel } from './suggested-bets-format.js?v=1787902226';
-import { TRANSLATIONS } from './translations.js?v=1787902226';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1788452064';
+import { confidenceLevel, splitPicks } from './suggested-bets-format.js?v=1788452064';
+import { TRANSLATIONS } from './translations.js?v=1788452064';
 
 /**
  * Translate a bet/outcome label for display. Labels stay English internally
@@ -1978,6 +1978,25 @@ export function renderSuggestedBets(data, containerId) {
   const picks = (data && data.currentWeek) || [];
   const history = (data && data.history) || [];
   const summary = (data && data.summary) || {};
+  const { reliable, speculative } = splitPicks(picks);
+
+  // Local helper — renders a picks array into the shared table markup
+  const picksTableHtml = (rows) => {
+    let s = '<div class="tracker-scroll"><table class="results-table tracker-table sb-table">';
+    s += `<thead><tr><th>${t('col.date')}</th><th>${t('sb.colLeague')}</th><th>${t('col.match')}</th><th>${t('col.bet')}</th><th>${t('col.odds')}</th><th>${t('sb.colBook')}</th><th>${t('col.edge')}</th><th>${t('sb.colConfidence')}</th></tr></thead><tbody>`;
+    for (const p of rows) {
+      const lvl = confidenceLevel(p.matchesPlayed);
+      const book = p.bestBook ? `${esc(formatBookmaker(p.bestBook))} @${p.bestOdds.toFixed(2)}` : '—';
+      s += `<tr class="suggested-bet-row" data-league="${esc(p.leagueId)}" data-home="${esc(p.homeTeam)}" data-away="${esc(p.awayTeam)}" tabindex="0" role="button">
+        <td>${p.date}</td><td>${esc(p.leagueName)}</td><td>${esc(p.homeTeam)} - ${esc(p.awayTeam)}</td>
+        <td>${translateBetLabel(p.bet)}</td><td>${p.odds.toFixed(2)}</td>
+        <td>${book}</td>
+        <td class="value-positive">+${(p.edge * 100).toFixed(1)}%</td>
+        <td><span class="conf-dot conf-${lvl}"></span>${t('sb.conf' + lvl[0].toUpperCase() + lvl.slice(1))}</td></tr>`;
+    }
+    s += '</tbody></table></div>';
+    return s;
+  };
 
   let html = `<h3>${t('sb.title')} <button type="button" class="help-tip" data-help="suggested-bets">?</button></h3>`;
 
@@ -1992,22 +2011,16 @@ export function renderSuggestedBets(data, containerId) {
 
   // This week's picks
   html += `<h4>${t('sb.thisWeek')}</h4>`;
-  if (picks.length === 0) {
+  if (reliable.length === 0 && speculative.length === 0) {
     html += `<p class="muted">${t('sb.empty')}</p>`;
-  } else {
-    html += '<div class="tracker-scroll"><table class="results-table tracker-table sb-table">';
-    html += `<thead><tr><th>${t('col.date')}</th><th>${t('sb.colLeague')}</th><th>${t('col.match')}</th><th>${t('col.bet')}</th><th>${t('col.odds')}</th><th>${t('sb.colBook')}</th><th>${t('col.edge')}</th><th>${t('sb.colConfidence')}</th></tr></thead><tbody>`;
-    for (const p of picks) {
-      const lvl = confidenceLevel(p.matchesPlayed);
-      const book = p.bestBook ? `${esc(formatBookmaker(p.bestBook))} @${p.bestOdds.toFixed(2)}` : '—';
-      html += `<tr class="suggested-bet-row" data-league="${esc(p.leagueId)}" data-home="${esc(p.homeTeam)}" data-away="${esc(p.awayTeam)}" tabindex="0" role="button">
-        <td>${p.date}</td><td>${esc(p.leagueName)}</td><td>${esc(p.homeTeam)} - ${esc(p.awayTeam)}</td>
-        <td>${translateBetLabel(p.bet)}</td><td>${p.odds.toFixed(2)}</td>
-        <td>${book}</td>
-        <td class="value-positive">+${(p.edge * 100).toFixed(1)}%</td>
-        <td><span class="conf-dot conf-${lvl}"></span>${t('sb.conf' + lvl[0].toUpperCase() + lvl.slice(1))}</td></tr>`;
-    }
-    html += '</tbody></table></div>';
+  } else if (reliable.length > 0) {
+    html += picksTableHtml(reliable);
+  }
+
+  // Speculative / high-risk overrides
+  if (speculative.length > 0) {
+    html += `<h4>${t('sb.speculative')}</h4><p class="muted sb-updated">${t('sb.speculativeNote')}</p>`;
+    html += picksTableHtml(speculative);
   }
 
   // Track record (settled history) — reuse P/L summary-card look
