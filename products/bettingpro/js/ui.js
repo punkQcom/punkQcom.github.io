@@ -2,9 +2,10 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1788452064';
-import { confidenceLevel, splitPicks } from './suggested-bets-format.js?v=1788452064';
-import { TRANSLATIONS } from './translations.js?v=1788452064';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1789142173';
+import { confidenceLevel, splitPicks } from './suggested-bets-format.js?v=1789142173';
+import { TRANSLATIONS } from './translations.js?v=1789142173';
+import { computePLBars } from './pl-simulation-format.js?v=1789142173';
 
 /**
  * Translate a bet/outcome label for display. Labels stay English internally
@@ -1930,17 +1931,14 @@ export function renderPLSimulation(plData, containerId) {
   </div>`;
   html += '</div>';
 
-  // CSS bar chart for cumulative P/L
-  if (cumulative.length > 1) {
-    const maxAbs = Math.max(...cumulative.map(Math.abs), 1);
+  // CSS bar chart — one bar per bet, mapped to its game
+  const { bars } = computePLBars(bets);
+  if (bars.length > 0) {
     html += '<div class="pl-chart">';
-    // Sample bars if too many (show max 60 bars)
-    const step = Math.max(1, Math.floor(cumulative.length / 60));
-    for (let i = 0; i < cumulative.length; i += step) {
-      const val = cumulative[i];
-      const heightPct = Math.abs(val) / maxAbs * 100;
-      const cls = val >= 0 ? 'pl-bar-pos' : 'pl-bar-neg';
-      html += `<div class="pl-bar ${cls}" style="height:${Math.max(2, heightPct)}%" title="${t('pl.betN', { n: i + 1, val: (val >= 0 ? '+' : '') + val.toFixed(2) })}"></div>`;
+    for (const bar of bars) {
+      const sign = bar.runningTotal >= 0 ? '+' : '';
+      const label = `${bets[bar.index].date} ${bets[bar.index].homeTeam}–${bets[bar.index].awayTeam} ${sign}${bar.runningTotal.toFixed(2)}`;
+      html += `<div class="pl-bar ${bar.cls}" style="height:${bar.heightPct}%" data-bet-index="${bar.index}" role="button" tabindex="0" aria-label="${esc(label)}"></div>`;
     }
     html += '</div>';
   }
@@ -1953,9 +1951,10 @@ export function renderPLSimulation(plData, containerId) {
   html += '<tbody>';
 
   for (const b of recent) {
+    const origIndex = bets.indexOf(b);
     const plCls = b.profit >= 0 ? 'value-positive' : 'value-negative';
     const sign = b.profit >= 0 ? '+' : '';
-    html += `<tr>
+    html += `<tr data-bet-index="${origIndex}">
       <td>${b.date}</td>
       <td>${b.homeTeam} - ${b.awayTeam}</td>
       <td>${translateBetLabel(b.bet)}</td>
@@ -1968,6 +1967,61 @@ export function renderPLSimulation(plData, containerId) {
   html += '</tbody></table>';
   html += '</div>';
   container.innerHTML = html;
+
+  const chart = container.querySelector('.pl-chart');
+  if (chart) {
+    let tip = document.getElementById('pl-tooltip');
+    if (!tip) { tip = document.createElement('div'); tip.id = 'pl-tooltip'; tip.hidden = true; document.body.appendChild(tip); }
+    const { bars: barModel } = computePLBars(bets);
+
+    const showTip = (barEl, clientX, clientY) => {
+      const i = Number(barEl.dataset.betIndex);
+      const b = bets[i]; if (!b) return;
+      const running = barModel[i].runningTotal;
+      const rSign = b.profit >= 0 ? '+' : '';
+      const tSign = running >= 0 ? '+' : '';
+      const rCls = b.profit >= 0 ? 'value-positive' : 'value-negative';
+      tip.innerHTML =
+        `<div>${esc(b.date)}</div>` +
+        `<div><strong>${esc(b.homeTeam)} – ${esc(b.awayTeam)}</strong></div>` +
+        `<div>${translateBetLabel(b.bet)} @${b.odds.toFixed(2)} · ${t('col.stake')} ${b.stake.toFixed(2)}</div>` +
+        `<div>${t('pl.tipResult')}: <span class="${rCls}">${rSign}${b.profit.toFixed(2)}</span></div>` +
+        `<div>${t('pl.tipRunning')}: ${tSign}${running.toFixed(2)}</div>`;
+      tip.hidden = false;
+      const pad = 12, w = tip.offsetWidth, h = tip.offsetHeight;
+      let x = clientX + pad, y = clientY + pad;
+      if (x + w > window.innerWidth) x = clientX - w - pad;
+      if (y + h > window.innerHeight) y = clientY - h - pad;
+      tip.style.left = `${Math.max(0, x)}px`;
+      tip.style.top = `${Math.max(0, y)}px`;
+    };
+    const hideTip = () => { tip.hidden = true; };
+
+    chart.addEventListener('mousemove', (e) => {
+      const bar = e.target.closest('.pl-bar');
+      if (bar) showTip(bar, e.clientX, e.clientY); else hideTip();
+    });
+    chart.addEventListener('mouseleave', hideTip);
+
+    const activate = (barEl) => {
+      const i = barEl.dataset.betIndex;
+      const row = container.querySelector(`tr[data-bet-index="${i}"]`);
+      if (!row) return;
+      row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      row.classList.remove('pl-row-flash');
+      void row.offsetWidth; // restart animation
+      row.classList.add('pl-row-flash');
+      setTimeout(() => row.classList.remove('pl-row-flash'), 1600);
+    };
+    chart.addEventListener('click', (e) => {
+      const bar = e.target.closest('.pl-bar'); if (bar) activate(bar);
+    });
+    chart.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const bar = e.target.closest('.pl-bar'); if (!bar) return;
+      e.preventDefault(); activate(bar);
+    });
+  }
 }
 
 /* === Suggested Bets Renderer === */

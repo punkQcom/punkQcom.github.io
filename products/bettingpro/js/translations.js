@@ -172,6 +172,8 @@ export const TRANSLATIONS = {
   'pl.maxDrawdown': { fi: 'Suurin pudotus', en: 'Max Drawdown' },
   'pl.winRate': { fi: 'Voitto-%', en: 'Win Rate' },
   'pl.betN': { fi: 'Veto #{n}: {val}', en: 'Bet #{n}: {val}' },
+  'pl.tipResult': { fi: 'Tulos', en: 'Result' },
+  'pl.tipRunning': { fi: 'Kertymä', en: 'Running total' },
 
   // Suggested Bets (cross-league)
   'sb.title': { fi: 'Ehdotetut vedot', en: 'Suggested Bets' },

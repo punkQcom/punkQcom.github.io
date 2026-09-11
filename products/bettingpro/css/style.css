@@ -1299,6 +1299,34 @@ details.card[open] summary h2::before {
 
 .pl-bar-pos { background: #4ade80; }
 .pl-bar-neg { background: #f87171; }
+.pl-bar { cursor: pointer; }
+.pl-bar:focus-visible { outline: 2px solid #93c5fd; outline-offset: 1px; }
+
+#pl-tooltip {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  max-width: 260px;
+  padding: 8px 10px;
+  background: #1e1e3a;
+  border: 1px solid #3a3a5a;
+  border-radius: 6px;
+  color: #e5e7eb;
+  font-size: 12px;
+  line-height: 1.45;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+#pl-tooltip[hidden] { display: none; }
+
+@keyframes pl-row-flash-kf {
+  from { background: rgba(147,197,253,0.35); }
+  to   { background: transparent; }
+}
+.pl-row-flash { animation: pl-row-flash-kf 1.5s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pl-row-flash { animation: none; background: rgba(147,197,253,0.25); }
+}
 
 /* === Tracker Summary === */
 .tracker-summary {
