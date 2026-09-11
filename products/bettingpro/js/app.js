@@ -3,16 +3,16 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1789142173';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1789142173';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1789142173';
+import { shinProbabilities } from './shin.js?v=1789149014';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1789149014';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1789149014';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1789142173';
-import { getSportDefaults } from './sport-config.js?v=1789142173';
-import { computeSplitGroups } from './split-stage.js?v=1789142173';
-import { computeNhlGroups } from './nhl-structure.js?v=1789142173';
-import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1789142173';
-import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1789142173';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1789149014';
+import { getSportDefaults } from './sport-config.js?v=1789149014';
+import { computeSplitGroups } from './split-stage.js?v=1789149014';
+import { computeNhlGroups } from './nhl-structure.js?v=1789149014';
+import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1789149014';
+import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1789149014';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
@@ -20,7 +20,7 @@ import {
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults,
   renderSuggestedBets
-} from './ui.js?v=1789142173';
+} from './ui.js?v=1789149014';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -524,14 +524,22 @@ async function loadAndShowLeague(leagueId, season) {
   // Elo ratings table — computed client-side, reactive to Previous Season slider
   updateEloTable();
 
-  // Tracker, P/L, and standings — render from precomputed data (with filter awareness)
-  renderTrackerFiltered();
-  renderPLSimulationFiltered();
+  // Tracker, P/L, and standings — render from precomputed data (with filter awareness).
+  // When "current season only" is active the bulk fetch below overwrites the tracker + P/L,
+  // so show a loading placeholder for those two instead of the precomputed numbers — otherwise
+  // precomputed data flashes for a beat before the season-only result arrives.
+  const seasonOnlyActive = !!(applySeasonOnly && document.getElementById('bar-season-only')?.checked);
+  if (seasonOnlyActive) {
+    showSeasonOnlyLoading();
+  } else {
+    renderTrackerFiltered();
+    renderPLSimulationFiltered();
+  }
   renderStandingsFiltered();
 
   // Keep "current season only" sticky: re-apply it for the newly loaded league
   // whenever the toggle is on (covers initial load and every league switch).
-  if (applySeasonOnly && document.getElementById('bar-season-only')?.checked) {
+  if (seasonOnlyActive) {
     await applySeasonOnly(true);
   }
 }
@@ -830,6 +838,19 @@ function renderTrackerFiltered() {
     : '';
   renderTracker(data, 'tracker-container');
   if (banner) el.insertAdjacentHTML('afterbegin', banner);
+}
+
+/**
+ * Placeholder shown in the tracker + P/L containers while the season-only bulk
+ * fetch is in flight, so precomputed data never flashes before the API result
+ * replaces it (the season-only fetch overwrites both sections).
+ */
+function showSeasonOnlyLoading() {
+  const msg = `<p class="muted">${t('seasonOnly.loading')}</p>`;
+  const pl = document.getElementById('pl-container');
+  const tr = document.getElementById('tracker-container');
+  if (pl) pl.innerHTML = msg;
+  if (tr) tr.innerHTML = msg;
 }
 
 /** Render P/L simulation with optional tournament filter applied to bets. */
@@ -1627,6 +1648,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function fetchSeasonOnlyBulk() {
     const depth = getMatchDepth();
+    // Show a placeholder before the request so precomputed data isn't left on screen
+    // (or flashed) while the bulk recompute is in flight.
+    showSeasonOnlyLoading();
     try {
       const res = await fetch(`${API_BASE}/predict`, {
         method: 'POST',
@@ -1660,9 +1684,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (eloDetails) eloDetails.open = true;
       } else {
         console.error('Bulk seasonOnly API error:', res.status);
+        // Degrade to precomputed rather than leaving the loading placeholder stuck.
+        renderTrackerFiltered();
+        renderPLSimulationFiltered();
       }
     } catch (err) {
       console.error('Bulk seasonOnly fetch failed:', err);
+      renderTrackerFiltered();
+      renderPLSimulationFiltered();
     }
     updateEloTable();
     reanalyzeIfNeeded();

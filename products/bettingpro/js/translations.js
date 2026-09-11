@@ -174,6 +174,7 @@ export const TRANSLATIONS = {
   'pl.betN': { fi: 'Veto #{n}: {val}', en: 'Bet #{n}: {val}' },
   'pl.tipResult': { fi: 'Tulos', en: 'Result' },
   'pl.tipRunning': { fi: 'Kertymä', en: 'Running total' },
+  'seasonOnly.loading': { fi: 'Lasketaan kauden simulaatiota…', en: 'Computing current-season simulation…' },
 
   // Suggested Bets (cross-league)
   'sb.title': { fi: 'Ehdotetut vedot', en: 'Suggested Bets' },

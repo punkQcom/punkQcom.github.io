@@ -2,10 +2,10 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1789142173';
-import { confidenceLevel, splitPicks } from './suggested-bets-format.js?v=1789142173';
-import { TRANSLATIONS } from './translations.js?v=1789142173';
-import { computePLBars } from './pl-simulation-format.js?v=1789142173';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1789149014';
+import { confidenceLevel, splitPicks } from './suggested-bets-format.js?v=1789149014';
+import { TRANSLATIONS } from './translations.js?v=1789149014';
+import { computePLBars } from './pl-simulation-format.js?v=1789149014';
 
 /**
  * Translate a bet/outcome label for display. Labels stay English internally
