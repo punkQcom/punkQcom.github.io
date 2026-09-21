@@ -3,16 +3,17 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1789149014';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1789149014';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1789149014';
+import { shinProbabilities } from './shin.js?v=1790002054';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1790002054';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1790002054';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1789149014';
-import { getSportDefaults } from './sport-config.js?v=1789149014';
-import { computeSplitGroups } from './split-stage.js?v=1789149014';
-import { computeNhlGroups } from './nhl-structure.js?v=1789149014';
-import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1789149014';
-import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1789149014';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1790002054';
+import { getSportDefaults } from './sport-config.js?v=1790002054';
+import { computeSplitGroups } from './split-stage.js?v=1790002054';
+import { computeNhlGroups } from './nhl-structure.js?v=1790002054';
+import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1790002054';
+import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1790002054';
+import { lookupPrediction } from './prediction-lookup.js?v=1790002054';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
@@ -20,7 +21,7 @@ import {
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults,
   renderSuggestedBets
-} from './ui.js?v=1789149014';
+} from './ui.js?v=1790002054';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -519,6 +520,11 @@ async function loadAndShowLeague(leagueId, season) {
   };
   renderTournamentFilter(tournaments, currentTournamentFilter, onFilterChange);
 
+  // Stale analysis state must not survive a league switch: a pending reanalyzeIfNeeded()
+  // (e.g. triggered by applySeasonOnly below) would otherwise resolve the old match's id
+  // against this new league's fixtures and analyze the wrong match under the old title.
+  currentAnalyzedMatch = null;
+
   initDateView(currentLeagueData);
 
   // Elo ratings table — computed client-side, reactive to Previous Season slider
@@ -548,7 +554,7 @@ async function loadAndShowLeague(leagueId, season) {
  * Open a Suggested Bet's detailed analysis: switch the whole view to the pick's
  * league (like picking it from the dropdowns), then analyze the match.
  */
-async function openSuggestedBet(leagueId, home, away) {
+async function openSuggestedBet(leagueId, home, away, matchId) {
   const league = (currentMeta?.leagues || []).find(l => l.id === leagueId);
   if (!league) return;
   const sportSel = document.getElementById('sport-select');
@@ -560,14 +566,14 @@ async function openSuggestedBet(leagueId, home, away) {
   if (leagueSel) leagueSel.value = String(leagueId);
   populateSeasonSelect(league);
   await loadAndShowLeague(league.id, league.season);
-  analyzeMatch(home, away);
+  analyzeMatch(home, away, { matchId: matchId || null });
 }
 
 /** Render the cross-league Suggested Bets section and wire clickable rows. */
 function refreshSuggestedBets() {
   renderSuggestedBets(sbCache, 'suggested-bets-container');
   document.querySelectorAll('.suggested-bet-row').forEach(row => {
-    const open = () => openSuggestedBet(row.dataset.league, row.dataset.home, row.dataset.away);
+    const open = () => openSuggestedBet(row.dataset.league, row.dataset.home, row.dataset.away, row.dataset.matchId);
     row.addEventListener('click', open);
     row.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
@@ -731,7 +737,7 @@ function buildKnockoutResults(matches) {
 
   const buckets = {};
   for (const m of finished) {
-    const pred = predictMatch(m.homeTeam, m.awayTeam);
+    const pred = predictMatch(m);
     let correct = null;
     if (pred) {
       const predOutcome = pred.home >= pred.draw && pred.home >= pred.away ? '1'
@@ -962,12 +968,12 @@ function formatDate(dateStr) {
 
 /**
  * Look up prediction from precomputed data (fast, no model computation).
+ * Takes the match object so repeated pairings resolve to their own prediction.
+ * @param {{id?: string|number, homeTeam: string, awayTeam: string}} match
  */
-function predictMatch(homeName, awayName) {
+function predictMatch(match) {
   const source = seasonOnlyData?.predictions || precomputedData?.predictions;
-  if (!source) return null;
-  const key = `${homeName} vs ${awayName}`;
-  return source[key] || null;
+  return lookupPrediction(source, match);
 }
 
 function initDateView(data) {
@@ -1049,7 +1055,7 @@ function renderDateView({ skipAutoScroll = false } = {}) {
         }
       }
       const isFinished = m.status === 'finished';
-      const pred = predictMatch(m.homeTeam, m.awayTeam);
+      const pred = predictMatch(m);
       const selOdds = getSelectedOdds(m.odds);
 
       // Prediction column (score only, with outcome check for finished matches)
@@ -1134,7 +1140,7 @@ function renderDateView({ skipAutoScroll = false } = {}) {
         ? ` <span class="steam-badge" title="${esc(steam.summary)}">\u26A1 ${t('list.oddsMoving')}</span>`
         : '';
 
-      html += `<div class="match-row${isFinished ? ' finished' : ' upcoming'}" data-home="${esc(m.homeTeam)}" data-away="${esc(m.awayTeam)}" tabindex="0" role="button">
+      html += `<div class="match-row${isFinished ? ' finished' : ' upcoming'}" data-home="${esc(m.homeTeam)}" data-away="${esc(m.awayTeam)}" data-match-id="${esc(String(m.id ?? ''))}" tabindex="0" role="button">
         <span class="match-teams">${esc(m.homeTeam)}${homeBadge} vs ${esc(m.awayTeam)}${awayBadge}${tagHtml}${steamBadge}</span>
         <span class="match-result-group">
           <span class="match-col-pred">${predContent}</span>
@@ -1175,7 +1181,7 @@ function renderDateView({ skipAutoScroll = false } = {}) {
 
   // Click + keyboard handlers for all matches (analysis)
   listEl.querySelectorAll('.match-row').forEach(row => {
-    const handler = () => analyzeMatch(row.dataset.home, row.dataset.away);
+    const handler = () => analyzeMatch(row.dataset.home, row.dataset.away, { matchId: row.dataset.matchId || null });
     row.addEventListener('click', handler);
     row.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handler(); }
@@ -1253,11 +1259,11 @@ function reanalyzeIfNeeded() {
   const elapsed = now - _reanalyzeLast;
   if (elapsed >= _reanalyzeInterval) {
     _reanalyzeLast = now;
-    analyzeMatch(currentAnalyzedMatch.home, currentAnalyzedMatch.away, { scroll: false });
+    analyzeMatch(currentAnalyzedMatch.home, currentAnalyzedMatch.away, { scroll: false, matchId: currentAnalyzedMatch.id });
   } else {
     _reanalyzeTimer = setTimeout(() => {
       _reanalyzeLast = Date.now();
-      analyzeMatch(currentAnalyzedMatch.home, currentAnalyzedMatch.away, { scroll: false });
+      analyzeMatch(currentAnalyzedMatch.home, currentAnalyzedMatch.away, { scroll: false, matchId: currentAnalyzedMatch.id });
     }, _reanalyzeInterval - elapsed);
   }
 }
@@ -1278,24 +1284,26 @@ function getMatchDepth() {
   return val >= 200 ? null : val;
 }
 
-async function analyzeMatch(homeName, awayName, { scroll = true } = {}) {
-  currentAnalyzedMatch = { home: homeName, away: awayName };
+async function analyzeMatch(homeName, awayName, { scroll = true, matchId = null } = {}) {
+  currentAnalyzedMatch = { home: homeName, away: awayName, id: matchId };
 
   // Highlight selected match
-  document.querySelectorAll('.match-row').forEach(r => r.classList.remove('selected'));
-  const rows = document.querySelectorAll('.match-row');
-  for (const r of rows) {
-    if (r.dataset.home === homeName && r.dataset.away === awayName) {
-      r.classList.add('selected');
-    }
+  for (const r of document.querySelectorAll('.match-row')) {
+    const sameRow = matchId
+      ? r.dataset.matchId === String(matchId)
+      : (r.dataset.home === homeName && r.dataset.away === awayName);
+    r.classList.toggle('selected', sameRow);
   }
 
   // Show loading state
   document.getElementById('selected-match-title').textContent = `${homeName} vs ${awayName}`;
 
   // Render context label (tournament + neutral venue) above the score matrix.
-  const matchObj = [...(currentLeagueData?.matches || []), ...(currentLeagueData?.upcoming || [])]
-    .find(m => m.homeTeam === homeName && m.awayTeam === awayName);
+  // id-first; the pair fallback covers callers with no id (openSuggestedBet) and pre-id
+  // published data — it outlives the prediction-key transition. See Task 7.
+  const allObjects = [...(currentLeagueData?.matches || []), ...(currentLeagueData?.upcoming || [])];
+  const byId = matchId ? allObjects.find(m => String(m.id) === String(matchId)) : null;
+  const matchObj = byId || allObjects.find(m => m.homeTeam === homeName && m.awayTeam === awayName);
   const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
   renderMatchContext(matchObj, leagueCfg?.tournaments || null);
 
@@ -1303,9 +1311,7 @@ async function analyzeMatch(homeName, awayName, { scroll = true } = {}) {
 
   // Resolve odds locally (odds are not secret)
   const odds = currentLeagueData?.odds || [];
-  const allObjects = [...(currentLeagueData?.matches || []), ...(currentLeagueData?.upcoming || [])];
-  const obj = allObjects.find(m => m.homeTeam === homeName && m.awayTeam === awayName);
-  const matchOddsMulti = resolveMatchOdds(obj || { homeTeam: homeName, awayTeam: awayName }, odds);
+  const matchOddsMulti = resolveMatchOdds(matchObj || { homeTeam: homeName, awayTeam: awayName }, odds);
 
   let selOdds = matchOddsMulti ? getSelectedOdds(matchOddsMulti) : null;
   if (!selOdds && matchOddsMulti) {
@@ -1337,6 +1343,7 @@ async function analyzeMatch(homeName, awayName, { scroll = true } = {}) {
         season: currentSeason,
         homeName,
         awayName,
+        matchId,
         settings: { rho, marketTrust, halfLife, formBoost, priorWeight, seasonOnly, ...(seasonOnly && getMatchDepth() ? { matchDepth: getMatchDepth() } : {}) },
       }),
     });
@@ -1346,8 +1353,8 @@ async function analyzeMatch(homeName, awayName, { scroll = true } = {}) {
 
     // Cache for display-only re-renders
     lastApiResponse = apiResponse;
-    const prevOddsMulti = obj?.previousOdds ? migrateOdds(obj.previousOdds) : null;
-    const initOddsMulti = obj?.initialOdds ? migrateOdds(obj.initialOdds) : null;
+    const prevOddsMulti = matchObj?.previousOdds ? migrateOdds(matchObj.previousOdds) : null;
+    const initOddsMulti = matchObj?.initialOdds ? migrateOdds(matchObj.initialOdds) : null;
     lastAnalysisContext = { homeName, awayName, matchOddsMulti, oddsData, prevOddsMulti, initOddsMulti };
 
     renderAnalysisFromApi(apiResponse, lastAnalysisContext);
@@ -1362,7 +1369,7 @@ async function analyzeMatch(homeName, awayName, { scroll = true } = {}) {
   } catch (err) {
     console.error('Predict API error:', err);
     // Fallback: show what we can from precomputed data
-    const pred = predictMatch(homeName, awayName);
+    const pred = predictMatch(matchObj || { id: matchId, homeTeam: homeName, awayTeam: awayName });
     if (pred) {
       document.getElementById('score-matrix').innerHTML =
         `<p class="muted">Detailed analysis unavailable — showing precomputed prediction</p>`;

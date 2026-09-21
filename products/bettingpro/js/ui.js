@@ -2,10 +2,10 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1789149014';
-import { confidenceLevel, splitPicks } from './suggested-bets-format.js?v=1789149014';
-import { TRANSLATIONS } from './translations.js?v=1789149014';
-import { computePLBars } from './pl-simulation-format.js?v=1789149014';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1790002054';
+import { confidenceLevel, splitPicks } from './suggested-bets-format.js?v=1790002054';
+import { TRANSLATIONS } from './translations.js?v=1790002054';
+import { computePLBars } from './pl-simulation-format.js?v=1790002054';
 
 /**
  * Translate a bet/outcome label for display. Labels stay English internally
@@ -2041,7 +2041,15 @@ export function renderSuggestedBets(data, containerId) {
     for (const p of rows) {
       const lvl = confidenceLevel(p.matchesPlayed);
       const book = p.bestBook ? `${esc(formatBookmaker(p.bestBook))} @${p.bestOdds.toFixed(2)}` : '—';
-      s += `<tr class="suggested-bet-row" data-league="${esc(p.leagueId)}" data-home="${esc(p.homeTeam)}" data-away="${esc(p.awayTeam)}" tabindex="0" role="button">
+      // Emit the id only when the pick actually carries one. Explicit rather than truthy because
+      // esc() stringifies via textContent, which maps null to "" but undefined to the literal
+      // "undefined" — truthy in dataset, and analyzeMatch would treat it as a real id. The backend
+      // (bettingpro-api/src/prediction/suggested-bets.js) already emits String(fx.id) or null, so
+      // this defends a cross-repo contract this repo doesn't own; absence is expected only for
+      // currentWeek picks generated before that deploy, and clears on the next generation run.
+      const hasMatchId = p.matchId !== undefined && p.matchId !== null && p.matchId !== 'undefined';
+      const matchId = hasMatchId ? p.matchId : '';
+      s += `<tr class="suggested-bet-row" data-league="${esc(p.leagueId)}" data-home="${esc(p.homeTeam)}" data-away="${esc(p.awayTeam)}" data-match-id="${esc(matchId)}" tabindex="0" role="button">
         <td>${p.date}</td><td>${esc(p.leagueName)}</td><td>${esc(p.homeTeam)} - ${esc(p.awayTeam)}</td>
         <td>${translateBetLabel(p.bet)}</td><td>${p.odds.toFixed(2)}</td>
         <td>${book}</td>
@@ -2087,6 +2095,10 @@ export function renderSuggestedBets(data, containerId) {
     </div>`;
     html += '<div class="tracker-scroll"><table class="results-table tracker-table">';
     html += `<thead><tr><th>${t('col.date')}</th><th>${t('col.match')}</th><th>${t('col.bet')}</th><th>${t('col.odds')}</th><th>${t('col.pl')}</th></tr></thead><tbody>`;
+    // Deliberately not a .suggested-bet-row / clickable: settled picks have no detailed
+    // analysis to open. If a future change makes track-record rows clickable too, it must
+    // carry data-match-id (esc()'d, same guard as picksTableHtml above) or it will silently
+    // fall back to pair-based resolution — the exact collision this task removed.
     for (const h of [...history].reverse()) {
       const cls = h.profit >= 0 ? 'value-positive' : 'value-negative';
       html += `<tr><td>${h.date}</td><td>${esc(h.homeTeam)} - ${esc(h.awayTeam)}</td><td>${translateBetLabel(h.bet)}</td><td>${h.odds.toFixed(2)}</td><td class="${cls}">${h.profit >= 0 ? '+' : ''}${h.profit.toFixed(2)}</td></tr>`;
