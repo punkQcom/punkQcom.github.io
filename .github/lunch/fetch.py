@@ -36,7 +36,7 @@ RESTAURANTS = [
      "url": "https://www.lounasverkko.fi/lounasravintelivarikko", "kind": "text",
      "stops": ["Pidätämme"]},
     {"key": "herkku", "name": "Teboil Herkku", "hours": "10.00–16.00",
-     "url": "https://www.tbherkku.fi/ravintola/", "kind": "text"},
+     "url": "https://www.tbherkku.fi/ravintola/", "kind": "text", "notes": ["Kaikkiin"]},
 ]
 
 
@@ -103,8 +103,47 @@ def today_text(page, day, r):
             if any(low.startswith(w) for w in WEEKDAYS) or any(nxt.startswith(s) for s in r.get("stops", [])):
                 break
             found.append(nxt.lstrip("•· ").strip())
-        return [l for l in found if l] or None
+        return structure([l for l in found if l], r.get("notes", [])) or None
     return None
+
+
+PRICE = re.compile(r"\d+,\d{2}\s*€$")
+
+
+def structure(lines, notes):
+    """Group dishes under price headings ("Noutopöytä 13,80€") and join continuation lines.
+
+    Returns a list of plain strings and {"title", "items"} groups. A line starting in lowercase
+    continues the previous line; a line starting with a note prefix ends the current group.
+    """
+    out = []
+    for line in lines:
+        if out and line[:1].islower():
+            prev = out[-1]
+            if isinstance(prev, str):
+                out[-1] = f"{prev} {line}"
+            elif prev["items"]:
+                prev["items"][-1] += f" {line}"
+            else:
+                prev["title"] += f" {line}"
+        elif PRICE.search(line):
+            out.append({"title": line, "items": []})
+        elif out and isinstance(out[-1], dict) and not any(line.startswith(n) for n in notes):
+            out[-1]["items"].append(line)
+        else:
+            out.append(line)
+    return out
+
+
+def lines_html(lines):
+    items = []
+    for line in lines:
+        if isinstance(line, str):
+            items.append(f"<li>{html.escape(line)}</li>")
+        else:
+            sub = "".join(f"<li>{html.escape(i)}</li>" for i in line["items"])
+            items.append(f"<li><strong>{html.escape(line['title'])}</strong>{f'<ul>{sub}</ul>' if sub else ''}</li>")
+    return "<ul>" + "".join(items) + "</ul>"
 
 
 def today_image(page, day):
@@ -140,7 +179,7 @@ def menus_html(results):
         if res.get("image"):
             parts.append(f'<p><img src="{html.escape(res["image"])}" alt="{html.escape(r["name"])} viikon lounaslista" style="max-width:100%"></p>')
         elif res.get("lines"):
-            parts.append("<ul>" + "".join(f"<li>{html.escape(l)}</li>" for l in res["lines"]) + "</ul>")
+            parts.append(lines_html(res["lines"]))
         else:
             parts.append(f'<p>Ei löytynyt vielä. <a href="{html.escape(r["url"])}">Katso ravintolan sivu</a></p>')
     return "\n".join(parts)
@@ -154,7 +193,7 @@ def page_html(day, updated, results):
             body = (f'<a href="{html.escape(res["image"])}"><img src="{html.escape(res["image"])}" '
                     f'alt="{html.escape(r["name"])} viikon lounaslista" loading="lazy"></a>')
         elif res.get("lines"):
-            body = "<ul>" + "".join(f"<li>{html.escape(l)}</li>" for l in res["lines"]) + "</ul>"
+            body = lines_html(res["lines"])
         else:
             body = f'<p class="lunch-note">Tämän päivän listaa ei löytynyt. <a href="{html.escape(r["url"])}">Katso ravintolan sivu</a></p>'
         cards.append(f"""        <section class="legal-section lunch-card">
@@ -180,6 +219,8 @@ def page_html(day, updated, results):
         .lunch-card h2 a {{ color: var(--text); text-decoration: none; }}
         .lunch-card ul {{ margin-bottom: 0; }}
         .lunch-card li {{ margin-bottom: 4px; }}
+        .lunch-card li strong {{ color: var(--text); font-weight: 600; }}
+        .lunch-card ul ul {{ margin: 4px 0 8px; }}
         .lunch-card img {{ width: 100%; border-radius: 12px; margin-top: 8px; }}
         .lunch-hours, .lunch-note {{ font-size: 14px; }}
         @media (max-width: 600px) {{ .legal-page {{ padding: 48px 16px; }} .lunch-card {{ padding: 18px; }} }}

@@ -1,6 +1,6 @@
 {
  "date": "2026-09-29",
- "updated": "29.9. klo 20.36",
+ "updated": "29.9. klo 20.40",
  "restaurants": {
   "hansasali": {
    "image": "https://cdn.prod.website-files.com/6a5757dd1c62f83f7a16d6c2/6ab8bf917f5db6dfbcecf2e7_Hansa%20ig%20vko%2040.png"
@@ -33,17 +33,31 @@
   },
   "herkku": {
    "lines": [
-    "Salaattibuffet 9,90€",
-    "Päivä keitto 11,50€",
-    "Kermaista lohikeittoa (l, g), saaristolaisleipää, ja runsas salaattibuffet",
-    "Noutopöytä 13,80€",
-    "Lihapyörykät kastikkeessa (l, g)",
-    "Tomaatti- pesto broileri (l, g)",
-    "Pariloitua maksaa ja puolukkaa (l, g)",
-    "Päivän leike 16,90€",
-    "Häränpihvi, aurajuustokastike (l, g)",
-    "Kaikkiin lounaisiin sisältyy runsas salaattibuffet, ruokajuoma vesi, mehu tai kotikalja",
-    "sekä kahvi/tee ja jälkiruoka, Puolukkarahkaa (l, g)"
+    {
+     "title": "Salaattibuffet 9,90€",
+     "items": []
+    },
+    {
+     "title": "Päivä keitto 11,50€",
+     "items": [
+      "Kermaista lohikeittoa (l, g), saaristolaisleipää, ja runsas salaattibuffet"
+     ]
+    },
+    {
+     "title": "Noutopöytä 13,80€",
+     "items": [
+      "Lihapyörykät kastikkeessa (l, g)",
+      "Tomaatti- pesto broileri (l, g)",
+      "Pariloitua maksaa ja puolukkaa (l, g)"
+     ]
+    },
+    {
+     "title": "Päivän leike 16,90€",
+     "items": [
+      "Häränpihvi, aurajuustokastike (l, g)"
+     ]
+    },
+    "Kaikkiin lounaisiin sisältyy runsas salaattibuffet, ruokajuoma vesi, mehu tai kotikalja sekä kahvi/tee ja jälkiruoka, Puolukkarahkaa (l, g)"
    ]
   }
  },
@@ -51,7 +65,7 @@
   {
    "date": "2026-09-29",
    "title": "Lounas ti 29.9.",
-   "html": "<h3><a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Pegasus Hansasali</a></h3>\n<p><img src=\"https://cdn.prod.website-files.com/6a5757dd1c62f83f7a16d6c2/6ab8bf917f5db6dfbcecf2e7_Hansa%20ig%20vko%2040.png\" alt=\"Pegasus Hansasali viikon lounaslista\" style=\"max-width:100%\"></p>\n<h3><a href=\"https://kolmaslinja.fi/lounas-turku/\">3. Linja</a></h3>\n<ul><li>Samettista tomaatti-tuorejuustokeittoa L, G</li><li>Uunifetapastaa, paahdettua tomaattia ja basilikaa L</li><li>Pitkään haudutettua naudan niskaa &amp; pippurikastiketta L, G</li><li>Rapeaksi paneroitua kanaa ja chili-hunajamajoneesia L</li><li>Paahdettuja perunoita M, G</li><li>Paahdettua porkkanaa ja yrttiöljyä M, G</li><li>Mustikkamoussea ja valkosuklaata L, G</li></ul>\n<h3><a href=\"https://gatoradecenter.fi/fi/lounas\">Gatorade Center (TPS-lounas)</a></h3>\n<ul><li>Gratinoitua uunimakkaraa ja perunamuusia (L, G)</li><li>Silakkapihvejä ja sipuli-voisulaa (L)</li><li>Balsamico-punajuurta ja kikherneitä (V, G)</li><li>Lihakeittoa (L, G)</li></ul>\n<h3><a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Lounasravinteli Varikko</a></h3>\n<ul><li>Naudan niskaa timjamikastikkeessa, perunamuusi (L,G)</li><li>Pasta Carbonara (L)</li><li>Aurinkokiisseli (L,G)</li></ul>\n<h3><a href=\"https://www.tbherkku.fi/ravintola/\">Teboil Herkku</a></h3>\n<ul><li>Salaattibuffet 9,90€</li><li>Päivä keitto 11,50€</li><li>Kermaista lohikeittoa (l, g), saaristolaisleipää, ja runsas salaattibuffet</li><li>Noutopöytä 13,80€</li><li>Lihapyörykät kastikkeessa (l, g)</li><li>Tomaatti- pesto broileri (l, g)</li><li>Pariloitua maksaa ja puolukkaa (l, g)</li><li>Päivän leike 16,90€</li><li>Häränpihvi, aurajuustokastike (l, g)</li><li>Kaikkiin lounaisiin sisältyy runsas salaattibuffet, ruokajuoma vesi, mehu tai kotikalja</li><li>sekä kahvi/tee ja jälkiruoka, Puolukkarahkaa (l, g)</li></ul>"
+   "html": "<h3><a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Pegasus Hansasali</a></h3>\n<p><img src=\"https://cdn.prod.website-files.com/6a5757dd1c62f83f7a16d6c2/6ab8bf917f5db6dfbcecf2e7_Hansa%20ig%20vko%2040.png\" alt=\"Pegasus Hansasali viikon lounaslista\" style=\"max-width:100%\"></p>\n<h3><a href=\"https://kolmaslinja.fi/lounas-turku/\">3. Linja</a></h3>\n<ul><li>Samettista tomaatti-tuorejuustokeittoa L, G</li><li>Uunifetapastaa, paahdettua tomaattia ja basilikaa L</li><li>Pitkään haudutettua naudan niskaa &amp; pippurikastiketta L, G</li><li>Rapeaksi paneroitua kanaa ja chili-hunajamajoneesia L</li><li>Paahdettuja perunoita M, G</li><li>Paahdettua porkkanaa ja yrttiöljyä M, G</li><li>Mustikkamoussea ja valkosuklaata L, G</li></ul>\n<h3><a href=\"https://gatoradecenter.fi/fi/lounas\">Gatorade Center (TPS-lounas)</a></h3>\n<ul><li>Gratinoitua uunimakkaraa ja perunamuusia (L, G)</li><li>Silakkapihvejä ja sipuli-voisulaa (L)</li><li>Balsamico-punajuurta ja kikherneitä (V, G)</li><li>Lihakeittoa (L, G)</li></ul>\n<h3><a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Lounasravinteli Varikko</a></h3>\n<ul><li>Naudan niskaa timjamikastikkeessa, perunamuusi (L,G)</li><li>Pasta Carbonara (L)</li><li>Aurinkokiisseli (L,G)</li></ul>\n<h3><a href=\"https://www.tbherkku.fi/ravintola/\">Teboil Herkku</a></h3>\n<ul><li><strong>Salaattibuffet 9,90€</strong></li><li><strong>Päivä keitto 11,50€</strong><ul><li>Kermaista lohikeittoa (l, g), saaristolaisleipää, ja runsas salaattibuffet</li></ul></li><li><strong>Noutopöytä 13,80€</strong><ul><li>Lihapyörykät kastikkeessa (l, g)</li><li>Tomaatti- pesto broileri (l, g)</li><li>Pariloitua maksaa ja puolukkaa (l, g)</li></ul></li><li><strong>Päivän leike 16,90€</strong><ul><li>Häränpihvi, aurajuustokastike (l, g)</li></ul></li><li>Kaikkiin lounaisiin sisältyy runsas salaattibuffet, ruokajuoma vesi, mehu tai kotikalja sekä kahvi/tee ja jälkiruoka, Puolukkarahkaa (l, g)</li></ul>"
   }
  ]
 }
