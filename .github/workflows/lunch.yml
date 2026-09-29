@@ -1,0 +1,35 @@
+name: Lunch menus
+on:
+  schedule:
+    # Hourly 03–08 UTC on weekdays = from 06:00 Helsinki until ~10–11, summer and winter time
+    - cron: '0 3-8 * * 1-5'
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lunch
+  cancel-in-progress: false
+
+jobs:
+  lunch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch today's menus
+        run: python3 .github/lunch/fetch.py
+
+      - name: Commit if changed
+        run: |
+          git add products/lunch
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "lunch: $(TZ=Europe/Helsinki date +'%-d.%-m. %H.%M')"
+          git pull --rebase
+          git push
