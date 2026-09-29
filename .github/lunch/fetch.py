@@ -152,8 +152,7 @@ def page_html(day, updated, results):
         res = results.get(r["key"], {})
         if res.get("image"):
             body = (f'<a href="{html.escape(res["image"])}"><img src="{html.escape(res["image"])}" '
-                    f'alt="{html.escape(r["name"])} viikon lounaslista" loading="lazy"></a>'
-                    f'<p class="lunch-note">Koko viikon lista kuvana – katso {WEEKDAYS[day.weekday()]}.</p>')
+                    f'alt="{html.escape(r["name"])} viikon lounaslista" loading="lazy"></a>')
         elif res.get("lines"):
             body = "<ul>" + "".join(f"<li>{html.escape(l)}</li>" for l in res["lines"]) + "</ul>"
         else:
