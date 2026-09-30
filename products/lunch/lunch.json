@@ -1,34 +1,34 @@
 {
- "date": "2026-09-29",
- "updated": "29.9. klo 20.40",
+ "date": "2026-09-30",
+ "updated": "30.9. klo 12.31",
  "restaurants": {
   "hansasali": {
    "image": "https://cdn.prod.website-files.com/6a5757dd1c62f83f7a16d6c2/6ab8bf917f5db6dfbcecf2e7_Hansa%20ig%20vko%2040.png"
   },
   "linja": {
    "lines": [
-    "Samettista tomaatti-tuorejuustokeittoa L, G",
-    "Uunifetapastaa, paahdettua tomaattia ja basilikaa L",
-    "Pitkään haudutettua naudan niskaa & pippurikastiketta L, G",
-    "Rapeaksi paneroitua kanaa ja chili-hunajamajoneesia L",
-    "Paahdettuja perunoita M, G",
-    "Paahdettua porkkanaa ja yrttiöljyä M, G",
-    "Mustikkamoussea ja valkosuklaata L, G"
+    "Kermaista lohikeittoa ja tilliä L, G",
+    "Kolmen juuston pastaa, chili-hunajaa ja rucolaa L",
+    "Uunilohta, piparjuuri-sitruunacrèmeä ja tilliä L, G",
+    "Talon lihapullia ja kermaista sipulikastiketta L, G",
+    "Ruskistetulla voilla maustettua perunamuusia L,G",
+    "Balsamicolla paahdettua punajuurta M, G",
+    "Suklaakakkua ja Marianne-crèmeä L, G"
    ]
   },
   "gatorade": {
    "lines": [
-    "Gratinoitua uunimakkaraa ja perunamuusia (L, G)",
-    "Silakkapihvejä ja sipuli-voisulaa (L)",
-    "Balsamico-punajuurta ja kikherneitä (V, G)",
-    "Lihakeittoa (L, G)"
+    "Hulihuli-broileria, yrtti-jogurttikastiketta ja riisiä (L, G)",
+    "Lohipastaa (L)",
+    "Paahdettua kesäkurpitsaa ja fetaa (L, G)",
+    "Purjo-perunasosekeittoa (L, G)"
    ]
   },
   "varikko": {
    "lines": [
-    "Naudan niskaa timjamikastikkeessa, perunamuusi (L,G)",
-    "Pasta Carbonara (L)",
-    "Aurinkokiisseli (L,G)"
+    "Possun grillikylkeä, chimichurri, paahdetut perunat (L,G)",
+    "Kaalilaatikko, puolukka (M,G)",
+    "Mustikkapiirakka, vaniljavaahto (L) Gluteeniton jälkiruoka keittiöstä"
    ]
   },
   "herkku": {
@@ -40,28 +40,33 @@
     {
      "title": "Päivä keitto 11,50€",
      "items": [
-      "Kermaista lohikeittoa (l, g), saaristolaisleipää, ja runsas salaattibuffet"
+      "Purjo- perunasosekeitto (l, g), runsas salaattibuffet, saaristolaisleipää"
      ]
     },
     {
      "title": "Noutopöytä 13,80€",
      "items": [
-      "Lihapyörykät kastikkeessa (l, g)",
-      "Tomaatti- pesto broileri (l, g)",
-      "Pariloitua maksaa ja puolukkaa (l, g)"
+      "Possupihvejä (l, g), broilerileikkeitä (l, g keit.)",
+      "Kermaperunat (l, g), pippurikastike (l, g)",
+      "Makkaraperunat (l, g), uunijuurekset (l, g)"
      ]
     },
     {
      "title": "Päivän leike 16,90€",
      "items": [
-      "Häränpihvi, aurajuustokastike (l, g)"
+      "Valkosipulihärkää (l, g)"
      ]
     },
-    "Kaikkiin lounaisiin sisältyy runsas salaattibuffet, ruokajuoma vesi, mehu tai kotikalja sekä kahvi/tee ja jälkiruoka, Puolukkarahkaa (l, g)"
+    "Kaikkiin lounaisiin sisältyy runsas salaattibuffet, ruokajuoma vesi, mehu tai kotikalja sekä kahvi/tee ja jälkiruoka, Suklaamousse (l)"
    ]
   }
  },
  "feed": [
+  {
+   "date": "2026-09-30",
+   "title": "Lounas ke 30.9.",
+   "html": "<h3><a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Pegasus Hansasali</a></h3>\n<p><img src=\"https://cdn.prod.website-files.com/6a5757dd1c62f83f7a16d6c2/6ab8bf917f5db6dfbcecf2e7_Hansa%20ig%20vko%2040.png\" alt=\"Pegasus Hansasali viikon lounaslista\" style=\"max-width:100%\"></p>\n<h3><a href=\"https://kolmaslinja.fi/lounas-turku/\">3. Linja</a></h3>\n<ul><li>Kermaista lohikeittoa ja tilliä L, G</li><li>Kolmen juuston pastaa, chili-hunajaa ja rucolaa L</li><li>Uunilohta, piparjuuri-sitruunacrèmeä ja tilliä L, G</li><li>Talon lihapullia ja kermaista sipulikastiketta L, G</li><li>Ruskistetulla voilla maustettua perunamuusia L,G</li><li>Balsamicolla paahdettua punajuurta M, G</li><li>Suklaakakkua ja Marianne-crèmeä L, G</li></ul>\n<h3><a href=\"https://gatoradecenter.fi/fi/lounas\">Gatorade Center (TPS-lounas)</a></h3>\n<ul><li>Hulihuli-broileria, yrtti-jogurttikastiketta ja riisiä (L, G)</li><li>Lohipastaa (L)</li><li>Paahdettua kesäkurpitsaa ja fetaa (L, G)</li><li>Purjo-perunasosekeittoa (L, G)</li></ul>\n<h3><a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Lounasravinteli Varikko</a></h3>\n<ul><li>Possun grillikylkeä, chimichurri, paahdetut perunat (L,G)</li><li>Kaalilaatikko, puolukka (M,G)</li><li>Mustikkapiirakka, vaniljavaahto (L) Gluteeniton jälkiruoka keittiöstä</li></ul>\n<h3><a href=\"https://www.tbherkku.fi/ravintola/\">Teboil Herkku</a></h3>\n<ul><li><strong>Salaattibuffet 9,90€</strong></li><li><strong>Päivä keitto 11,50€</strong><ul><li>Purjo- perunasosekeitto (l, g), runsas salaattibuffet, saaristolaisleipää</li></ul></li><li><strong>Noutopöytä 13,80€</strong><ul><li>Possupihvejä (l, g), broilerileikkeitä (l, g keit.)</li><li>Kermaperunat (l, g), pippurikastike (l, g)</li><li>Makkaraperunat (l, g), uunijuurekset (l, g)</li></ul></li><li><strong>Päivän leike 16,90€</strong><ul><li>Valkosipulihärkää (l, g)</li></ul></li><li>Kaikkiin lounaisiin sisältyy runsas salaattibuffet, ruokajuoma vesi, mehu tai kotikalja sekä kahvi/tee ja jälkiruoka, Suklaamousse (l)</li></ul>"
+  },
   {
    "date": "2026-09-29",
    "title": "Lounas ti 29.9.",
