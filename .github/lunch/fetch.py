@@ -37,6 +37,8 @@ RESTAURANTS = [
      "stops": ["Pidätämme"]},
     {"key": "herkku", "name": "Teboil Herkku", "hours": "10.00–16.00",
      "url": "https://www.tbherkku.fi/ravintola/", "kind": "text", "notes": ["Kaikkiin"]},
+    {"key": "siskot", "name": "Ravintola Siskot", "hours": "10.30–15.00",
+     "url": "https://www.umai.fi/siskot", "kind": "text", "stops": ["L=laktoositon"]},
 ]
 
 
@@ -75,7 +77,7 @@ class TextLines(HTMLParser):
 def page_lines(page):
     parser = TextLines()
     parser.feed(page)
-    lines = (re.sub(r"\s+", " ", l.replace("​", "")).strip() for l in "".join(parser.parts).split("\n"))
+    lines = (re.sub(r"\s+", " ", re.sub("[\u200b\u200d]", "", l)).strip() for l in "".join(parser.parts).split("\n"))
     return [l for l in lines if l]
 
 
@@ -90,13 +92,13 @@ def today_text(page, day, r):
     for i, line in enumerate(lines):
         if not line.lower().startswith(name):
             continue
-        m = re.search(r"(\d{1,2})\.(\d{1,2})\.", line)
+        m = re.search(r"(\d{1,2})\.(\d{1,2})\b", line)
         if m and (int(m.group(1)), int(m.group(2))) != (day.day, day.month):
             continue  # same weekday, other date (e.g. next week or an event list)
         if not m and not r.get("week_check"):
             continue
         # keep extra words in the heading, e.g. "PERJANTAI – STEAK FRIDAY"
-        extra = re.sub(r"^\w+\s*|\d{1,2}\.\d{1,2}\.(\d{4})?|[*–-]", " ", line).strip()
+        extra = re.sub(r"^\w+\s*|\d{1,2}\.\d{1,2}\.?(\d{4})?|[*–-]", " ", line).strip()
         found = [extra.title()] if extra else []
         for nxt in lines[i + 1:]:
             low = nxt.lower()
