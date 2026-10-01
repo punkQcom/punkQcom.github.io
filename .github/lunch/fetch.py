@@ -246,7 +246,9 @@ def feed_xml(items):
     entries = []
     for it in items:
         d = date.fromisoformat(it["date"])
-        pub = format_datetime(datetime(d.year, d.month, d.day, 6, 0, tzinfo=TZ))
+        # pubDate = when the day's item first appeared, so RSS triggers (Power Automate) that
+        # only pick up items newer than their last poll see it even when the run was late
+        pub = it.get("pub") or format_datetime(datetime(d.year, d.month, d.day, 6, 0, tzinfo=TZ))
         entries.append(f"""  <item>
     <title>{html.escape(it["title"])}</title>
     <link>{SITE_URL}</link>
@@ -297,8 +299,11 @@ def main():
 
     updated = now.strftime("%-d.%-m. klo %H.%M")
     title = f"Lounas {SHORT[day.weekday()]} {day.day}.{day.month}."
+    old = next((f for f in state.get("feed", []) if f["date"] == day.isoformat()), {})
+    pub = old.get("pub") or format_datetime(now.replace(microsecond=0))
     feed = [f for f in state.get("feed", []) if f["date"] != day.isoformat()]
-    feed = ([{"date": day.isoformat(), "title": title, "html": menus_html(results)}] + feed)[:FEED_DAYS]
+    feed = ([{"date": day.isoformat(), "title": title, "pub": pub, "html": menus_html(results)}]
+            + feed)[:FEED_DAYS]
 
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "index.html").write_text(page_html(day, updated, results))
