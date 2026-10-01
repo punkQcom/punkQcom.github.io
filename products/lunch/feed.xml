@@ -6,6 +6,13 @@
   <description>Päivän lounaslistat lähiravintoloista</description>
   <language>fi</language>
   <item>
+    <title>Lounas TESTI 5</title>
+    <link>https://punkq.com/products/lunch/</link>
+    <guid isPermaLink="false">lounas-test-5</guid>
+    <pubDate>Thu, 01 Oct 2026 20:17:41 +0300</pubDate>
+    <description><![CDATA[<h3>Testi 5</h3><ul><li>Tämä on testiviesti</li></ul>]]></description>
+  </item>
+  <item>
     <title>Lounas TESTI 4</title>
     <link>https://punkq.com/products/lunch/</link>
     <guid isPermaLink="false">lounas-test-4</guid>
