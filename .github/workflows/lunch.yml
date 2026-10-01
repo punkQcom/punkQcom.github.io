@@ -1,8 +1,11 @@
 name: Lunch menus
 on:
   schedule:
-    # Hourly 03–08 UTC on weekdays = from 06:00 Helsinki until ~10–11, summer and winter time
-    - cron: '0 3-8 * * 1-5'
+    # GitHub delays scheduled runs by up to ~6 h, so start 6 h early: hourly from 21 UTC the
+    # evening before (Sun–Thu) until 08 UTC. fetch.py uses Helsinki date, skips weekends, and
+    # exits without changes once all menus are found, so extra/early runs are harmless.
+    - cron: '0 21-23 * * 0-4'
+    - cron: '0 0-8 * * 1-5'
   workflow_dispatch: # Allow manual trigger
 
 permissions:
