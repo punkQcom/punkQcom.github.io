@@ -275,6 +275,9 @@ def main():
     if day.weekday() >= 5:
         print("Weekend, nothing to do.")
         return
+    if now.hour < 6 and not os.environ.get("LUNCH_DATE"):
+        print("Before 06:00 Helsinki, nothing to do.")
+        return
 
     state_file = OUT / "lunch.json"
     state = json.loads(state_file.read_text()) if state_file.exists() else {}
