@@ -6,39 +6,22 @@
   <description>Päivän lounaslistat lähiravintoloista</description>
   <language>fi</language>
   <item>
-    <title>Lounas TESTI 5</title>
+    <title>Lounas pe 2.10.</title>
     <link>https://punkq.com/products/lunch/</link>
-    <guid isPermaLink="false">lounas-test-5</guid>
-    <pubDate>Thu, 01 Oct 2026 20:17:41 +0300</pubDate>
-    <description><![CDATA[<h3>Testi 5</h3><ul><li>Tämä on testiviesti</li></ul>]]></description>
-  </item>
-  <item>
-    <title>Lounas TESTI 4</title>
-    <link>https://punkq.com/products/lunch/</link>
-    <guid isPermaLink="false">lounas-test-4</guid>
-    <pubDate>Thu, 01 Oct 2026 20:13:51 +0300</pubDate>
-    <description><![CDATA[<h3>Testi 4</h3><ul><li>Tämä on testiviesti</li></ul>]]></description>
-  </item>
-  <item>
-    <title>Lounas TESTI 3</title>
-    <link>https://punkq.com/products/lunch/</link>
-    <guid isPermaLink="false">lounas-test-3</guid>
-    <pubDate>Thu, 01 Oct 2026 20:09:20 +0300</pubDate>
-    <description><![CDATA[<h3>Testi 3</h3><ul><li>Tämä on testiviesti</li></ul>]]></description>
-  </item>
-  <item>
-    <title>Lounas TESTI 2</title>
-    <link>https://punkq.com/products/lunch/</link>
-    <guid isPermaLink="false">lounas-test-2</guid>
-    <pubDate>Thu, 01 Oct 2026 20:04:10 +0300</pubDate>
-    <description><![CDATA[<h3>Testi 2</h3><ul><li>Tämä on testiviesti</li></ul>]]></description>
-  </item>
-  <item>
-    <title>Lounas TESTI</title>
-    <link>https://punkq.com/products/lunch/</link>
-    <guid isPermaLink="false">lounas-test-1</guid>
-    <pubDate>Thu, 01 Oct 2026 19:59:05 +0300</pubDate>
-    <description><![CDATA[<h3>Testi</h3><ul><li>Tämä on testiviesti</li></ul>]]></description>
+    <guid isPermaLink="false">lounas-2026-10-02</guid>
+    <pubDate>Fri, 02 Oct 2026 12:51:13 +0300</pubDate>
+    <description><![CDATA[<h3><a href="https://www.pegasus-ravintolat.fi/hansasali#lounaslista">Pegasus Hansasali</a></h3>
+<p><img src="https://cdn.prod.website-files.com/6a5757dd1c62f83f7a16d6c2/6ab8bf917f5db6dfbcecf2e7_Hansa%20ig%20vko%2040.png" alt="Pegasus Hansasali viikon lounaslista" style="max-width:100%"></p>
+<h3><a href="https://kolmaslinja.fi/lounas-turku/">3. Linja</a></h3>
+<ul><li>Steak Friday</li><li>Paahdettua maissi-valkosipulikeittoa L, G</li><li>Mac &amp; cheese, rapeaa sipulia ja jalapeñoa L</li><li>Grillattuja porsaan ulkofilepihvejä &amp; café de Paris -voita L, G</li><li>BBQ-kanaa ja paahdettua valkosipulia L, G</li><li>Steakhouse-ranskalaisia M, G</li><li>Savuaiolia ja chilimajoneesia M, G</li><li>Paahdettua maissia, paprikaa ja limeä M, G</li><li>Lakritsipannacottaa ja vadelmamelbaa L, G</li></ul>
+<h3><a href="https://gatoradecenter.fi/fi/lounas">Gatorade Center (TPS-lounas)</a></h3>
+<ul><li>Härkäwokkia (M, G)</li><li>Kanakebabbia, tomaattikastiketta ja riisiä (M, G)</li><li>Chimichurrilla maustettuja kasviksia ja halloumia (L, G)</li><li>Tomaatti-vuohenjuustokeittoa (VL, G)</li></ul>
+<h3><a href="https://www.lounasverkko.fi/lounasravintelivarikko">Lounasravinteli Varikko</a></h3>
+<ul><li>Kansallinen lenkkipäivä</li><li>Uunimakkaraa, tomaattikastikkeessa, paistetut perunat (L,G)</li><li>Paneroitu porsaanleike (L) bearnaisekastike (L,G) Gluteeniton leike keittiöstä</li><li>Suklaamousse (L,G)</li></ul>
+<h3><a href="https://www.tbherkku.fi/ravintola/">Teboil Herkku</a></h3>
+<ul><li><strong>Salaattibuffet 9,90€</strong></li><li><strong>Päivä keitto 11,50€</strong><ul><li>Tomaatti- mascarponekeitto (l, g),, runsas salaattibuffet</li></ul></li><li><strong>Noutopöytä 13,80€</strong><ul><li>Broilerileike (l), valkosipuliperunat (l, g)</li><li>Wingsejä, auradippi (l, g), hampurilaisia (l, g keit.)</li><li>Hodareita (l), sipulirenkaat (l), ranskalaisia (l, g)</li></ul></li><li><strong>Päivän leike 16,90€</strong><ul><li>Pippuripihvi (l, g)</li></ul></li><li>Kaikkiin lounaisiin sisältyy runsas salaattibuffet, ruokajuoma vesi, mehu tai kotikalja sekä kahvi/tee ja jälkiruoka, Hätävara (l)</li></ul>
+<h3><a href="https://www.umai.fi/siskot">Ravintola Siskot</a></h3>
+<ul><li>Riistakäristystä &amp; puolukkahillo (L.G.)</li><li>Paistettu kanafileet limekastikkeella(L.G.)</li><li>Kungpo possua (M.G.)</li><li>Porkkanakakku (L.)</li></ul>]]></description>
   </item>
   <item>
     <title>Lounas to 1.10.</title>
