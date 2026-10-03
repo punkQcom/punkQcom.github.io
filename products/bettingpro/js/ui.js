@@ -2,10 +2,10 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1791032013';
-import { confidenceLevel, splitPicks } from './suggested-bets-format.js?v=1791032013';
-import { TRANSLATIONS } from './translations.js?v=1791032013';
-import { computePLBars } from './pl-simulation-format.js?v=1791032013';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1791032738';
+import { confidenceLevel, splitPicks, confidenceTitle } from './suggested-bets-format.js?v=1791032738';
+import { TRANSLATIONS } from './translations.js?v=1791032738';
+import { computePLBars } from './pl-simulation-format.js?v=1791032738';
 
 /**
  * Translate a bet/outcome label for display. Labels stay English internally
@@ -27,6 +27,17 @@ function esc(str) {
   const d = document.createElement('div');
   d.textContent = str;
   return d.innerHTML;
+}
+
+/**
+ * Escape for use inside a quoted HTML attribute.
+ *
+ * esc() goes through textContent, which escapes &, < and > but NOT quotes — safe for
+ * element content, not for `attr="..."`. Team names are externally sourced, so a name
+ * containing a double quote would otherwise close the attribute early and inject markup.
+ */
+function escAttr(str) {
+  return esc(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 export function showResults({ scroll = true } = {}) {
@@ -59,7 +70,7 @@ export function renderTournamentFilter(tournaments, activeId, onChange) {
   ];
 
   const pillsHtml = buttons
-    .map(b => `<button data-tournament="${esc(b.id)}" class="${b.id === activeId ? 'active' : ''}">${esc(b.label)}</button>`)
+    .map(b => `<button data-tournament="${escAttr(b.id)}" class="${b.id === activeId ? 'active' : ''}">${esc(b.label)}</button>`)
     .join('');
   const helpHtml = `<button type="button" class="help-tip" data-help="tournament_filter">?</button>`;
   container.innerHTML = pillsHtml + helpHtml;
@@ -1938,7 +1949,7 @@ export function renderPLSimulation(plData, containerId) {
     for (const bar of bars) {
       const sign = bar.runningTotal >= 0 ? '+' : '';
       const label = `${bets[bar.index].date} ${bets[bar.index].homeTeam}–${bets[bar.index].awayTeam} ${sign}${bar.runningTotal.toFixed(2)}`;
-      html += `<div class="pl-bar ${bar.cls}" style="height:${bar.heightPct}%" data-bet-index="${bar.index}" role="button" tabindex="0" aria-label="${esc(label)}"></div>`;
+      html += `<div class="pl-bar ${bar.cls}" style="height:${bar.heightPct}%" data-bet-index="${bar.index}" role="button" tabindex="0" aria-label="${escAttr(label)}"></div>`;
     }
     html += '</div>';
   }
@@ -2037,7 +2048,7 @@ export function renderSuggestedBets(data, containerId) {
   // Local helper — renders a picks array into the shared table markup
   const picksTableHtml = (rows) => {
     let s = '<div class="tracker-scroll"><table class="results-table tracker-table sb-table">';
-    s += `<thead><tr><th>${t('col.date')}</th><th>${t('sb.colLeague')}</th><th>${t('col.match')}</th><th>${t('col.bet')}</th><th>${t('col.odds')}</th><th>${t('sb.colBook')}</th><th>${t('col.edge')}</th><th>${t('sb.colConfidence')}</th></tr></thead><tbody>`;
+    s += `<thead><tr><th>${t('col.date')}</th><th>${t('sb.colLeague')}</th><th>${t('col.match')}</th><th>${t('col.bet')}</th><th>${t('col.odds')}</th><th>${t('sb.colBook')}</th><th>${t('col.edge')}</th><th title="${escAttr(t('sb.confTip'))}">${t('sb.colConfidence')}</th></tr></thead><tbody>`;
     for (const p of rows) {
       const lvl = confidenceLevel(p.matchesPlayed);
       const book = p.bestBook ? `${esc(formatBookmaker(p.bestBook))} @${p.bestOdds.toFixed(2)}` : '—';
@@ -2049,12 +2060,12 @@ export function renderSuggestedBets(data, containerId) {
       // currentWeek picks generated before that deploy, and clears on the next generation run.
       const hasMatchId = p.matchId !== undefined && p.matchId !== null && p.matchId !== 'undefined';
       const matchId = hasMatchId ? p.matchId : '';
-      s += `<tr class="suggested-bet-row" data-league="${esc(p.leagueId)}" data-home="${esc(p.homeTeam)}" data-away="${esc(p.awayTeam)}" data-match-id="${esc(matchId)}" tabindex="0" role="button">
+      s += `<tr class="suggested-bet-row" data-league="${escAttr(p.leagueId)}" data-home="${escAttr(p.homeTeam)}" data-away="${escAttr(p.awayTeam)}" data-match-id="${escAttr(matchId)}" tabindex="0" role="button">
         <td>${p.date}</td><td>${esc(p.leagueName)}</td><td>${esc(p.homeTeam)} - ${esc(p.awayTeam)}</td>
         <td>${translateBetLabel(p.bet)}</td><td>${p.odds.toFixed(2)}</td>
         <td>${book}</td>
         <td class="value-positive">+${(p.edge * 100).toFixed(1)}%</td>
-        <td><span class="conf-dot conf-${lvl}"></span>${t('sb.conf' + lvl[0].toUpperCase() + lvl.slice(1))}</td></tr>`;
+        <td title="${escAttr(confidenceTitle(lvl, p.matchesPlayed, t))}"><span class="conf-dot conf-${lvl}"></span>${t('sb.conf' + lvl[0].toUpperCase() + lvl.slice(1))}</td></tr>`;
     }
     s += '</tbody></table></div>';
     return s;

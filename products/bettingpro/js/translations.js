@@ -188,6 +188,25 @@ export const TRANSLATIONS = {
   'sb.confCold': { fi: 'Kylmä', en: 'Cold' },
   'sb.confWarming': { fi: 'Lämpenee', en: 'Warming' },
   'sb.confWarm': { fi: 'Lämmin', en: 'Warm' },
+  // The dot is about how much of the league's season the model has seen, not about how
+  // strongly it likes this particular pick — users read "cold" as "bad bet" otherwise.
+  'sb.confTip': {
+    fi: 'Kuinka paljon tämän sarjan kautta malli on ehtinyt nähdä. Mitä enemmän pelattuja otteluita, sitä luotettavammat joukkuearviot. Ei kerro tämän vihjeen vahvuudesta.',
+    en: "How much of this league's season the model has seen. More completed matches means more reliable team ratings. It does not rate this particular pick.",
+  },
+  'sb.confMatchesPlayed': { fi: 'ottelua pelattu tällä kaudella', en: 'matches played this season' },
+  'sb.confColdTip': {
+    fi: 'Alle 10 ottelua pelattu: arviot nojaavat yhä suurelta osin viime kauteen.',
+    en: 'Under 10 matches played: ratings still lean heavily on last season.',
+  },
+  'sb.confWarmingTip': {
+    fi: '10–20 ottelua pelattu: arviot asettuvat, mutta elävät vielä.',
+    en: '10–20 matches played: ratings are settling but still moving.',
+  },
+  'sb.confWarmTip': {
+    fi: 'Yli 20 ottelua pelattu: arviot perustuvat tämän kauden kunnolliseen otokseen.',
+    en: 'Over 20 matches played: ratings rest on a solid sample from this season.',
+  },
   'sb.record': { fi: 'Osumat', en: 'Record' },
   'sb.speculative': { fi: 'Spekulatiivinen arvo', en: 'Speculative value' },
   'sb.speculativeNote': { fi: 'Korkeakertoimisia, suuren edgen pitkänmatkan vetoja — mallin poimintoja, mutta selvästi riskisempiä.', en: 'High-odds, high-edge longshots the model flags — picks, but clearly higher risk.' },

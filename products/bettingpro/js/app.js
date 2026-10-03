@@ -3,20 +3,20 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1791032013';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1791032013';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1791032013';
+import { shinProbabilities } from './shin.js?v=1791032738';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1791032738';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1791032738';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1791032013';
-import { getSportDefaults } from './sport-config.js?v=1791032013';
-import { computeSplitGroups } from './split-stage.js?v=1791032013';
-import { computeNhlGroups } from './nhl-structure.js?v=1791032013';
-import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1791032013';
-import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1791032013';
-import { lookupPrediction } from './prediction-lookup.js?v=1791032013';
-import { localMatchDate } from './match-date.js?v=1791032013';
-import { getConsensusOdds } from './odds-consensus.js?v=1791032013';
-import { initTeam as coreInitTeam, accumulateMatch, rowPoints } from './standings-core.js?v=1791032013';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1791032738';
+import { getSportDefaults } from './sport-config.js?v=1791032738';
+import { computeSplitGroups } from './split-stage.js?v=1791032738';
+import { computeNhlGroups } from './nhl-structure.js?v=1791032738';
+import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1791032738';
+import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1791032738';
+import { lookupPrediction } from './prediction-lookup.js?v=1791032738';
+import { localMatchDate } from './match-date.js?v=1791032738';
+import { getConsensusOdds } from './odds-consensus.js?v=1791032738';
+import { initTeam as coreInitTeam, accumulateMatch, rowPoints } from './standings-core.js?v=1791032738';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
@@ -24,7 +24,7 @@ import {
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults,
   renderSuggestedBets
-} from './ui.js?v=1791032013';
+} from './ui.js?v=1791032738';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
