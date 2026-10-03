@@ -3,17 +3,18 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1790002054';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1790002054';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1790002054';
+import { shinProbabilities } from './shin.js?v=1791015231';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1791015231';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1791015231';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1790002054';
-import { getSportDefaults } from './sport-config.js?v=1790002054';
-import { computeSplitGroups } from './split-stage.js?v=1790002054';
-import { computeNhlGroups } from './nhl-structure.js?v=1790002054';
-import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1790002054';
-import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1790002054';
-import { lookupPrediction } from './prediction-lookup.js?v=1790002054';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1791015231';
+import { getSportDefaults } from './sport-config.js?v=1791015231';
+import { computeSplitGroups } from './split-stage.js?v=1791015231';
+import { computeNhlGroups } from './nhl-structure.js?v=1791015231';
+import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1791015231';
+import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1791015231';
+import { lookupPrediction } from './prediction-lookup.js?v=1791015231';
+import { localMatchDate } from './match-date.js?v=1791015231';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
@@ -21,7 +22,7 @@ import {
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults,
   renderSuggestedBets
-} from './ui.js?v=1790002054';
+} from './ui.js?v=1791015231';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -887,14 +888,15 @@ function buildDateGroups(matches, upcoming, odds) {
   const cutoff = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
 
   for (const m of filterByTournament(matches)) {
-    const d = m.date || 'unknown';
+    // Group on the local kickoff day, not the feed's match-day label — see match-date.js.
+    const d = localMatchDate(m) || 'unknown';
     if (!groups[d]) groups[d] = [];
     const migrated = migrateOdds(m.odds) || null;
     groups[d].push({ ...m, odds: migrated, status: 'finished' });
   }
 
   for (const m of filterByTournament(upcoming)) {
-    const d = m.date || 'unknown';
+    const d = localMatchDate(m) || 'unknown';
     if (d < cutoff) continue; // skip stale upcoming entries with past dates
     if (!groups[d]) groups[d] = [];
     const matchOdds = resolveMatchOdds(m, odds);
