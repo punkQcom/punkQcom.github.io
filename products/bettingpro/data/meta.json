@@ -1,5 +1,5 @@
 {
-  "lastUpdate": "2026-10-03T06:44:12.793Z",
+  "lastUpdate": "2026-10-03T08:12:53.838Z",
   "leagues": [
     {
       "id": "veikkausliiga",
@@ -258,6 +258,7 @@
             "UEFA_Nations_League"
           ],
           "seasons": [
+            "2026-2027",
             "2024-2025",
             "2022-2023",
             "2020-2021"
@@ -274,6 +275,7 @@
             "CONCACAF_Nations_League"
           ],
           "seasons": [
+            "2026-2027",
             "2024-2025",
             "2023-2024"
           ],
