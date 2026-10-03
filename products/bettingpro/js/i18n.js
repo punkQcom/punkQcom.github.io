@@ -7,7 +7,7 @@
  * choice (persisted in localStorage, default Finnish).
  */
 
-import { TRANSLATIONS, COUNTRY_SUFFIX } from './translations.js?v=1791033859';
+import { TRANSLATIONS, COUNTRY_SUFFIX } from './translations.js?v=1791036187';
 
 export const LANGS = ['fi', 'en'];
 export const DEFAULT_LANG = 'fi';
