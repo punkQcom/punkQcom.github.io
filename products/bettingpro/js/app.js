@@ -3,19 +3,20 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1791017488';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1791017488';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1791017488';
+import { shinProbabilities } from './shin.js?v=1791032013';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1791032013';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1791032013';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1791017488';
-import { getSportDefaults } from './sport-config.js?v=1791017488';
-import { computeSplitGroups } from './split-stage.js?v=1791017488';
-import { computeNhlGroups } from './nhl-structure.js?v=1791017488';
-import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1791017488';
-import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1791017488';
-import { lookupPrediction } from './prediction-lookup.js?v=1791017488';
-import { localMatchDate } from './match-date.js?v=1791017488';
-import { initTeam as coreInitTeam, accumulateMatch, rowPoints } from './standings-core.js?v=1791017488';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1791032013';
+import { getSportDefaults } from './sport-config.js?v=1791032013';
+import { computeSplitGroups } from './split-stage.js?v=1791032013';
+import { computeNhlGroups } from './nhl-structure.js?v=1791032013';
+import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1791032013';
+import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1791032013';
+import { lookupPrediction } from './prediction-lookup.js?v=1791032013';
+import { localMatchDate } from './match-date.js?v=1791032013';
+import { getConsensusOdds } from './odds-consensus.js?v=1791032013';
+import { initTeam as coreInitTeam, accumulateMatch, rowPoints } from './standings-core.js?v=1791032013';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
@@ -23,7 +24,7 @@ import {
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults,
   renderSuggestedBets
-} from './ui.js?v=1791017488';
+} from './ui.js?v=1791032013';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -83,36 +84,6 @@ function migrateOdds(odds) {
   return odds;
 }
 
-/** Average implied probabilities across bookmakers, convert back to odds */
-function getConsensusOdds(oddsObj) {
-  const entries = Object.values(oddsObj);
-  if (entries.length === 0) return null;
-
-  function avgOdds(values) {
-    const valid = values.filter(o => o > 0);
-    if (valid.length === 0) return 0;
-    const avgProb = valid.reduce((s, o) => s + 1 / o, 0) / valid.length;
-    return avgProb > 0 ? 1 / avgProb : 0;
-  }
-
-  const result = {
-    home: avgOdds(entries.map(b => b.home || 0)),
-    draw: avgOdds(entries.map(b => b.draw || 0)),
-    away: avgOdds(entries.map(b => b.away || 0)),
-    overUnder: {},
-  };
-  const allLines = new Set();
-  for (const e of entries) for (const line of Object.keys(e.overUnder || {})) allLines.add(line);
-  for (const line of allLines) {
-    const withLine = entries.filter(e => e.overUnder?.[line]);
-    if (withLine.length === 0) continue;
-    result.overUnder[line] = {
-      over: avgOdds(withLine.map(e => e.overUnder[line].over)),
-      under: avgOdds(withLine.map(e => e.overUnder[line].under)),
-    };
-  }
-  return result;
-}
 
 // ── Multi-bookmaker utilities ────────────────────────────────────────
 
