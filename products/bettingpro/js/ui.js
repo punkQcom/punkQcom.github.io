@@ -2,10 +2,10 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1791015231';
-import { confidenceLevel, splitPicks } from './suggested-bets-format.js?v=1791015231';
-import { TRANSLATIONS } from './translations.js?v=1791015231';
-import { computePLBars } from './pl-simulation-format.js?v=1791015231';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1791017488';
+import { confidenceLevel, splitPicks } from './suggested-bets-format.js?v=1791017488';
+import { TRANSLATIONS } from './translations.js?v=1791017488';
+import { computePLBars } from './pl-simulation-format.js?v=1791017488';
 
 /**
  * Translate a bet/outcome label for display. Labels stay English internally
@@ -2252,7 +2252,7 @@ function buildStandingsTable(rows, sport) {
         <td>${row.goalsFor}</td>
         <td>${row.goalsAgainst}</td>
         <td class="${gdClass}">${gdText}</td>
-        <td class="standings-pts">${row.points}</td>
+        <td class="standings-pts">${row.points}${row.pointsAdjustment ? ` <span class="standings-adj" title="${t('st.pointsAdjustment')}">(${row.pointsAdjustment > 0 ? '+' : ''}${row.pointsAdjustment})</span>` : ''}</td>
       </tr>`;
     } else {
       html += `<tr${row.rank === 1 ? ' class="standings-leader"' : ''}>
@@ -2265,7 +2265,7 @@ function buildStandingsTable(rows, sport) {
         <td>${row.goalsFor}</td>
         <td>${row.goalsAgainst}</td>
         <td class="${gdClass}">${gdText}</td>
-        <td class="standings-pts">${row.points}</td>
+        <td class="standings-pts">${row.points}${row.pointsAdjustment ? ` <span class="standings-adj" title="${t('st.pointsAdjustment')}">(${row.pointsAdjustment > 0 ? '+' : ''}${row.pointsAdjustment})</span>` : ''}</td>
       </tr>`;
     }
   }

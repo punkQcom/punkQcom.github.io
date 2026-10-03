@@ -3,18 +3,19 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1791015231';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1791015231';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1791015231';
+import { shinProbabilities } from './shin.js?v=1791017488';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1791017488';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1791017488';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1791015231';
-import { getSportDefaults } from './sport-config.js?v=1791015231';
-import { computeSplitGroups } from './split-stage.js?v=1791015231';
-import { computeNhlGroups } from './nhl-structure.js?v=1791015231';
-import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1791015231';
-import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1791015231';
-import { lookupPrediction } from './prediction-lookup.js?v=1791015231';
-import { localMatchDate } from './match-date.js?v=1791015231';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1791017488';
+import { getSportDefaults } from './sport-config.js?v=1791017488';
+import { computeSplitGroups } from './split-stage.js?v=1791017488';
+import { computeNhlGroups } from './nhl-structure.js?v=1791017488';
+import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1791017488';
+import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1791017488';
+import { lookupPrediction } from './prediction-lookup.js?v=1791017488';
+import { localMatchDate } from './match-date.js?v=1791017488';
+import { initTeam as coreInitTeam, accumulateMatch, rowPoints } from './standings-core.js?v=1791017488';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
@@ -22,7 +23,7 @@ import {
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults,
   renderSuggestedBets
-} from './ui.js?v=1791015231';
+} from './ui.js?v=1791017488';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -625,35 +626,24 @@ function activeTournamentLabel() {
 }
 
 /** Build standings table from finished matches. */
-function buildStandings(matches, sport, upcoming = []) {
-  const sd = getSportDefaults(sport || 'football');
+function buildStandings(matches, sport, upcoming = [], leagueId = null, adjustments = {}) {
+  // leagueId matters: NHL and Liiga are both ice hockey but score differently.
+  const sd = getSportDefaults(sport || 'football', leagueId);
   const isHockey = sport === 'ice_hockey';
   const finished = filterByTournament(
     (matches || []).filter(m => m.homeGoals != null && m.awayGoals != null)
   );
 
-  const initTeam = name => ({ team: name, played: 0, won: 0, otWon: 0, otLost: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0 });
-  const accumulate = (teams, m) => {
-    const h = teams[m.homeTeam], a = teams[m.awayTeam];
-    h.played++; a.played++;
-    h.goalsFor += m.homeGoals; h.goalsAgainst += m.awayGoals;
-    a.goalsFor += m.awayGoals; a.goalsAgainst += m.homeGoals;
-    if (m.homeGoals > m.awayGoals) {
-      if (isHockey && m.overtime) { h.otWon++; a.otLost++; } else { h.won++; a.lost++; }
-    } else if (m.homeGoals < m.awayGoals) {
-      if (isHockey && m.overtime) { a.otWon++; h.otLost++; } else { a.won++; h.lost++; }
-    } else {
-      h.drawn++; a.drawn++;
-    }
-  };
+  // Shared with scripts/verify-standings.mjs via standings-core.js — a cross-check that
+  // reimplements the maths would drift from this and then only agree with itself.
+  const initTeam = name => ({ ...coreInitTeam(name), lost: 0 });
+  const accumulate = (teams, m) => accumulateMatch(teams, m, isHockey);
   const toRows = teams => {
-    const rows = Object.values(teams).map(t => {
-      const pts = t.won * sd.pointsForWin
-        + t.otWon * (sd.pointsForOTWin ?? 0)
-        + t.otLost * (sd.pointsForOTLoss ?? 0)
-        + t.drawn * (sd.pointsForDraw ?? 0);
-      return { ...t, goalDiff: t.goalsFor - t.goalsAgainst, points: pts };
-    });
+    const rows = Object.values(teams).map(t => ({
+      ...t, goalDiff: t.goalsFor - t.goalsAgainst,
+      pointsAdjustment: adjustments[t.team] || 0,
+      points: rowPoints(t, sd, adjustments[t.team] || 0),
+    }));
     rows.sort((a, b) => b.points - a.points || b.goalDiff - a.goalDiff || b.goalsFor - a.goalsFor);
     rows.forEach((r, i) => r.rank = i + 1);
     return rows;
@@ -783,7 +773,7 @@ function renderStandingsFiltered() {
   const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
   const sport = leagueCfg?.sport || 'football';
   const isIntl = !!leagueCfg?.isInternational;
-  const data = buildStandings(matches, sport, upcoming);
+  const data = buildStandings(matches, sport, upcoming, currentLeagueId, leagueCfg?.pointsAdjustments || {});
 
   // For internationals, a league table is only meaningful for a single group-stage
   // tournament (e.g. the World Cup). Hide the section for "All" and for non-group tags

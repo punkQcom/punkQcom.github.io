@@ -224,6 +224,7 @@ export const TRANSLATIONS = {
   'st.goalDiff': { fi: 'Maaliero', en: 'Goal Difference' },
   'st.goalDiffAbbr': { fi: 'ME', en: 'GD' },
   'st.points': { fi: 'Pisteet', en: 'Points' },
+  'st.pointsAdjustment': { fi: 'Sarjan määräämä pistevähennys', en: 'Points deduction imposed by the competition' },
   'st.pointsAbbr': { fi: 'P', en: 'Pts' },
 
   // Knockout stage names
