@@ -1,5 +1,5 @@
 {
-  "lastUpdate": "2026-10-03T08:22:51.240Z",
+  "lastUpdate": "2026-10-03T08:51:13.998Z",
   "leagues": [
     {
       "id": "veikkausliiga",
@@ -8,7 +8,8 @@
       "country": "Finland",
       "season": 2026,
       "isInternational": false,
-      "tournaments": null
+      "tournaments": null,
+      "pointsAdjustments": null
     },
     {
       "id": "epl",
@@ -17,7 +18,8 @@
       "country": "England",
       "season": "2026-2027",
       "isInternational": false,
-      "tournaments": null
+      "tournaments": null,
+      "pointsAdjustments": null
     },
     {
       "id": "efl_championship",
@@ -26,7 +28,10 @@
       "country": "England",
       "season": "2026-2027",
       "isInternational": false,
-      "tournaments": null
+      "tournaments": null,
+      "pointsAdjustments": {
+        "Southampton": -4
+      }
     },
     {
       "id": "bundesliga",
@@ -35,7 +40,8 @@
       "country": "Germany",
       "season": "2026-2027",
       "isInternational": false,
-      "tournaments": null
+      "tournaments": null,
+      "pointsAdjustments": null
     },
     {
       "id": "bundesliga2",
@@ -44,7 +50,8 @@
       "country": "Germany",
       "season": "2026-2027",
       "isInternational": false,
-      "tournaments": null
+      "tournaments": null,
+      "pointsAdjustments": null
     },
     {
       "id": "serie_a",
@@ -53,7 +60,8 @@
       "country": "Italy",
       "season": "2026-2027",
       "isInternational": false,
-      "tournaments": null
+      "tournaments": null,
+      "pointsAdjustments": null
     },
     {
       "id": "la_liga",
@@ -62,7 +70,8 @@
       "country": "Spain",
       "season": "2026-2027",
       "isInternational": false,
-      "tournaments": null
+      "tournaments": null,
+      "pointsAdjustments": null
     },
     {
       "id": "liiga",
@@ -71,7 +80,8 @@
       "country": "Finland",
       "season": 2027,
       "isInternational": false,
-      "tournaments": null
+      "tournaments": null,
+      "pointsAdjustments": null
     },
     {
       "id": "nhl",
@@ -80,7 +90,8 @@
       "country": "USA",
       "season": "2026-2027",
       "isInternational": false,
-      "tournaments": null
+      "tournaments": null,
+      "pointsAdjustments": null
     },
     {
       "id": "mens_international",
@@ -299,7 +310,8 @@
           ],
           "theOddsApiSportKey": null
         }
-      ]
+      ],
+      "pointsAdjustments": null
     }
   ],
   "previousSeasons": {
