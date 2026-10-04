@@ -20,6 +20,20 @@ export function confidenceTitle(level, matchesPlayed, t) {
   return `${t('sb.conf' + suffix)}: ${count} ${t('sb.confMatchesPlayed')}. ${t('sb.conf' + suffix + 'Tip')}`;
 }
 
+/**
+ * One tooltip covering all three confidence levels, for the compact legend line.
+ *
+ * The levels used to be rendered as a five-row block under the picks; that took more
+ * space than it earned, so the text lives on hover and the page keeps one short line.
+ */
+export function confidenceLegendTooltip(t) {
+  const level = (lvl) => {
+    const suffix = lvl[0].toUpperCase() + lvl.slice(1);
+    return `${t('sb.conf' + suffix)}: ${t('sb.conf' + suffix + 'Tip')}`;
+  };
+  return [t('sb.confLegendLead'), ...['warm', 'warming', 'cold'].map(level)].join(' ');
+}
+
 /** Split picks into the reliable core and the flagged high-risk overrides. */
 export function splitPicks(picks) {
   const list = picks || [];
