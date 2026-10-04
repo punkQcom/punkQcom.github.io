@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Fetch today's lunch menus and write products/lunch/{index.html, feed.xml, lunch.json}.
+"""Fetch tomorrow's lunch menus and write products/lunch/{index.html, feed.xml, lunch.json}.
 
-Standard library only. Run hourly on weekday mornings: restaurants already found today
-are kept, only missing ones are fetched again, and nothing is written if nothing changed.
-Set LUNCH_DATE=YYYY-MM-DD to test another day.
+Standard library only. Runs several times on Sun–Thu afternoons/evenings: restaurants already
+found for tomorrow are kept, only missing ones are fetched again, and nothing is written if
+nothing changed. Set LUNCH_DATE=YYYY-MM-DD to fetch a specific day.
 """
 import html
 import json
@@ -11,7 +11,7 @@ import os
 import re
 import sys
 import urllib.request
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from email.utils import format_datetime
 from html.parser import HTMLParser
 from pathlib import Path
@@ -197,7 +197,7 @@ def page_html(day, updated, results):
         elif res.get("lines"):
             body = lines_html(res["lines"])
         else:
-            body = f'<p class="lunch-note">Tämän päivän listaa ei löytynyt. <a href="{html.escape(r["url"])}">Katso ravintolan sivu</a></p>'
+            body = f'<p class="lunch-note">Päivän listaa ei löytynyt. <a href="{html.escape(r["url"])}">Katso ravintolan sivu</a></p>'
         cards.append(f"""        <section class="legal-section lunch-card">
             <h2><a href="{html.escape(r["url"])}">{html.escape(r["name"])}</a></h2>
             <p class="lunch-hours">Lounas {r["hours"]}</p>
@@ -271,12 +271,10 @@ def feed_xml(items):
 
 def main():
     now = datetime.now(TZ)
-    day = date.fromisoformat(os.environ["LUNCH_DATE"]) if os.environ.get("LUNCH_DATE") else now.date()
+    tomorrow = now.date() + timedelta(days=1)
+    day = date.fromisoformat(os.environ["LUNCH_DATE"]) if os.environ.get("LUNCH_DATE") else tomorrow
     if day.weekday() >= 5:
-        print("Weekend, nothing to do.")
-        return
-    if now.hour < 6 and not os.environ.get("LUNCH_DATE"):
-        print("Before 06:00 Helsinki, nothing to do.")
+        print(f"{day} is a weekend day, nothing to do.")
         return
 
     state_file = OUT / "lunch.json"
@@ -286,7 +284,7 @@ def main():
 
     missing = [r for r in RESTAURANTS if not found(results.get(r["key"], {}))]
     if same_day and not missing:
-        print("All menus already found today.")
+        print(f"All menus for {day} already found.")
         return
 
     new = 0
