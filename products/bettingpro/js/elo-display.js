@@ -2,7 +2,7 @@
  * Elo Ratings Display — builds and renders an Elo ratings table.
  */
 
-import { t } from './i18n.js?v=1791036787';
+import { t } from './i18n.js?v=1791116245';
 
 const DEFAULT_RATING = 1500;
 const K_FACTOR = 32;

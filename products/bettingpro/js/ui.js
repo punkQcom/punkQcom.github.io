@@ -2,10 +2,10 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1791036787';
-import { confidenceLevel, splitPicks, confidenceTitle } from './suggested-bets-format.js?v=1791036787';
-import { TRANSLATIONS } from './translations.js?v=1791036787';
-import { computePLBars } from './pl-simulation-format.js?v=1791036787';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1791116245';
+import { confidenceLevel, splitPicks, confidenceTitle } from './suggested-bets-format.js?v=1791116245';
+import { TRANSLATIONS } from './translations.js?v=1791116245';
+import { computePLBars } from './pl-simulation-format.js?v=1791116245';
 
 /**
  * Translate a bet/outcome label for display. Labels stay English internally
@@ -2088,6 +2088,22 @@ export function renderSuggestedBets(data, containerId) {
     html += `<p class="muted">${t('sb.empty')}</p>`;
   } else if (reliable.length > 0) {
     html += picksTableHtml(reliable);
+  }
+
+  // Confidence legend — the dot is about league data volume, not pick quality, and that
+  // is not guessable from the word alone ("Cold" reads as "bad bet"). The tooltips say the
+  // same thing on hover; this states it in the open, where it is actually read.
+  if (reliable.length > 0 || speculative.length > 0) {
+    const legendRow = (lvl) => `<div class="sb-legend-row">` +
+      `<span class="conf-dot conf-${lvl}"></span>` +
+      `<span class="sb-legend-label">${t('sb.conf' + lvl[0].toUpperCase() + lvl.slice(1))}</span>` +
+      `<span class="sb-legend-text">${t('sb.conf' + lvl[0].toUpperCase() + lvl.slice(1) + 'Tip')}</span>` +
+      `</div>`;
+    html += `<div class="sb-legend">` +
+      `<p class="sb-legend-title">${t('sb.confLegendTitle')}</p>` +
+      `<p class="muted sb-legend-lead">${t('sb.confLegendLead')}</p>` +
+      ['warm', 'warming', 'cold'].map(legendRow).join('') +
+      `</div>`;
   }
 
   // Speculative / high-risk overrides

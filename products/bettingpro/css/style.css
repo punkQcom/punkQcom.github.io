@@ -1401,6 +1401,29 @@ details.card[open] summary h2::before {
 .conf-warming { background: #fbbf24; }
 .conf-warm { background: #f87171; }
 
+/* Confidence legend — states in the open what the dot means, since "Cold" otherwise
+   reads as "bad bet" rather than "this league has not played many matches yet". */
+.sb-legend {
+  margin: 10px 0 18px;
+  padding: 10px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 6px;
+  background: rgba(148, 163, 184, 0.06);
+  font-size: 0.9em;
+}
+.sb-legend-title { margin: 0 0 2px; font-weight: 600; }
+.sb-legend-lead { margin: 0 0 8px; }
+.sb-legend-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.sb-legend-row .conf-dot { flex: none; align-self: center; }
+.sb-legend-label { font-weight: 600; min-width: 5.5em; }
+.sb-legend-text { color: var(--muted, #94a3b8); flex: 1 1 14em; }
+
 .suggested-bet-row { cursor: pointer; }
 .suggested-bet-row:hover,
 .suggested-bet-row:focus { background: rgba(96, 165, 250, 0.12); outline: none; }

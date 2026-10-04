@@ -166,7 +166,7 @@ export const TRANSLATIONS = {
   'track.predictedScore': { fi: 'Ennustettu tulos', en: 'Predicted score' },
 
   // P/L simulation
-  'pl.noBets': { fi: 'Ei arvovetoja vielä — simulaatio alkaa 10 päättyneen ottelun jälkeen ja huomioi vain positiivisen edun vedot.', en: 'No value bets yet — the simulation starts after 10 finished matches and only counts positive-edge picks.' },
+  'pl.noBets': { fi: 'Ei arvovetoja vielä - simulaatio alkaa 10 päättyneen ottelun jälkeen ja huomioi vain positiivisen edun vedot.', en: 'No value bets yet - the simulation starts after 10 finished matches and only counts positive-edge picks.' },
   'pl.totalPL': { fi: 'Kokonaistulos', en: 'Total P/L' },
   'pl.roi': { fi: 'ROI', en: 'ROI' },
   'pl.maxDrawdown': { fi: 'Suurin pudotus', en: 'Max Drawdown' },
@@ -180,7 +180,7 @@ export const TRANSLATIONS = {
   'sb.title': { fi: 'Ehdotetut vedot', en: 'Suggested Bets' },
   'sb.thisWeek': { fi: 'Tämän viikon ehdotukset', en: "This week's picks" },
   'sb.trackRecord': { fi: 'Tulokset', en: 'Track record' },
-  'sb.empty': { fi: 'Ei ehdotuksia vielä — päivittyy torstaisin.', en: 'No suggestions yet — updates on Thursdays.' },
+  'sb.empty': { fi: 'Ei ehdotuksia vielä - päivittyy torstaisin.', en: 'No suggestions yet - updates on Thursdays.' },
   'sb.lastUpdated': { fi: 'Päivitetty', en: 'Updated' },
   'sb.colLeague': { fi: 'Sarja', en: 'League' },
   'sb.colConfidence': { fi: 'Luottamus', en: 'Confidence' },
@@ -190,6 +190,14 @@ export const TRANSLATIONS = {
   'sb.confWarm': { fi: 'Lämmin', en: 'Warm' },
   // The dot is about how much of the league's season the model has seen, not about how
   // strongly it likes this particular pick — users read "cold" as "bad bet" otherwise.
+  'sb.confLegendTitle': {
+    fi: 'Mitä Varmuus-sarake tarkoittaa',
+    en: 'What the Confidence column means',
+  },
+  'sb.confLegendLead': {
+    fi: 'Kertoo kuinka paljon kyseisen sarjan kautta malli on ehtinyt nähdä, ei sitä kuinka hyvä vihje on.',
+    en: "It shows how much of that league's season the model has seen, not how good the pick is.",
+  },
   'sb.confTip': {
     fi: 'Kuinka paljon tämän sarjan kautta malli on ehtinyt nähdä. Mitä enemmän pelattuja otteluita, sitä luotettavammat joukkuearviot. Ei kerro tämän vihjeen vahvuudesta.',
     en: "How much of this league's season the model has seen. More completed matches means more reliable team ratings. It does not rate this particular pick.",
@@ -200,8 +208,8 @@ export const TRANSLATIONS = {
     en: 'Under 10 matches played: ratings still lean heavily on last season.',
   },
   'sb.confWarmingTip': {
-    fi: '10–20 ottelua pelattu: arviot asettuvat, mutta elävät vielä.',
-    en: '10–20 matches played: ratings are settling but still moving.',
+    fi: '10-20 ottelua pelattu: arviot asettuvat, mutta elävät vielä.',
+    en: '10-20 matches played: ratings are settling but still moving.',
   },
   'sb.confWarmTip': {
     fi: 'Yli 20 ottelua pelattu: arviot perustuvat tämän kauden kunnolliseen otokseen.',
@@ -209,13 +217,13 @@ export const TRANSLATIONS = {
   },
   'sb.record': { fi: 'Osumat', en: 'Record' },
   'sb.speculative': { fi: 'Spekulatiivinen arvo', en: 'Speculative value' },
-  'sb.speculativeNote': { fi: 'Korkeakertoimisia, suuren edgen pitkänmatkan vetoja — mallin poimintoja, mutta selvästi riskisempiä.', en: 'High-odds, high-edge longshots the model flags — picks, but clearly higher risk.' },
-  'sb.help': { fi: 'Mallin parhaat arvovedot tulevista otteluista, koottuna kaikista sarjoista. Jokaisessa ottelussa mallin 1X2-todennäköisyyksiä verrataan vedonvälittäjän kertoimiin (marginaali poistettuna); veto on arvoveto kun malli arvioi lopputuloksen todennäköisemmäksi kuin markkina — tämä ero on <strong>etu</strong>. Mukaan otetaan vedot joiden etu on vähintään 3 % ja jotka pelataan seuraavan noin 8 päivän aikana, ne järjestetään edun mukaan ja näytetään 20 parasta. Luottamuspiste kertoo kuinka monta ottelua sarjassa on pelattu (enemmän otteluita = luotettavampi malli). Jokaista vetoa seurataan tasapanoksin (1 yksikkö: voitto tuottaa kerroin−1, tappio −1) ja se arvostellaan kun ottelu päättyy. Ei tuottotakuuta — urheiluvedonlyöntiä.',
+  'sb.speculativeNote': { fi: 'Korkeakertoimisia, suuren edgen pitkänmatkan vetoja - mallin poimintoja, mutta selvästi riskisempiä.', en: 'High-odds, high-edge longshots the model flags - picks, but clearly higher risk.' },
+  'sb.help': { fi: 'Mallin parhaat arvovedot tulevista otteluista, koottuna kaikista sarjoista. Jokaisessa ottelussa mallin 1X2-todennäköisyyksiä verrataan vedonvälittäjän kertoimiin (marginaali poistettuna); veto on arvoveto kun malli arvioi lopputuloksen todennäköisemmäksi kuin markkina - tämä ero on <strong>etu</strong>. Mukaan otetaan vedot joiden etu on vähintään 3 % ja jotka pelataan seuraavan noin 8 päivän aikana, ne järjestetään edun mukaan ja näytetään 20 parasta. Luottamuspiste kertoo kuinka monta ottelua sarjassa on pelattu (enemmän otteluita = luotettavampi malli). Jokaista vetoa seurataan tasapanoksin (1 yksikkö: voitto tuottaa kerroin−1, tappio −1) ja se arvostellaan kun ottelu päättyy. Ei tuottotakuuta - urheiluvedonlyöntiä.',
                en: "The model's best value bets on upcoming fixtures, gathered across every league. For each match the model's 1X2 probabilities are compared against the bookmaker odds (with the margin removed); an outcome is a value bet when the model rates it more likely than the market — that gap is the <strong>edge</strong>. We keep bets with an edge of at least 3% on matches in the next ~8 days, rank them by edge, and show the top 20. The confidence dot shows how many matches the league has played (more games = more reliable model). Each pick is tracked at level stakes (1 unit: a win pays odds−1, a loss −1) and is graded once the match finishes. Not a profit guarantee — this is sports betting." },
 
   // Standings tables
   'st.groupNotStarted': { fi: 'Lohkovaihe ei ole vielä alkanut', en: "Group stage hasn't started yet" },
-  'st.groupComplete': { fi: 'Lohkovaihe valmis — lopulliset sijoitukset', en: 'Group Stage Complete — Final Standings' },
+  'st.groupComplete': { fi: 'Lohkovaihe valmis - lopulliset sijoitukset', en: 'Group Stage Complete - Final Standings' },
   'st.fullTable': { fi: 'Koko taulukko', en: 'Full Table' },
   'st.knockoutResults': { fi: 'Pudotuspelien tulokset', en: 'Knockout Results' },
   'st.group': { fi: 'Lohko', en: 'Group' },

@@ -17,7 +17,7 @@ export function confidenceLevel(matchesPlayed) {
 export function confidenceTitle(level, matchesPlayed, t) {
   const suffix = level[0].toUpperCase() + level.slice(1);
   const count = Number.isFinite(matchesPlayed) ? matchesPlayed : 0;
-  return `${t('sb.conf' + suffix)} — ${count} ${t('sb.confMatchesPlayed')}. ${t('sb.conf' + suffix + 'Tip')}`;
+  return `${t('sb.conf' + suffix)}: ${count} ${t('sb.confMatchesPlayed')}. ${t('sb.conf' + suffix + 'Tip')}`;
 }
 
 /** Split picks into the reliable core and the flagged high-risk overrides. */
