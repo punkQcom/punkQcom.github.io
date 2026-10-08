@@ -1,54 +1,61 @@
-# Lunch feed: reliable morning trigger (in progress)
+# Lunch feed: notes & open items
 
-## Problem
+## The original problem (now worked around)
 `lunch.yml`'s `schedule:` cron is unreliable — GitHub delays or drops most
 scheduled runs. Confirmed by comparing intended cron times vs actual run
 timestamps (via the Actions API):
 
-- `lunch.yml` (cron every 30 min, 03:17–08:47 UTC weekdays): only fires
-  ~once/day, 1–7 hours late (e.g. Oct 1 run landed at 09:58 UTC instead of
-  its ~03:17 slot).
+- `lunch.yml`: fired ~once/day, 1–7 hours late. Observed landings ranged from
+  21.00 to 03.00 to 13.30.
 - `cleanup-runs.yml` (cron 06:00 UTC daily): same pattern, lands 11:26–12:58
   UTC every day — 5–7 hours late, consistently.
 
-The scraping logic itself (`fetch.py`) is fine: it already retries only the
-restaurants not yet found and is cheap to re-run. The fix is to trigger the
-workflow from something other than GitHub's own `schedule:` event.
+There is no setting that fixes this; GitHub does not guarantee cron timing.
 
-## Requirement
-- Page should be updated by **07:00 Helsinki**.
-- Need repeated follow-up checks through the morning, since a restaurant
-  (esp. on **Mondays**) may not have posted its weekly menu yet at 07:00.
-  Checks should keep retrying only the missing ones.
+## How it is solved now (no external trigger needed)
+Rather than trying to control *when* the run happens, `fetch.py` was made
+indifferent to it:
 
-## Options considered
-1. **Power Automate calling GitHub's `workflow_dispatch` API** — ruled out
-   for now. Requires the HTTP action, which is a *premium* connector.
-   User's Microsoft 365 **E3** license only includes "Power Automate for
-   Office 365" (standard connectors only) — would need Power Automate
-   Premium/per-user (~$15/mo) or a per-flow plan (~$100/mo) to unlock it.
-2. **cron-job.org (or similar free cron service) → POST to GitHub
-   `workflow_dispatch`** — recommended, no license needed. Needs:
-   - A GitHub fine-grained PAT scoped to just this repo, "Actions: write"
-     permission only.
-   - Several scheduled jobs (e.g. 06:00 then every ~20 min until ~09:00,
-     possibly denser on Mondays) each POSTing to
-     `https://api.github.com/repos/punkQcom/punkQcom.github.io/actions/workflows/lunch.yml/dispatches`
-     with `Authorization: Bearer <token>` and `{"ref":"main"}` as the body.
-3. **Move fetch off GitHub Actions entirely** (e.g. Cloudflare Workers Cron
-   Triggers calling the same dispatch API) — more setup, avoids depending
-   on a third-party cron website, not otherwise necessary.
+- Every run tops up **both today and tomorrow**, fetching only what is still
+  missing. A run at 21.00 fills tomorrow; a run at 03.00 or 13.30 fills
+  whatever today is still missing.
+- State is keyed per date (`days: {"YYYY-MM-DD": {...}}`), so a prefetched
+  tomorrow no longer overwrites today. This was the bug where the page showed
+  Friday's list while it was still Thursday.
+- Hansasali publishes one picture per week, so it is stored per ISO week
+  (`images: {"2026-41": url}`) and rendered **once**, not per day.
+- The page carries both days as dated sections (`Torstai 8.10.`,
+  `Perjantai 9.10.`), today first. A small inline script labels them
+  Tänään / Huomenna and hides days already past **using the viewer's clock**,
+  so a page built the evening before is still correct when read next morning.
+- Cron is now daily (so Sunday evening prefetches Monday): every 30 min
+  06–12 Helsinki for lists published late that morning, hourly for the rest
+  of the day for tomorrow's lists. Runs are no-ops once both days are full.
 
-## Decision so far
-Leaning towards option 2 (cron-job.org). **Not yet decided:**
-- Exact check schedule/density (uniform every ~20 min vs. Monday-heavy).
-- Whether to create the GitHub PAT and cron-job.org account.
+The Monday "chef overslept" case is covered from both sides: Sunday evening
+prefetches it, and Monday morning's dense runs fill it in if it was late.
 
-## Next steps when resuming
-1. Pick the check schedule (see above).
-2. Create a fine-grained GitHub PAT (repo: `punkQcom/punkQcom.github.io`,
-   permission: Actions → Read and write).
-3. Create free account on cron-job.org, add the scheduled POST jobs with
-   that token.
-4. Optionally keep `lunch.yml`'s own `schedule:` as a redundant backup
-   (harmless since `fetch.py` is a no-op once everything's found).
+## Open items
+- **Not needed unless the above proves insufficient:** an external trigger
+  (cron-job.org or similar POSTing to GitHub's `workflow_dispatch` API with a
+  fine-grained PAT scoped to this repo, Actions: write). Only worth doing if
+  menus still turn up missing at lunchtime.
+- Power Automate for that trigger was **ruled out**: it needs the HTTP action,
+  a *premium* connector. Microsoft 365 **E3** only includes "Power Automate
+  for Office 365" (standard connectors), so it would need Power Automate
+  Premium (~$15/user/mo) or a per-flow plan (~$100/mo).
+- RSS semantics left as they were: one item per day, `pubDate` = when the
+  day's item first appeared. Note this means the feed delivers tomorrow's
+  item the evening before. Revisit only if the Power Automate flow that reads
+  the feed should instead notify on the morning it applies.
+
+## Testing locally
+No system Python on the dev machine; `uv` is installed, which can fetch an
+interpreter on demand. Windows needs `tzdata` (no system zoneinfo):
+
+    uv run --no-project --python 3.12 --with tzdata .github/lunch/fetch.py
+
+`LUNCH_DATE=YYYY-MM-DD` fetches one specific day instead of today+tomorrow.
+The script is idempotent, so a **template-only** change will not rebuild the
+page until something new is found — drop the `rendered` key from
+`products/lunch/lunch.json` to force one rebuild.
