@@ -53,6 +53,16 @@ gets to it. Handling:
   picture under the *old* week number. Blank-and-retrying was preferred over
   risking the wrong week's menu.
 
+## Constraint: scheduling must be external
+There is no local scheduler available — the dev machine cannot be relied on
+to be awake, so every trigger has to run outside it. In practice that means
+GitHub Actions (as now) or a cloud cron service. A local cron job / Task
+Scheduler entry / always-on PC is not an option, so do not revisit those.
+
+This is why the current design matters: because `fetch.py` no longer cares
+when it runs, an external scheduler with no timing guarantee is good enough.
+Local Python (via `uv`, see below) is for **testing only**.
+
 ## Open items
 - **Not needed unless the above proves insufficient:** an external trigger
   (cron-job.org or similar POSTing to GitHub's `workflow_dispatch` API with a
