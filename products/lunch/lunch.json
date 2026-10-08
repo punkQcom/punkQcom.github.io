@@ -1,80 +1,12 @@
 {
- "updated": "8.10. klo 11.54",
+ "updated": "9.10. klo 02.22",
  "rendered": [
-  "2026-10-08",
   "2026-10-09"
  ],
  "images": {
   "2026-41": "https://cdn.prod.website-files.com/6a5757dd1c62f83f7a16d6c2/6ac27f95687a84362d0e8224_Hansa%20ig%20vko%2041.png"
  },
  "days": {
-  "2026-10-08": {
-   "linja": {
-    "lines": [
-     "Samettista paprika-tomaattikeittoa L, G",
-     "Ricotta-aurinkotomaatti tortelliineja L",
-     "Ylikypsää porsaan niskaa & BBQ-kastiketta M, G",
-     "Piri piri -kanaa ja ranch-dippiä L, G",
-     "Cajun-paahdettuja perunoita M, G",
-     "Kukkakaaliwingsejä ja aurajuustodippiä L, G",
-     "Lettuja, kuningatarhilloa ja kermavaahtoa L"
-    ]
-   },
-   "gatorade": {
-    "lines": [
-     "Porsaan kassleria, metsäsienikastiketta ja paahdettua yrttiperunaa (L, G)",
-     "Rapeita kalaleikkeitä ja ruohosipulikermaviiliä (M, G)",
-     "Kasvis-papucurrya (M, G)",
-     "Siskonmakkarakeittoa (L, G)"
-    ]
-   },
-   "varikko": {
-    "lines": [
-     "Chilihärkää, peunamuusi (L,G)",
-     "Kinkkukiusaus (L,G)",
-     "Hernekeitto (M,G)",
-     "Pannukakku(L) hillo, kermavaahto (L,G) Gluteeniton jälkiruoka keittiöstä"
-    ]
-   },
-   "herkku": {
-    "lines": [
-     {
-      "title": "Salaattibuffet 9,90€",
-      "items": []
-     },
-     {
-      "title": "Päivä keitto 11,50€",
-      "items": [
-       "Hernekeittoa (l, g), runsas salaattibuffet, saaristolaisleipää"
-      ]
-     },
-     {
-      "title": "Noutopöytä 13,80€",
-      "items": [
-       "Lihamureke, suppilovahverokastike (l, g)",
-       "Voissa paistetut, rukiiset muikut (l)",
-       "Frittikanaa hot & spicy, aioli (l)"
-      ]
-     },
-     {
-      "title": "Päivän leike 16,90€",
-      "items": [
-       "Metsästäjän leike (l)"
-      ]
-     },
-     "Kaikkiin lounaisiin sisältyy runsas salaattibuffet, ruokajuoma vesi, mehu tai kotikalja sekä kahvi/tee ja jälkiruoka, Pannaria, hilloa ja kermavaahtoa (l)"
-    ]
-   },
-   "siskot": {
-    "lines": [
-     "Porsaan uunifilettä sinappi-kermakastikkeessa (L.G.)",
-     "Paistetut nuudelit kananmuna-katkarapuja (L.)",
-     "Kungpo kanaa(M.G.)",
-     "Hernekeitto (M.G.)",
-     "Pannukakku (L.) ja hillolla ja kermavaahdolla(L.G.)"
-    ]
-   }
-  },
   "2026-10-09": {
    "linja": {
     "lines": [
