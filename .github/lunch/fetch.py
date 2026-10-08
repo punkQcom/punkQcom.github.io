@@ -159,9 +159,18 @@ def lines_html(lines):
     return "<ul>" + "".join(items) + "</ul>"
 
 
+# "vko 41", "vko41", "vk_41", "viikko 41"; the number must be followed straight by the
+# extension, which keeps out Webflow's -p-500/-p-800 downscaled copies of the same picture
+WEEK_IMAGE = re.compile(r'https://[^"\s]+?(?:viikko|vko|vk)(?:%20|[\s_-])*(\d{1,2})\.(?:png|jpe?g|webp)', re.I)
+
+
 def today_image(page, day):
-    """Weekly menu image, only if its 'vko NN' matches the current ISO week."""
-    for m in re.finditer(r'https://[^"\s]+?vko(?:%20|\s)*(\d+)\.(?:png|jpe?g|webp)', page, re.I):
+    """Weekly menu image, only if its 'vko NN' matches the current ISO week.
+
+    A mismatching number is never accepted: showing last week's food as this week's is
+    worse than showing nothing and retrying until the new picture appears.
+    """
+    for m in WEEK_IMAGE.finditer(page):
         if int(m.group(1)) == day.isocalendar().week:
             return m.group(0)
     return None
@@ -217,12 +226,15 @@ def week_cards(days, images):
     """The weekly picture, rendered once per distinct ISO week on the page."""
     out = []
     for wk in dict.fromkeys(week_key(d) for d in days):
+        num = wk.split("-")[1].lstrip("0")
         img = images.get(wk)
         for r in WEEKLY:
             body = (f'<a href="{html.escape(img)}"><img src="{html.escape(img)}" '
                     f'alt="{html.escape(r["name"])} viikon lounaslista" loading="lazy"></a>'
-                    if img else missing_note(r))
-            out.append(card(r, body, f' · viikon lista (vko {wk.split("-")[1]})'))
+                    if img else
+                    f'<p class="lunch-note">Viikon {num} lista ei ole vielä julkaistu. '
+                    f'<a href="{html.escape(r["url"])}">Katso ravintolan sivu</a></p>')
+            out.append(card(r, body, f' · viikon lista (vko {num})'))
     return out
 
 

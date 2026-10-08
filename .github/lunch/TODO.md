@@ -35,6 +35,24 @@ indifferent to it:
 The Monday "chef overslept" case is covered from both sides: Sunday evening
 prefetches it, and Monday morning's dense runs fill it in if it was late.
 
+## Hansasali weekly picture
+The site hosts only one picture at a time (`_Hansa ig vko 41.png`, plus
+Webflow's `-p-500`/`-p-800` downscaled copies) and replaces it each week, at
+an unpredictable time — Sunday evening, Monday morning, whenever the chef
+gets to it. Handling:
+
+- The picture is accepted **only** if its week number matches the ISO week of
+  the day being shown, so last week's food is never presented as this week's.
+- Until the new one appears the card reads "Viikon NN lista ei ole vielä
+  julkaistu" with a link to the restaurant page, and every run retries, so it
+  is picked up within ~30–60 min of upload.
+- Recognised name forms: `vko 41`, `vko41`, `vk 41`, `vk_41`, `vko-41`,
+  `viikko 41`, in .png/.jpg/.jpeg/.webp.
+- **Known gaps** (both leave the card blank for the week, by choice): a
+  two-week range name like `vko 41-42`, and the chef uploading the new
+  picture under the *old* week number. Blank-and-retrying was preferred over
+  risking the wrong week's menu.
+
 ## Open items
 - **Not needed unless the above proves insufficient:** an external trigger
   (cron-job.org or similar POSTing to GitHub's `workflow_dispatch` API with a
