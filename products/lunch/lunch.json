@@ -1,7 +1,8 @@
 {
- "updated": "9.10. klo 08.41",
+ "updated": "9.10. klo 08.48",
  "rendered": [
-  "2026-10-09"
+  "2026-10-09",
+  "2026-10-12"
  ],
  "images": {
   "2026-41": "https://cdn.prod.website-files.com/6a5757dd1c62f83f7a16d6c2/6ac27f95687a84362d0e8224_Hansa%20ig%20vko%2041.png"
@@ -73,6 +74,13 @@
      "Mangojuusto suklaakakku (L.G.)"
     ]
    }
+  },
+  "2026-10-12": {
+   "linja": {},
+   "gatorade": {},
+   "varikko": {},
+   "herkku": {},
+   "siskot": {}
   }
  },
  "feed": [

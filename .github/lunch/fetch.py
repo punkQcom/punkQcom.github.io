@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Fetch today's and tomorrow's lunch menus; write products/lunch/{index.html, feed.xml, lunch.json}.
 
-Standard library only. Every run tops up whatever is still missing for both weekdays, so it
-does not matter when GitHub's scheduler actually fires: a run at 21.00 fills tomorrow, a run
-at 03.00 or 13.30 fills whatever today is still missing. Results already found are kept and
-nothing is written if nothing changed. Set LUNCH_DATE=YYYY-MM-DD to fetch one specific day.
+Standard library only. Every run tops up whatever is still missing for today and the next
+weekday, so it does not matter when GitHub's scheduler actually fires: a run at 21.00 fills
+the day ahead, a run at 03.00 or 13.30 fills whatever today is still missing. On a Friday
+the day ahead is Monday, so the weekend's runs keep trying for it. Results already found are
+kept and nothing is written if nothing changed. The day ahead stays off the page and out of
+the feed until it has menus. Set LUNCH_DATE=YYYY-MM-DD to fetch one specific day.
 
 Hansasali publishes one picture per week, so it is stored per ISO week and shown once.
 """
@@ -53,6 +55,18 @@ def week_key(day):
     return f"{cal.year}-{cal.week:02d}"
 
 
+def next_weekday(day):
+    """The next day that serves lunch — from Friday (or the weekend) that is Monday."""
+    day += timedelta(days=1)
+    while day.weekday() >= 5:
+        day += timedelta(days=1)
+    return day
+
+
+def has_lists(results):
+    return any(r.get("lines") for r in results.values())
+
+
 def fetch(url):
     req = urllib.request.Request(url, headers={
         "User-Agent": "Mozilla/5.0 (compatible; punkq-lunch/1.0; +https://punkq.com/products/lunch/)"})
@@ -92,6 +106,10 @@ def page_lines(page):
     return [l for l in lines if l]
 
 
+# colon only: "16.10." is a date, "18:30" is a kick-off time
+CLOCK = re.compile(r"\b\d{1,2}:\d{2}\b")
+
+
 def today_text(page, day, r):
     """Lines between today's weekday heading and the next weekday heading (or a stop marker)."""
     lines = page_lines(page)
@@ -103,6 +121,8 @@ def today_text(page, day, r):
     for i, line in enumerate(lines):
         if not line.lower().startswith(name):
             continue
+        if CLOCK.search(line):
+            continue  # a fixture, not a menu: Gatorade lists home games as "Perjantai 16.10. 18:30"
         m = re.search(r"(\d{1,2})\.(\d{1,2})\b", line)
         if m and (int(m.group(1)), int(m.group(2))) != (day.day, day.month):
             continue  # same weekday, other date (e.g. next week or an event list)
@@ -239,6 +259,8 @@ def week_cards(days, images):
 
 
 def day_sections(days, results_by_day):
+    # the header already names the week; repeat it per day only when the page spans two
+    show_week = len({week_key(d) for d in days}) > 1
     out = []
     for d in days:
         results = results_by_day.get(d.isoformat(), {})
@@ -247,13 +269,17 @@ def day_sections(days, results_by_day):
             res = results.get(r["key"], {})
             cards.append(card(r, lines_html(res["lines"]) if res.get("lines") else missing_note(r)))
         out.append(f"""        <section class="lunch-day" data-date="{d.isoformat()}">
-            <h2 class="lunch-day-title">{WEEKDAYS[d.weekday()].capitalize()} {d.day}.{d.month}.</h2>
+            <h2 class="lunch-day-title">{WEEKDAYS[d.weekday()].capitalize()} {d.day}.{d.month}.{f' <span class="lunch-week">vko {d.isocalendar().week}</span>' if show_week else ''}</h2>
 {chr(10).join(cards)}
         </section>""")
     return out
 
 
 def page_html(days, updated, results_by_day, images):
+    # the day being looked ahead to only appears once it has something; on a Friday next
+    # week's lists are rarely out yet, and an empty Monday would sit on the page all weekend
+    days = [d for i, d in enumerate(days)
+            if i == 0 or has_lists(results_by_day.get(d.isoformat(), {}))]
     day = days[0]
     cards = week_cards(days, images) + day_sections(days, results_by_day)
     title = f"Lounas {SHORT[day.weekday()]} {day.day}.{day.month}."
@@ -280,6 +306,7 @@ def page_html(days, updated, results_by_day, images):
         .lunch-hours, .lunch-note {{ font-size: 14px; }}
         .lunch-day {{ margin-top: 32px; }}
         .lunch-day-title {{ margin-bottom: 12px; }}
+        .lunch-week {{ color: var(--glow); font-size: 15px; font-weight: 400; }}
         .lunch-day-when {{ color: var(--glow); font-size: 14px; letter-spacing: .08em;
             text-transform: uppercase; display: block; }}
         .lunch-day[hidden] {{ display: none; }}
@@ -291,7 +318,7 @@ def page_html(days, updated, results_by_day, images):
         <div class="legal-header">
             <a class="back-link" href="/products/">← Products</a>
             <h1>{title}</h1>
-            <p>Päivitetty {updated} · <a href="feed.xml" style="color:var(--glow)">RSS</a></p>
+            <p>Viikko {day.isocalendar().week} · Päivitetty {updated} · <a href="feed.xml" style="color:var(--glow)">RSS</a></p>
         </div>
 {chr(10).join(cards)}
     </main>
@@ -361,7 +388,9 @@ def main():
     if os.environ.get("LUNCH_DATE"):
         days = [date.fromisoformat(os.environ["LUNCH_DATE"])]
     else:
-        days = [now.date(), now.date() + timedelta(days=1)]
+        # next_weekday, not tomorrow: on Friday that is Monday, so the weekend's runs all
+        # get a chance at Monday's lists instead of only Sunday evening's
+        days = [now.date(), next_weekday(now.date())]
     days = [d for d in days if d.weekday() < 5]
     if not days:
         print("Weekend both days, nothing to do.")
@@ -404,6 +433,10 @@ def main():
     feed = [f for f in state.get("feed", []) if f["date"] not in rendered]
     for d in days:
         iso = d.isoformat()
+        # an item is published only once the day has menus: pubDate is pinned to first
+        # appearance, so an empty item would notify now and never again when it fills in
+        if not has_lists(results_by_day[iso]):
+            continue
         old = next((f for f in state.get("feed", []) if f["date"] == iso), {})
         feed.append({"date": iso,
                      "title": f"Lounas {SHORT[d.weekday()]} {d.day}.{d.month}.",
