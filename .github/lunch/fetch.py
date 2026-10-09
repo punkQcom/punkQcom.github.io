@@ -63,6 +63,12 @@ def next_weekday(day):
     return day
 
 
+def week_days(day):
+    """Mon–Fri of that day's week."""
+    monday = day - timedelta(days=day.weekday())
+    return [monday + timedelta(days=i) for i in range(5)]
+
+
 def has_lists(results):
     return any(r.get("lines") for r in results.values())
 
@@ -196,17 +202,13 @@ def today_image(page, day):
     return None
 
 
-def scrape(r, day):
+def fetch_page(r):
+    """The restaurant's page, or None. One broken site must never break the run."""
     try:
-        page = fetch(r["url"])
-        if r["kind"] == "image":
-            img = today_image(page, day)
-            return {"image": img} if img else {}
-        lines = today_text(page, day, r)
-        return {"lines": lines} if lines else {}
-    except Exception as e:  # one broken site must never break the run
+        return fetch(r["url"])
+    except Exception as e:
         print(f"{r['key']}: {e}", file=sys.stderr)
-        return {}
+        return None
 
 
 def found(result):
@@ -229,8 +231,8 @@ def menus_html(day, results, images):
     return "\n".join(parts)
 
 
-def card(r, body, extra=""):
-    return f"""            <section class="legal-section lunch-card">
+def card(r, body, extra="", cls=""):
+    return f"""            <section class="legal-section lunch-card{cls}">
                 <h3><a href="{html.escape(r["url"])}">{html.escape(r["name"])}</a></h3>
                 <p class="lunch-hours">Lounas {r["hours"]}{extra}</p>
                 {body}
@@ -254,13 +256,25 @@ def week_cards(days, images):
                     if img else
                     f'<p class="lunch-note">Viikon {num} lista ei ole vielä julkaistu. '
                     f'<a href="{html.escape(r["url"])}">Katso ravintolan sivu</a></p>')
-            out.append(card(r, body, f' · viikon lista (vko {num})'))
+            out.append(card(r, body, f' · koko viikon lista (vko {num})', " lunch-week-card"))
     return out
 
 
-def day_sections(days, results_by_day):
-    # the header already names the week; repeat it per day only when the page spans two
-    show_week = len({week_key(d) for d in days}) > 1
+def day_tabs(days, results_by_day, active):
+    buttons = []
+    for d in days:
+        has = has_lists(results_by_day.get(d.isoformat(), {}))
+        buttons.append(
+            f'<button type="button" class="lunch-tab" data-date="{d.isoformat()}"'
+            f'{" aria-current=\"true\"" if d == active else ""}'
+            f'{"" if has else " data-empty=\"true\""}>'
+            f'<span class="lunch-tab-day">{SHORT[d.weekday()]}</span>'
+            f'<span class="lunch-tab-date">{d.day}.{d.month}.</span></button>')
+    return ('        <nav class="lunch-tabs" aria-label="Viikonpäivä">\n'
+            f'            {"".join(buttons)}\n        </nav>')
+
+
+def day_sections(days, results_by_day, active):
     out = []
     for d in days:
         results = results_by_day.get(d.isoformat(), {})
@@ -268,21 +282,25 @@ def day_sections(days, results_by_day):
         for r in DAILY:
             res = results.get(r["key"], {})
             cards.append(card(r, lines_html(res["lines"]) if res.get("lines") else missing_note(r)))
-        out.append(f"""        <section class="lunch-day" data-date="{d.isoformat()}">
-            <h2 class="lunch-day-title">{WEEKDAYS[d.weekday()].capitalize()} {d.day}.{d.month}.{f' <span class="lunch-week">vko {d.isocalendar().week}</span>' if show_week else ''}</h2>
+        out.append(f"""        <section class="lunch-day" data-date="{d.isoformat()}"{"" if d == active else " hidden"}>
+            <h2 class="lunch-day-title">{WEEKDAYS[d.weekday()].capitalize()} {d.day}.{d.month}.</h2>
 {chr(10).join(cards)}
         </section>""")
     return out
 
 
 def page_html(days, updated, results_by_day, images):
-    # the day being looked ahead to only appears once it has something; on a Friday next
-    # week's lists are rarely out yet, and an empty Monday would sit on the page all weekend
-    days = [d for i, d in enumerate(days)
-            if i == 0 or has_lists(results_by_day.get(d.isoformat(), {}))]
-    day = days[0]
-    cards = week_cards(days, images) + day_sections(days, results_by_day)
-    title = f"Lounas {SHORT[day.weekday()]} {day.day}.{day.month}."
+    today = datetime.now(TZ).date()
+    # the tab open on arrival: today when the shown week contains it, else the first day
+    # that actually has menus, else Monday
+    active = next((d for d in days if d == today),
+                  next((d for d in days if has_lists(results_by_day.get(d.isoformat(), {}))), days[0]))
+    cards = (day_tabs(days, results_by_day, active)
+             + "\n" + "\n".join(day_sections(days, results_by_day, active))
+             # the week picture is not per day, so it sits below the tabs rather than in them
+             + "\n" + "\n".join(week_cards(days, images)))
+    title = f"Lounas {SHORT[active.weekday()]} {active.day}.{active.month}."
+    day = active
     return f"""<!DOCTYPE html>
 <html lang="fi">
 <head>
@@ -304,12 +322,23 @@ def page_html(days, updated, results_by_day, images):
         .lunch-card ul ul {{ margin: 4px 0 8px; }}
         .lunch-card img {{ width: 100%; border-radius: 12px; margin-top: 8px; }}
         .lunch-hours, .lunch-note {{ font-size: 14px; }}
-        .lunch-day {{ margin-top: 32px; }}
+        .lunch-day {{ margin-top: 24px; }}
         .lunch-day-title {{ margin-bottom: 12px; }}
         .lunch-week {{ color: var(--glow); font-size: 15px; font-weight: 400; }}
         .lunch-day-when {{ color: var(--glow); font-size: 14px; letter-spacing: .08em;
             text-transform: uppercase; display: block; }}
-        .lunch-day[hidden] {{ display: none; }}
+        .lunch-day[hidden], .lunch-week-card[hidden] {{ display: none; }}
+        .lunch-tabs {{ display: flex; gap: 8px; margin-top: 24px; }}
+        .lunch-tab {{ flex: 1; display: flex; flex-direction: column; gap: 2px; padding: 10px 4px;
+            border: 1px solid rgba(255,255,255,.14); border-radius: 12px; background: transparent;
+            color: var(--text); font: inherit; cursor: pointer; opacity: .62; }}
+        .lunch-tab:hover {{ opacity: .9; }}
+        .lunch-tab[aria-current="true"] {{ opacity: 1; border-color: var(--glow);
+            box-shadow: 0 0 0 1px var(--glow) inset; }}
+        .lunch-tab[data-empty] .lunch-tab-day {{ text-decoration: line-through; }}
+        .lunch-tab-day {{ font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }}
+        .lunch-tab-date {{ font-size: 12px; opacity: .75; }}
+        .lunch-week-card {{ margin-top: 28px; }}
         @media (max-width: 600px) {{ .legal-page {{ padding: 48px 16px; }} .lunch-card {{ padding: 18px; }} }}
     </style>
 </head>
@@ -320,11 +349,11 @@ def page_html(days, updated, results_by_day, images):
             <h1>{title}</h1>
             <p>Viikko {day.isocalendar().week} · Päivitetty {updated} · <a href="feed.xml" style="color:var(--glow)">RSS</a></p>
         </div>
-{chr(10).join(cards)}
+{cards}
     </main>
     <script>
-        // The page is built the evening before, so the viewer's own clock decides what is
-        // current: drop days already past and label the rest Tänään / Huomenna.
+        // The page is built ahead of the day it is read, so the viewer's own clock decides
+        // which tab opens; the week's days are all present, only one panel is shown.
         (function () {{
             var p = function (n) {{ return String(n).padStart(2, "0"); }};
             var now = new Date();
@@ -334,9 +363,27 @@ def page_html(days, updated, results_by_day, images):
             var today = iso(now);
             // from date parts, not +24h: the DST night in October is 25 hours long
             var tomorrow = iso(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1));
-            var days = [].slice.call(document.querySelectorAll(".lunch-day"));
-            days.forEach(function (sec) {{
-                if (sec.dataset.date < today) {{ sec.hidden = true; return; }}
+            var tabs = [].slice.call(document.querySelectorAll(".lunch-tab"));
+            var panels = [].slice.call(document.querySelectorAll(".lunch-day"));
+
+            function show(date) {{
+                tabs.forEach(function (t) {{
+                    if (t.dataset.date === date) {{ t.setAttribute("aria-current", "true"); }}
+                    else {{ t.removeAttribute("aria-current"); }}
+                }});
+                panels.forEach(function (sec) {{ sec.hidden = sec.dataset.date !== date; }});
+            }}
+
+            // the page is built ahead of time, so the viewer's clock picks the open tab
+            var pick = tabs.filter(function (t) {{ return t.dataset.date === today; }})[0]
+                || tabs.filter(function (t) {{ return !t.hasAttribute("data-empty"); }})[0]
+                || tabs[0];
+            if (pick) show(pick.dataset.date);
+            tabs.forEach(function (t) {{
+                t.addEventListener("click", function () {{ show(t.dataset.date); }});
+            }});
+
+            panels.forEach(function (sec) {{
                 var when = sec.dataset.date === today ? "Tänään"
                     : sec.dataset.date === tomorrow ? "Huomenna" : "";
                 if (!when) return;
@@ -346,9 +393,6 @@ def page_html(days, updated, results_by_day, images):
                 tag.textContent = when;
                 title.insertBefore(tag, title.firstChild);
             }});
-            if (days.length && days.every(function (s) {{ return s.hidden; }})) {{
-                days[days.length - 1].hidden = false;
-            }}
         }})();
     </script>
 </body>
@@ -386,52 +430,61 @@ def feed_xml(items):
 def main():
     now = datetime.now(TZ)
     if os.environ.get("LUNCH_DATE"):
-        days = [date.fromisoformat(os.environ["LUNCH_DATE"])]
+        shown = week_days(date.fromisoformat(os.environ["LUNCH_DATE"]))
     else:
-        # next_weekday, not tomorrow: on Friday that is Monday, so the weekend's runs all
-        # get a chance at Monday's lists instead of only Sunday evening's
-        days = [now.date(), next_weekday(now.date())]
-    days = [d for d in days if d.weekday() < 5]
-    if not days:
-        print("Weekend both days, nothing to do.")
-        return
+        # on a weekend the week worth showing is the one starting Monday
+        today = now.date()
+        shown = week_days(today if today.weekday() < 5 else next_weekday(today))
+    # next week costs no extra requests — the same page is parsed for both — and means
+    # Monday is already in hand by the time it becomes the shown week
+    targets = shown + week_days(shown[0] + timedelta(days=7))
 
     state_file = OUT / "lunch.json"
     state = json.loads(state_file.read_text(encoding="utf-8")) if state_file.exists() else {}
-    # days already past are dropped here, so the page never renders a stale day
-    results_by_day = {k: v for k, v in state.get("days", {}).items() if k >= days[0].isoformat()}
+    # anything older than the shown week is dropped; the days within it are kept, since the
+    # tabs cover Mon–Fri including the ones already gone
+    results_by_day = {k: v for k, v in state.get("days", {}).items() if k >= shown[0].isoformat()}
     images = dict(state.get("images", {}))
 
     new = 0
-    for d in days:
-        res = results_by_day.setdefault(d.isoformat(), {})
-        for r in DAILY:
-            if found(res.get(r["key"], {})):
-                continue
-            got = scrape(r, d)
+    for d in targets:
+        results_by_day.setdefault(d.isoformat(), {})
+    for r in DAILY:
+        missing = [d for d in targets if not found(results_by_day[d.isoformat()].get(r["key"], {}))]
+        if not missing:
+            continue
+        page = fetch_page(r)  # once per restaurant: every weekday is on the same page
+        if page is None:
+            continue
+        for d in missing:
+            lines = today_text(page, d, r)
+            got = {"lines": lines} if lines else {}
             new += found(got)
-            res[r["key"]] = got
-            print(f"{d} {r['key']}: {'found' if found(got) else 'missing'}")
+            results_by_day[d.isoformat()][r["key"]] = got
+        hits = [str(d.day) for d in missing if found(results_by_day[d.isoformat()][r["key"]])]
+        print(f"{r['key']}: +{len(hits)} of {len(missing)} missing days{' (' + ', '.join(hits) + '.)' if hits else ''}")
 
-    for wk in dict.fromkeys(week_key(d) for d in days):
+    for wk in dict.fromkeys(week_key(d) for d in targets):
         if images.get(wk):
             continue
-        d = next(x for x in days if week_key(x) == wk)
+        d = next(x for x in targets if week_key(x) == wk)
         for r in WEEKLY:
-            got = scrape(r, d)
-            if got.get("image"):
-                images[wk] = got["image"]
+            page = fetch_page(r)
+            img = today_image(page, d) if page else None
+            if img:
+                images[wk] = img
                 new += 1
-            print(f"{wk} {r['key']}: {'found' if got.get('image') else 'missing'}")
+            print(f"{wk} {r['key']}: {'found' if img else 'missing'}")
 
-    rendered = [d.isoformat() for d in days]
+    rendered = [d.isoformat() for d in shown]
     if not new and state.get("rendered") == rendered:
         print("Nothing new, no changes written.")
         return
 
     updated = f"{now.day}.{now.month}. klo {now:%H.%M}"  # %-d is glibc-only, breaks on Windows
-    feed = [f for f in state.get("feed", []) if f["date"] not in rendered]
-    for d in days:
+    target_isos = [d.isoformat() for d in targets]
+    feed = [f for f in state.get("feed", []) if f["date"] not in target_isos]
+    for d in targets:
         iso = d.isoformat()
         # an item is published only once the day has menus: pubDate is pinned to first
         # appearance, so an empty item would notify now and never again when it fills in
@@ -445,16 +498,17 @@ def main():
                      "pub": old.get("pub") or format_datetime(now.replace(microsecond=0)),
                      "html": menus_html(d, results_by_day[iso], images)})
     feed = sorted(feed, key=lambda f: f["date"], reverse=True)[:FEED_DAYS]
-    images = {k: v for k, v in images.items() if k in {week_key(d) for d in days}}
+    images = {k: v for k, v in images.items() if k in {week_key(d) for d in targets}}
 
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "index.html").write_text(page_html(days, updated, results_by_day, images), encoding="utf-8")
+    (OUT / "index.html").write_text(page_html(shown, updated, results_by_day, images), encoding="utf-8")
     (OUT / "feed.xml").write_text(feed_xml(feed), encoding="utf-8")
     state_file.write_text(json.dumps(
         {"updated": updated, "rendered": rendered, "images": images,
          "days": results_by_day, "feed": feed}, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     got = sum(found(v) for d in rendered for v in results_by_day[d].values())
-    print(f"Wrote {OUT} ({got}/{len(DAILY) * len(days)} lists, {len(images)} week image(s))")
+    print(f"Wrote {OUT} (week {week_key(shown[0])}: {got}/{len(DAILY) * len(shown)} lists, "
+          f"{len(images)} week image(s))")
 
 
 if __name__ == "__main__":

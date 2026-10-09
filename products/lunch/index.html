@@ -19,12 +19,23 @@
         .lunch-card ul ul { margin: 4px 0 8px; }
         .lunch-card img { width: 100%; border-radius: 12px; margin-top: 8px; }
         .lunch-hours, .lunch-note { font-size: 14px; }
-        .lunch-day { margin-top: 32px; }
+        .lunch-day { margin-top: 24px; }
         .lunch-day-title { margin-bottom: 12px; }
         .lunch-week { color: var(--glow); font-size: 15px; font-weight: 400; }
         .lunch-day-when { color: var(--glow); font-size: 14px; letter-spacing: .08em;
             text-transform: uppercase; display: block; }
-        .lunch-day[hidden] { display: none; }
+        .lunch-day[hidden], .lunch-week-card[hidden] { display: none; }
+        .lunch-tabs { display: flex; gap: 8px; margin-top: 24px; }
+        .lunch-tab { flex: 1; display: flex; flex-direction: column; gap: 2px; padding: 10px 4px;
+            border: 1px solid rgba(255,255,255,.14); border-radius: 12px; background: transparent;
+            color: var(--text); font: inherit; cursor: pointer; opacity: .62; }
+        .lunch-tab:hover { opacity: .9; }
+        .lunch-tab[aria-current="true"] { opacity: 1; border-color: var(--glow);
+            box-shadow: 0 0 0 1px var(--glow) inset; }
+        .lunch-tab[data-empty] .lunch-tab-day { text-decoration: line-through; }
+        .lunch-tab-day { font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+        .lunch-tab-date { font-size: 12px; opacity: .75; }
+        .lunch-week-card { margin-top: 28px; }
         @media (max-width: 600px) { .legal-page { padding: 48px 16px; } .lunch-card { padding: 18px; } }
     </style>
 </head>
@@ -33,13 +44,123 @@
         <div class="legal-header">
             <a class="back-link" href="/products/">← Products</a>
             <h1>Lounas pe 9.10.</h1>
-            <p>Viikko 41 · Päivitetty 9.10. klo 08.48 · <a href="feed.xml" style="color:var(--glow)">RSS</a></p>
+            <p>Viikko 41 · Päivitetty 9.10. klo 08.54 · <a href="feed.xml" style="color:var(--glow)">RSS</a></p>
         </div>
+        <nav class="lunch-tabs" aria-label="Viikonpäivä">
+            <button type="button" class="lunch-tab" data-date="2026-10-05"><span class="lunch-tab-day">ma</span><span class="lunch-tab-date">5.10.</span></button><button type="button" class="lunch-tab" data-date="2026-10-06"><span class="lunch-tab-day">ti</span><span class="lunch-tab-date">6.10.</span></button><button type="button" class="lunch-tab" data-date="2026-10-07"><span class="lunch-tab-day">ke</span><span class="lunch-tab-date">7.10.</span></button><button type="button" class="lunch-tab" data-date="2026-10-08"><span class="lunch-tab-day">to</span><span class="lunch-tab-date">8.10.</span></button><button type="button" class="lunch-tab" data-date="2026-10-09" aria-current="true"><span class="lunch-tab-day">pe</span><span class="lunch-tab-date">9.10.</span></button>
+        </nav>
+        <section class="lunch-day" data-date="2026-10-05" hidden>
+            <h2 class="lunch-day-title">Maanantai 5.10.</h2>
             <section class="legal-section lunch-card">
-                <h3><a href="https://www.pegasus-ravintolat.fi/hansasali#lounaslista">Pegasus Hansasali</a></h3>
-                <p class="lunch-hours">Lounas 10.30–14.30 · viikon lista (vko 41)</p>
-                <a href="https://cdn.prod.website-files.com/6a5757dd1c62f83f7a16d6c2/6ac27f95687a84362d0e8224_Hansa%20ig%20vko%2041.png"><img src="https://cdn.prod.website-files.com/6a5757dd1c62f83f7a16d6c2/6ac27f95687a84362d0e8224_Hansa%20ig%20vko%2041.png" alt="Pegasus Hansasali viikon lounaslista" loading="lazy"></a>
+                <h3><a href="https://kolmaslinja.fi/lounas-turku/">3. Linja</a></h3>
+                <p class="lunch-hours">Lounas 10.30–14.00</p>
+                <ul><li>Bataatti-porkkanakeittoa ja vuohenjuustocrèmeä VL, G</li><li>Spaghetti carbonaraa, parmesaania ja rucolaa L</li><li>Pitkään haudutettua naudan briskettiä &amp; metsäsienikastiketta L, G</li><li>Vihreää curry-kanaa, kasviksia ja kookosta L, G</li><li>Limellä maustettua riisiä M, G</li><li>Paahdettua perunaa ja kasviksia M, G</li><li>Jälkiruokalajitelma L</li></ul>
             </section>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://gatoradecenter.fi/fi/lounas">Gatorade Center (TPS-lounas)</a></h3>
+                <p class="lunch-hours">Lounas 11.00–14.00</p>
+                <ul><li>Crispy-kanaa, currymajoneesia ja perunaa (M, G)</li><li>Kinkkukiusausta (L, G)</li><li>Paistettuja gnoccheja ja pinaattia (L)</li><li>Porkkana-kookoskeittoa (M, G)</li></ul>
+            </section>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://www.lounasverkko.fi/lounasravintelivarikko">Lounasravinteli Varikko</a></h3>
+                <p class="lunch-hours">Lounas 10.30–14.00</p>
+                <ul><li>Herkullinen paprika broileri, keitetty riisi (L,G)</li><li>Pyttipannu, paistettu kananmuna (L,G)</li><li>Mustikkarahka (L,G)</li></ul>
+            </section>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://www.tbherkku.fi/ravintola/">Teboil Herkku</a></h3>
+                <p class="lunch-hours">Lounas 10.00–16.00</p>
+                <ul><li><strong>Salaattibuffet 9,90€</strong></li><li><strong>Päivä keitto 11,50€</strong><ul><li>Lihakeittoa (l, g), saaristolaisleipää, ja runsas salaattibuffet</li></ul></li><li><strong>Noutopöytä 13,80€</strong><ul><li>Rakuunapossua (l, g)</li><li>Peltipizzaa, jauheliha, paprika (l)</li><li>Punajuuri- aurajuustopaistos (l, g)</li></ul></li><li><strong>Päivän leike 15,90€</strong><ul><li>Possunpihvi, maustevoi (l)</li></ul></li><li>Kaikkiin lounaisiin sisältyy runsas salaattibuffet, ruokajuoma vesi, mehu tai kotikalja sekä kahvi/tee ja jälkiruoka, Hedelmäsalaatti (l, g)</li></ul>
+            </section>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://www.umai.fi/siskot">Ravintola Siskot</a></h3>
+                <p class="lunch-hours">Lounas 10.30–15.00</p>
+                <ul><li>Possupata (L.G.)</li><li>Talon kalaleike (L.) ja Tartar kastike(L.G.)</li><li>Kanaa punaisen currykastike(L.G.)</li><li>Mustikkarahka (L.G.)</li></ul>
+            </section>
+        </section>
+        <section class="lunch-day" data-date="2026-10-06" hidden>
+            <h2 class="lunch-day-title">Tiistai 6.10.</h2>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://kolmaslinja.fi/lounas-turku/">3. Linja</a></h3>
+                <p class="lunch-hours">Lounas 10.30–14.00</p>
+                <ul><li>Ribs &amp; Wings</li><li>Tomaatti-linssikeittoa M, G, V</li><li>Vuohenjuusto-aurinkotomaattipastaa L</li><li>Teriyaki-glaseerattuja ribsejä ja seesamia M, G</li><li>Crispy chicken &amp; hot honey L</li><li>Jättilohkoperunoita M, G</li><li>Coleslaw’ta L, G</li><li>Savuaiolia ja ranch-dippiä L, G</li><li>Valkosuklaapannacottaa ja mango-passionmelbaa L, G</li></ul>
+            </section>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://gatoradecenter.fi/fi/lounas">Gatorade Center (TPS-lounas)</a></h3>
+                <p class="lunch-hours">Lounas 11.00–14.00</p>
+                <ul><li>Pestobroileria, sitruskermaviiliä ja riisiä (L, G)</li><li>Jauhelihakastiketta ja pastaa (L)</li><li>Ratatouillea (M, G)</li><li>Linssikeittoa (L, G)</li></ul>
+            </section>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://www.lounasverkko.fi/lounasravintelivarikko">Lounasravinteli Varikko</a></h3>
+                <p class="lunch-hours">Lounas 10.30–14.00</p>
+                <ul><li>Ylikypsää kassleria, suppilovahverokastike, perunamuusi (L,G)</li><li>Kana-kasvispasta (L)</li><li>Omenakaurapaistos, vaniljakastike (L) Gluteeniton jälkiruoka keittiöstä</li></ul>
+            </section>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://www.tbherkku.fi/ravintola/">Teboil Herkku</a></h3>
+                <p class="lunch-hours">Lounas 10.00–16.00</p>
+                <ul><li><strong>Salaattibuffet 9,90€</strong></li><li><strong>Päivä keitto 11,50€</strong><ul><li>Kermaista lohikeittoa (l, g), saaristolaisleipää, ja runsas salaattibuffet</li></ul></li><li><strong>Noutopöytä 13,80€</strong><ul><li>Juusto- pekoni täytteiset jauhelihapihvit (l, g)</li><li>Kebabkiusaus (l, g)</li><li>Pariloitua maksaa ja puolukkaa (l, g)</li></ul></li><li><strong>Päivän leike 16,90€</strong><ul><li>Häränpihvi, bearnaise (l, g)</li></ul></li><li>Kaikkiin lounaisiin sisältyy runsas salaattibuffet, ruokajuoma vesi, mehu tai kotikalja sekä kahvi/tee ja jälkiruoka, Mariannerahkaa (l)</li></ul>
+            </section>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://www.umai.fi/siskot">Ravintola Siskot</a></h3>
+                <p class="lunch-hours">Lounas 10.30–15.00</p>
+                <ul><li>Curry naudanlihasta (L.G.)</li><li>Nakkikastike ( L.G.)</li><li>Paneroitu broilerileike(L.) &amp; tulista salsamajoa(L.G.)</li><li>Raparperipiirakka(L.G.)</li></ul>
+            </section>
+        </section>
+        <section class="lunch-day" data-date="2026-10-07" hidden>
+            <h2 class="lunch-day-title">Keskiviikko 7.10.</h2>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://kolmaslinja.fi/lounas-turku/">3. Linja</a></h3>
+                <p class="lunch-hours">Lounas 10.30–14.00</p>
+                <ul><li>Kukkakaali-parmesaanikeittoa L, G</li><li>Talon lasagnea L</li><li>Paneroitua puna-ahventa &amp; remouladea L</li><li>Pannupihvejä ja smetanassa haudutettua sipulia L, G</li><li>Kermaista perunamuusia L, G</li><li>Hunaja-rosmariinipaahdettuja juureksia M, G</li><li>Porkkanakakkua ja vaniljakermaa L</li></ul>
+            </section>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://gatoradecenter.fi/fi/lounas">Gatorade Center (TPS-lounas)</a></h3>
+                <p class="lunch-hours">Lounas 11.00–14.00</p>
+                <ul><li>Chili con carne ja riisiä (M, G)</li><li>Kievin-kanaa ja sitruunamajoneesia</li><li>Chili sin carne (V, G)</li><li>Kesäkurpitsakeittoa (L, G)</li></ul>
+            </section>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://www.lounasverkko.fi/lounasravintelivarikko">Lounasravinteli Varikko</a></h3>
+                <p class="lunch-hours">Lounas 10.30–14.00</p>
+                <ul><li>Talon pekoni-jauhelihapihvit (L) paahdetut perunat (L,G) Gluteeniton pihvi keittiöstä</li><li>Maissikuorrutettu kala, kermaviilikastike (L,G)</li><li>Mokkapalat (L) Gluteeniton jälkiruoka keittiöstä</li></ul>
+            </section>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://www.tbherkku.fi/ravintola/">Teboil Herkku</a></h3>
+                <p class="lunch-hours">Lounas 10.00–16.00</p>
+                <ul><li><strong>Salaattibuffet 9,90€</strong></li><li><strong>Päivä keitto 11,50€</strong><ul><li>Bortch keitto, smetana (l, g), runsas salaattibuffet, saaristolaisleipää</li></ul></li><li><strong>Noutopöytä 13,80€</strong><ul><li>Possupihvejä (l, g), broilerileikkeitä (l, g keit.)</li><li>Kermaperunat (l, g), pippurikastike (l, g)</li><li>Makkaraperunat (l, g), uunijuurekset (l, g)</li></ul></li><li><strong>Päivän leike 16,90€</strong><ul><li>Sipulipihvi (l, g)</li></ul></li><li>Kaikkiin lounaisiin sisältyy runsas salaattibuffet, ruokajuoma vesi, mehu tai kotikalja sekä kahvi/tee ja jälkiruoka, Mustikka- omenavispipuuro (l)</li></ul>
+            </section>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://www.umai.fi/siskot">Ravintola Siskot</a></h3>
+                <p class="lunch-hours">Lounas 10.30–15.00</p>
+                <ul><li>Paahdettua porsaan kasslerpihvi kantonilaiseentapaan(L.G.)</li><li>Salsa broileria (M.G.)</li><li>Peking häränlihaa (M.G.)</li><li>Kermainen lohikeitto( L.G. )</li><li>Ananaskiisseli(M.G.)</li></ul>
+            </section>
+        </section>
+        <section class="lunch-day" data-date="2026-10-08" hidden>
+            <h2 class="lunch-day-title">Torstai 8.10.</h2>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://kolmaslinja.fi/lounas-turku/">3. Linja</a></h3>
+                <p class="lunch-hours">Lounas 10.30–14.00</p>
+                <ul><li>Samettista paprika-tomaattikeittoa L, G</li><li>Ricotta-aurinkotomaatti tortelliineja L</li><li>Ylikypsää porsaan niskaa &amp; BBQ-kastiketta M, G</li><li>Piri piri -kanaa ja ranch-dippiä L, G</li><li>Cajun-paahdettuja perunoita M, G</li><li>Kukkakaaliwingsejä ja aurajuustodippiä L, G</li><li>Lettuja, kuningatarhilloa ja kermavaahtoa L</li></ul>
+            </section>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://gatoradecenter.fi/fi/lounas">Gatorade Center (TPS-lounas)</a></h3>
+                <p class="lunch-hours">Lounas 11.00–14.00</p>
+                <ul><li>Porsaan kassleria, metsäsienikastiketta ja paahdettua yrttiperunaa (L, G)</li><li>Rapeita kalaleikkeitä ja ruohosipulikermaviiliä (M, G)</li><li>Kasvis-papucurrya (M, G)</li><li>Siskonmakkarakeittoa (L, G)</li></ul>
+            </section>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://www.lounasverkko.fi/lounasravintelivarikko">Lounasravinteli Varikko</a></h3>
+                <p class="lunch-hours">Lounas 10.30–14.00</p>
+                <ul><li>Chilihärkää, peunamuusi (L,G)</li><li>Kinkkukiusaus (L,G)</li><li>Hernekeitto (M,G)</li><li>Pannukakku(L) hillo, kermavaahto (L,G) Gluteeniton jälkiruoka keittiöstä</li></ul>
+            </section>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://www.tbherkku.fi/ravintola/">Teboil Herkku</a></h3>
+                <p class="lunch-hours">Lounas 10.00–16.00</p>
+                <ul><li><strong>Salaattibuffet 9,90€</strong></li><li><strong>Päivä keitto 11,50€</strong><ul><li>Hernekeittoa (l, g), runsas salaattibuffet, saaristolaisleipää</li></ul></li><li><strong>Noutopöytä 13,80€</strong><ul><li>Lihamureke, suppilovahverokastike (l, g)</li><li>Voissa paistetut, rukiiset muikut (l)</li><li>Frittikanaa hot &amp; spicy, aioli (l)</li></ul></li><li><strong>Päivän leike 16,90€</strong><ul><li>Metsästäjän leike (l)</li></ul></li><li>Kaikkiin lounaisiin sisältyy runsas salaattibuffet, ruokajuoma vesi, mehu tai kotikalja sekä kahvi/tee ja jälkiruoka, Pannaria, hilloa ja kermavaahtoa (l)</li></ul>
+            </section>
+            <section class="legal-section lunch-card">
+                <h3><a href="https://www.umai.fi/siskot">Ravintola Siskot</a></h3>
+                <p class="lunch-hours">Lounas 10.30–15.00</p>
+                <ul><li>Porsaan uunifilettä sinappi-kermakastikkeessa (L.G.)</li><li>Paistetut nuudelit kananmuna-katkarapuja (L.)</li><li>Kungpo kanaa(M.G.)</li><li>Hernekeitto (M.G.)</li><li>Pannukakku (L.) ja hillolla ja kermavaahdolla(L.G.)</li></ul>
+            </section>
+        </section>
         <section class="lunch-day" data-date="2026-10-09">
             <h2 class="lunch-day-title">Perjantai 9.10.</h2>
             <section class="legal-section lunch-card">
@@ -68,10 +189,15 @@
                 <ul><li>Naudanjauhelihamureke ruskeakastikkeessa(L.G.)</li><li>BBQ-ribsit (M.G.)</li><li>Kanaa hotpotkastike (M.G.)</li><li>Mangojuusto suklaakakku (L.G.)</li></ul>
             </section>
         </section>
+            <section class="legal-section lunch-card lunch-week-card">
+                <h3><a href="https://www.pegasus-ravintolat.fi/hansasali#lounaslista">Pegasus Hansasali</a></h3>
+                <p class="lunch-hours">Lounas 10.30–14.30 · koko viikon lista (vko 41)</p>
+                <a href="https://cdn.prod.website-files.com/6a5757dd1c62f83f7a16d6c2/6ac27f95687a84362d0e8224_Hansa%20ig%20vko%2041.png"><img src="https://cdn.prod.website-files.com/6a5757dd1c62f83f7a16d6c2/6ac27f95687a84362d0e8224_Hansa%20ig%20vko%2041.png" alt="Pegasus Hansasali viikon lounaslista" loading="lazy"></a>
+            </section>
     </main>
     <script>
-        // The page is built the evening before, so the viewer's own clock decides what is
-        // current: drop days already past and label the rest Tänään / Huomenna.
+        // The page is built ahead of the day it is read, so the viewer's own clock decides
+        // which tab opens; the week's days are all present, only one panel is shown.
         (function () {
             var p = function (n) { return String(n).padStart(2, "0"); };
             var now = new Date();
@@ -81,9 +207,27 @@
             var today = iso(now);
             // from date parts, not +24h: the DST night in October is 25 hours long
             var tomorrow = iso(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1));
-            var days = [].slice.call(document.querySelectorAll(".lunch-day"));
-            days.forEach(function (sec) {
-                if (sec.dataset.date < today) { sec.hidden = true; return; }
+            var tabs = [].slice.call(document.querySelectorAll(".lunch-tab"));
+            var panels = [].slice.call(document.querySelectorAll(".lunch-day"));
+
+            function show(date) {
+                tabs.forEach(function (t) {
+                    if (t.dataset.date === date) { t.setAttribute("aria-current", "true"); }
+                    else { t.removeAttribute("aria-current"); }
+                });
+                panels.forEach(function (sec) { sec.hidden = sec.dataset.date !== date; });
+            }
+
+            // the page is built ahead of time, so the viewer's clock picks the open tab
+            var pick = tabs.filter(function (t) { return t.dataset.date === today; })[0]
+                || tabs.filter(function (t) { return !t.hasAttribute("data-empty"); })[0]
+                || tabs[0];
+            if (pick) show(pick.dataset.date);
+            tabs.forEach(function (t) {
+                t.addEventListener("click", function () { show(t.dataset.date); });
+            });
+
+            panels.forEach(function (sec) {
                 var when = sec.dataset.date === today ? "Tänään"
                     : sec.dataset.date === tomorrow ? "Huomenna" : "";
                 if (!when) return;
@@ -93,9 +237,6 @@
                 tag.textContent = when;
                 title.insertBefore(tag, title.firstChild);
             });
-            if (days.length && days.every(function (s) { return s.hidden; })) {
-                days[days.length - 1].hidden = false;
-            }
         })();
     </script>
 </body>
