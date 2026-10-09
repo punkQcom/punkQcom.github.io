@@ -216,18 +216,21 @@ def found(result):
 
 
 def menus_html(day, results, images):
-    """Feed-item markup for one day: the week's picture plus that day's lists."""
+    """Feed-item markup for one day: that day's lists, then the week's picture.
+
+    Same order as the page — the tall picture goes last so the mail opens on the menus.
+    """
     parts = []
-    img = images.get(week_key(day))
-    for r in WEEKLY:
-        parts.append(f'<h3><a href="{html.escape(r["url"])}">{html.escape(r["name"])}</a></h3>')
-        parts.append(f'<p><img src="{html.escape(img)}" alt="{html.escape(r["name"])} viikon lounaslista" style="max-width:100%"></p>'
-                     if img else f'<p>Ei löytynyt vielä. <a href="{html.escape(r["url"])}">Katso ravintolan sivu</a></p>')
     for r in DAILY:
         res = results.get(r["key"], {})
         parts.append(f'<h3><a href="{html.escape(r["url"])}">{html.escape(r["name"])}</a></h3>')
         parts.append(lines_html(res["lines"]) if res.get("lines")
                      else f'<p>Ei löytynyt vielä. <a href="{html.escape(r["url"])}">Katso ravintolan sivu</a></p>')
+    img = images.get(week_key(day))
+    for r in WEEKLY:
+        parts.append(f'<h3><a href="{html.escape(r["url"])}">{html.escape(r["name"])} – koko viikon lista</a></h3>')
+        parts.append(f'<p><img src="{html.escape(img)}" alt="{html.escape(r["name"])} viikon lounaslista" style="max-width:100%"></p>'
+                     if img else f'<p>Ei löytynyt vielä. <a href="{html.escape(r["url"])}">Katso ravintolan sivu</a></p>')
     return "\n".join(parts)
 
 

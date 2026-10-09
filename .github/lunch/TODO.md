@@ -16,24 +16,39 @@ There is no setting that fixes this; GitHub does not guarantee cron timing.
 Rather than trying to control *when* the run happens, `fetch.py` was made
 indifferent to it:
 
-- Every run tops up **both today and tomorrow**, fetching only what is still
-  missing. A run at 21.00 fills tomorrow; a run at 03.00 or 13.30 fills
-  whatever today is still missing.
-- State is keyed per date (`days: {"YYYY-MM-DD": {...}}`), so a prefetched
-  tomorrow no longer overwrites today. This was the bug where the page showed
-  Friday's list while it was still Thursday.
+- All five text restaurants publish their **whole week on one page**, so each
+  site is fetched **once per run** and every weekday is parsed out of that one
+  page. Filling an empty week costs 6 requests; fetching per day would be 50.
+- State is keyed per date (`days: {"YYYY-MM-DD": {...}}`), so one day never
+  overwrites another. This was the bug where the page showed Friday's list
+  while it was still Thursday.
 - Hansasali publishes one picture per week, so it is stored per ISO week
-  (`images: {"2026-41": url}`) and rendered **once**, not per day.
-- The page carries both days as dated sections (`Torstai 8.10.`,
-  `Perjantai 9.10.`), today first. A small inline script labels them
-  Tänään / Huomenna and hides days already past **using the viewer's clock**,
-  so a page built the evening before is still correct when read next morning.
-- Cron is now daily (so Sunday evening prefetches Monday): every 30 min
-  06–12 Helsinki for lists published late that morning, hourly for the rest
-  of the day for tomorrow's lists. Runs are no-ops once both days are full.
+  (`images: {"2026-41": url}`) and rendered **once**, below the day's lists.
+- The page is **Mon–Fri tabs**. Every day of the shown week is in the HTML;
+  an inline script opens the tab for the current day **using the viewer's
+  clock**, so a page built hours earlier still opens on the right day. A day
+  with nothing published yet gets a struck-through tab and is skipped when
+  choosing which tab to open.
+- Each run also parses **next week** from the same pages at no extra cost, so
+  Monday is usually in hand before it becomes the shown week.
+
+### Schedule
+One successful run fetches the whole week, so the runs cluster where the new
+week appears rather than spreading evenly. Once everything is found a run
+makes no requests at all — cost is only paid while something is missing.
+
+| when (Helsinki) | cron (UTC) | why |
+|---|---|---|
+| Sun 18.17, 21.17 | `17 15,18 * * 0` | the new week usually lands here |
+| Mon 06.17–10.17 hourly | `17 3-7 * * 1` | the chef may not post until Monday |
+| Tue–Fri 07.17 | `17 4 * * 2-5` | late list, or a Monday GitHub skipped |
+
+~11 runs/week. GitHub drops and delays runs, which is why each window has
+more than one attempt rather than a single daily trigger.
 
 The Monday "chef overslept" case is covered from both sides: Sunday evening
-prefetches it, and Monday morning's dense runs fill it in if it was late.
+picks the week up early, and Monday morning's hourly runs fill it in if it
+was late.
 
 ## Hansasali weekly picture
 The site hosts only one picture at a time (`_Hansa ig vko 41.png`, plus
@@ -72,10 +87,16 @@ Local Python (via `uv`, see below) is for **testing only**.
   a *premium* connector. Microsoft 365 **E3** only includes "Power Automate
   for Office 365" (standard connectors), so it would need Power Automate
   Premium (~$15/user/mo) or a per-flow plan (~$100/mo).
-- RSS semantics left as they were: one item per day, `pubDate` = when the
-  day's item first appeared. Note this means the feed delivers tomorrow's
-  item the evening before. Revisit only if the Power Automate flow that reads
-  the feed should instead notify on the morning it applies.
+- **The feed arrives as a weekly burst, by choice.** An item is published the
+  moment its day is first found, and a run now finds the whole week at once,
+  so when the new week appears (Sun/Mon) all five items land together rather
+  than one per morning. `pubDate` stays pinned to first appearance, and
+  `guid` is stable per day, so correcting a day's content in place does not
+  re-notify. If one-per-morning is wanted later, the reliable fix is to hold
+  a day's item out of the feed until that day arrives — *not* to set a future
+  `pubDate`, which readers handle inconsistently.
+- Feed items list the five text menus first and the Hansasali week picture
+  last, matching the page.
 
 ## Testing locally
 No system Python on the dev machine; `uv` is installed, which can fetch an
@@ -83,7 +104,7 @@ interpreter on demand. Windows needs `tzdata` (no system zoneinfo):
 
     uv run --no-project --python 3.12 --with tzdata .github/lunch/fetch.py
 
-`LUNCH_DATE=YYYY-MM-DD` fetches one specific day instead of today+tomorrow.
-The script is idempotent, so a **template-only** change will not rebuild the
-page until something new is found — drop the `rendered` key from
+`LUNCH_DATE=YYYY-MM-DD` shows the week containing that date instead of the
+current one. The script is idempotent, so a **template-only** change will not
+rebuild the page until something new is found — drop the `rendered` key from
 `products/lunch/lunch.json` to force one rebuild.

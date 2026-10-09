@@ -1,14 +1,17 @@
 name: Lunch menus
 on:
   schedule:
-    # fetch.py tops up BOTH today and tomorrow on every run, so it no longer matters when
-    # GitHub actually fires (observed: anywhere from 21.00 to 03.00 to 13.30). Every day, so
-    # Sunday evening can prefetch Monday. Runs are no-ops once both days are complete, and
-    # off the full hour, where GitHub delays/drops runs most.
-    # Dense 06–12 Helsinki: catches a list published late on the morning it applies.
-    - cron: '17,47 3-9 * * *'
-    # Hourly for the rest of the day: picks up tomorrow's lists as they appear.
-    - cron: '17 10-20 * * *'
+    # One successful run fetches the whole week, so the runs cluster where the new week
+    # actually appears instead of spreading evenly. Once every restaurant is in, a run makes
+    # no requests at all; the cost is only paid while something is still missing. Times are
+    # UTC and off the full hour, where GitHub delays/drops runs most — and it does drop them,
+    # so each window has more than one attempt.
+    # Sunday evening, 18.17 + 21.17 Helsinki: the new week usually lands here.
+    - cron: '17 15,18 * * 0'
+    # Monday morning, hourly 06.17–10.17 Helsinki: the chef may not have posted until then.
+    - cron: '17 3-7 * * 1'
+    # Tue–Fri, 07.17 Helsinki: safety net for a late list, or a Monday GitHub skipped.
+    - cron: '17 4 * * 2-5'
   workflow_dispatch: # Allow manual trigger
 
 permissions:
