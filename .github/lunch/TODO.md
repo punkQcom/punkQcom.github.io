@@ -46,6 +46,12 @@ makes no requests at all — cost is only paid while something is missing.
 ~11 runs/week. GitHub drops and delays runs, which is why each window has
 more than one attempt rather than a single daily trigger.
 
+**Known trade-off:** there is no Saturday run, and Sunday starts at 18.17.
+A restaurant that publishes next week on a Saturday is therefore not seen
+until Sunday evening. This was deliberate — next week's lists were measured
+as never being up before Sunday, so every Saturday run spent six requests on
+the restaurants for nothing. Add a Saturday cron back if that ever changes.
+
 The Monday "chef overslept" case is covered from both sides: Sunday evening
 picks the week up early, and Monday morning's hourly runs fill it in if it
 was late.
@@ -59,14 +65,27 @@ gets to it. Handling:
 - The picture is accepted **only** if its week number matches the ISO week of
   the day being shown, so last week's food is never presented as this week's.
 - Until the new one appears the card reads "Viikon NN lista ei ole vielä
-  julkaistu" with a link to the restaurant page, and every run retries, so it
-  is picked up within ~30–60 min of upload.
+  julkaistu" with a link to the restaurant page, and every run retries. How
+  fast it is picked up follows the schedule above: within the hour on a
+  Monday morning, but only once a day Tue–Fri.
 - Recognised name forms: `vko 41`, `vko41`, `vk 41`, `vk_41`, `vko-41`,
   `viikko 41`, in .png/.jpg/.jpeg/.webp.
 - **Known gaps** (both leave the card blank for the week, by choice): a
   two-week range name like `vko 41-42`, and the chef uploading the new
   picture under the *old* week number. Blank-and-retrying was preferred over
   risking the wrong week's menu.
+
+## Parser gotchas (don't regress these)
+- **Gatorade lists TPS home games with weekday headings** — "Perjantai 16.10.
+  18:30" — which `today_text` happily matched as a lunch menu, publishing
+  kick-off times as that day's food. Headings containing a clock time are now
+  skipped. The test is **colon only** (`18:30`): a dot form would also match
+  the date `16.10.` and silently blank every restaurant.
+- The weekly-image regex requires the week number to be followed directly by
+  the extension, which is what keeps out Webflow's `-p-500` / `-p-800`
+  downscaled copies of the same picture.
+- A day is only considered found if it has lists; empty days are kept off the
+  page and out of the feed rather than published blank.
 
 ## Constraint: scheduling must be external
 There is no local scheduler available — the dev machine cannot be relied on
