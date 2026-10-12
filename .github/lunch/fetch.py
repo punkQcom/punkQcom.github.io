@@ -26,6 +26,9 @@ TZ = ZoneInfo("Europe/Helsinki")
 OUT = Path(__file__).resolve().parents[2] / "products" / "lunch"
 SITE_URL = "https://punkq.com/products/lunch/"
 FEED_DAYS = 10
+# Bumped whenever the page or feed markup changes: a week already fetched is otherwise never
+# rewritten (nothing new to find), so the old markup would linger until the next week.
+FORMAT = 2
 WEEKDAYS = ["maanantai", "tiistai", "keskiviikko", "torstai", "perjantai", "lauantai", "sunnuntai"]
 SHORT = ["ma", "ti", "ke", "to", "pe", "la", "su"]
 
@@ -490,7 +493,7 @@ def main():
             print(f"{wk} {r['key']}: {'found' if img else 'missing'}")
 
     rendered = [d.isoformat() for d in shown]
-    if not new and state.get("rendered") == rendered:
+    if not new and state.get("rendered") == rendered and state.get("format") == FORMAT:
         print("Nothing new, no changes written.")
         return
 
@@ -519,7 +522,7 @@ def main():
     (OUT / "index.html").write_text(page_html(shown, updated, results_by_day, images), encoding="utf-8")
     (OUT / "feed.xml").write_text(feed_xml(feed), encoding="utf-8")
     state_file.write_text(json.dumps(
-        {"updated": updated, "rendered": rendered, "images": images,
+        {"updated": updated, "format": FORMAT, "rendered": rendered, "images": images,
          "days": results_by_day, "feed": feed}, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     got = sum(found(v) for d in rendered for v in results_by_day[d].values())
     print(f"Wrote {OUT} (week {week_key(shown[0])}: {got}/{len(DAILY) * len(shown)} lists, "
