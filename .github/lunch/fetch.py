@@ -215,12 +215,20 @@ def found(result):
     return bool(result.get("lines") or result.get("image"))
 
 
+def long_date(day):
+    """Spelled out — "maanantai 12.10.2026" — because a feed item is read on its own."""
+    return f"{WEEKDAYS[day.weekday()]} {day.day}.{day.month}.{day.year}"
+
+
 def menus_html(day, results, images):
     """Feed-item markup for one day: that day's lists, then the week's picture.
 
     Same order as the page — the tall picture goes last so the mail opens on the menus.
+    The day is named first: a late run tops up several days at once, so items arrive in
+    batches, and in a reader or a mail the body is all the viewer has to go by.
     """
-    parts = []
+    parts = [f'<p><strong>Lounaslista {long_date(day)}</strong>'
+             f' · viikko {day.isocalendar().week}</p>']
     for r in DAILY:
         res = results.get(r["key"], {})
         parts.append(f'<h3><a href="{html.escape(r["url"])}">{html.escape(r["name"])}</a></h3>')
@@ -417,6 +425,7 @@ def feed_xml(items):
     <pubDate>{pub}</pubDate>
     <description><![CDATA[{it["html"].replace("]]>", "]]&gt;")}]]></description>
   </item>""")
+    built = format_datetime(datetime.now(TZ).replace(microsecond=0))
     return f"""<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
 <channel>
@@ -424,6 +433,7 @@ def feed_xml(items):
   <link>{SITE_URL}</link>
   <description>Päivän lounaslistat lähiravintoloista</description>
   <language>fi</language>
+  <lastBuildDate>{built}</lastBuildDate>
 {chr(10).join(entries)}
 </channel>
 </rss>
@@ -495,7 +505,9 @@ def main():
             continue
         old = next((f for f in state.get("feed", []) if f["date"] == iso), {})
         feed.append({"date": iso,
-                     "title": f"Lounas {SHORT[d.weekday()]} {d.day}.{d.month}.",
+                     # the full date in the title too: a reader may group items by their own
+                     # fetch time, and then "ma 12.10." is the only thing naming the day
+                     "title": f"Lounas {SHORT[d.weekday()]} {d.day}.{d.month}.{d.year}",
                      # pubDate = when the day's item first appeared, so RSS triggers (Power
                      # Automate) that only pick up items newer than their last poll still see it
                      "pub": old.get("pub") or format_datetime(now.replace(microsecond=0)),
