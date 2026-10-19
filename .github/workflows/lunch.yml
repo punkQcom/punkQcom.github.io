@@ -8,8 +8,9 @@ on:
     # so each window has more than one attempt.
     # Sunday evening, 18.17 + 21.17 Helsinki: the new week usually lands here.
     - cron: '17 15,18 * * 0'
-    # Monday morning, hourly 06.17–10.17 Helsinki: the chef may not have posted until then.
-    - cron: '17 3-7 * * 1'
+    # Monday, hourly 06.17–12.17 Helsinki: the chef may not have posted until then, and a
+    # list found even at noon is still worth a mail while lunch is served until 14.
+    - cron: '17 3-9 * * 1'
     # Mon–Fri daily publish: each day's feed item is due at 06.00 Helsinki, and it is due
     # whether or not anything was scraped, so these runs exist to rebuild the feed alone.
     # Cron is UTC and ignores DST, so both hours are covered: 03 UTC is 06.00 in summer time

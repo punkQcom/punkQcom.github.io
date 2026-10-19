@@ -12,7 +12,8 @@ The page shows the whole week at once, but the feed is a diary: a day's item app
 once its own 06.00 Helsinki has passed, stamped with that time, so a reader gets one item
 each morning rather than the whole week in the batch the Sunday scrape found it in. That
 makes the feed change at 06.00 with nothing scraped, which is why the workflow also runs
-every weekday morning.
+every weekday morning. A list posted later than that keeps the run time as its pubDate
+instead, so a late Monday still reaches a trigger that only looks forward.
 
 Hansasali publishes one picture per week, so it is stored per ISO week and shown once.
 """
@@ -437,26 +438,39 @@ def page_html(days, updated, results_by_day, images):
 """
 
 
-def pub_date(day):
-    """06.00 Helsinki on the lunch day itself.
+def six(day):
+    """06.00 Helsinki on that date — +0300 or +0200 either side of the October change."""
+    return datetime(day.year, day.month, day.day, 6, 0, tzinfo=TZ)
+
+
+def pub_date(day, seen=None):
+    """06.00 Helsinki on the lunch day — or when the item really appeared, if that is later.
 
     Not the moment the scrape found it: one Sunday run finds the whole week, and five items
     stamped the same second arrive as one indistinguishable batch. Pinned to the day instead,
-    each morning delivers exactly its own item. ZoneInfo gives +0300 or +0200 as the date
-    falls either side of the October change, so it is 06.00 local all year.
+    each morning delivers exactly its own item.
+
+    But a Monday list is sometimes not posted at 06.00, and the item can then only appear on
+    a later run. A pubDate of 06.00 would by then be in the past, behind the bookmark of a
+    trigger that polls for items newer than its last check, and the mail would never arrive.
+    So 06.00 is a floor, not a fixed stamp: on time it is 06.00, late it is the run that
+    found it. 'seen' is stored on first appearance so a rebuild never moves it again.
     """
-    return format_datetime(datetime(day.year, day.month, day.day, 6, 0, tzinfo=TZ))
+    stamp = six(day)
+    if seen:
+        stamp = max(stamp, datetime.fromisoformat(seen))
+    return format_datetime(stamp)
 
 
 def released(day, now):
     """Whether the day's item belongs in the feed yet — its own 06.00 has come."""
-    return datetime(day.year, day.month, day.day, 6, 0, tzinfo=TZ) <= now
+    return six(day) <= now
 
 
 def feed_xml(items):
     entries = []
     for it in items:
-        pub = pub_date(date.fromisoformat(it["date"]))
+        pub = pub_date(date.fromisoformat(it["date"]), it.get("seen"))
         entries.append(f"""  <item>
     <title>{html.escape(it["title"])}</title>
     <link>{SITE_URL}#{it["date"]}</link>
@@ -549,10 +563,14 @@ def main():
         # in one go days ahead, and a reader should get one item per morning, not five at once
         if not has_lists(results_by_day[iso]) or not released(d, now):
             continue
+        old = next((f for f in state.get("feed", []) if f["date"] == iso), {})
         feed.append({"date": iso,
                      # the full date in the title too: a reader may group items by their own
                      # fetch time, and then "ma 12.10." is the only thing naming the day
                      "title": f"Lounas {SHORT[d.weekday()]} {d.day}.{d.month}.{d.year}",
+                     # when this item first entered the feed; pub_date uses it when a late
+                     # list means the day's own 06.00 has already gone by
+                     "seen": old.get("seen") or now.replace(microsecond=0).isoformat(),
                      "html": menus_html(d, results_by_day[iso], images)})
     feed = sorted(feed, key=lambda f: f["date"], reverse=True)[:FEED_DAYS]
     images = {k: v for k, v in images.items() if k in {week_key(d) for d in targets}}
