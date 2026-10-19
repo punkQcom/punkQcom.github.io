@@ -13,11 +13,15 @@ on:
     - cron: '17 3-9 * * 1'
     # Mon–Fri daily publish: each day's feed item is due at 06.00 Helsinki, and it is due
     # whether or not anything was scraped, so these runs exist to rebuild the feed alone.
-    # Cron is UTC and ignores DST, so both hours are covered: 03 UTC is 06.00 in summer time
-    # and 04 UTC is 06.00 in winter time. The off hour writes nothing — a day is released
-    # only once its own 06.00 local has passed — and it doubles as the late-list safety net
-    # and as a second attempt when GitHub drops the first.
-    - cron: '0 3,4 * * 1-5'
+    #
+    # GitHub's scheduler is the unreliable part here: cron is UTC and ignores DST, runs are
+    # delayed under load — most at the top of the hour, hence :07/:37 — and some are dropped
+    # altogether. So the window is wide rather than precise. 03 UTC is 06.00 summer time and
+    # 04 UTC is 06.00 winter time, 05 UTC is one more attempt in both, and whichever run gets
+    # there first publishes: the day is released once its own 06.00 local has passed, and
+    # every later run that day writes nothing. A delayed run is harmless — it stamps the item
+    # with its own time, which is still ahead of any reader's bookmark.
+    - cron: '7,37 3,4,5 * * 1-5'
   workflow_dispatch: # Allow manual trigger
 
 permissions:
