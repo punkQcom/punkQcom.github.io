@@ -10,8 +10,13 @@ on:
     - cron: '17 15,18 * * 0'
     # Monday morning, hourly 06.17–10.17 Helsinki: the chef may not have posted until then.
     - cron: '17 3-7 * * 1'
-    # Tue–Fri, 07.17 Helsinki: safety net for a late list, or a Monday GitHub skipped.
-    - cron: '17 4 * * 2-5'
+    # Mon–Fri daily publish: each day's feed item is due at 06.00 Helsinki, and it is due
+    # whether or not anything was scraped, so these runs exist to rebuild the feed alone.
+    # Cron is UTC and ignores DST, so both hours are covered: 03 UTC is 06.00 in summer time
+    # and 04 UTC is 06.00 in winter time. The off hour writes nothing — a day is released
+    # only once its own 06.00 local has passed — and it doubles as the late-list safety net
+    # and as a second attempt when GitHub drops the first.
+    - cron: '0 3,4 * * 1-5'
   workflow_dispatch: # Allow manual trigger
 
 permissions:

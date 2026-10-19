@@ -5,8 +5,14 @@ Standard library only. Every run tops up whatever is still missing for today and
 weekday, so it does not matter when GitHub's scheduler actually fires: a run at 21.00 fills
 the day ahead, a run at 03.00 or 13.30 fills whatever today is still missing. On a Friday
 the day ahead is Monday, so the weekend's runs keep trying for it. Results already found are
-kept and nothing is written if nothing changed. The day ahead stays off the page and out of
-the feed until it has menus. Set LUNCH_DATE=YYYY-MM-DD to fetch one specific day.
+kept and nothing is written if nothing changed. The day ahead stays off the page until it has
+menus. Set LUNCH_DATE=YYYY-MM-DD to fetch one specific day.
+
+The page shows the whole week at once, but the feed is a diary: a day's item appears only
+once its own 06.00 Helsinki has passed, stamped with that time, so a reader gets one item
+each morning rather than the whole week in the batch the Sunday scrape found it in. That
+makes the feed change at 06.00 with nothing scraped, which is why the workflow also runs
+every weekday morning.
 
 Hansasali publishes one picture per week, so it is stored per ISO week and shown once.
 """
@@ -28,7 +34,7 @@ SITE_URL = "https://punkq.com/products/lunch/"
 FEED_DAYS = 10
 # Bumped whenever the page or feed markup changes: a week already fetched is otherwise never
 # rewritten (nothing new to find), so the old markup would linger until the next week.
-FORMAT = 2
+FORMAT = 3
 WEEKDAYS = ["maanantai", "tiistai", "keskiviikko", "torstai", "perjantai", "lauantai", "sunnuntai"]
 SHORT = ["ma", "ti", "ke", "to", "pe", "la", "su"]
 
@@ -296,7 +302,8 @@ def day_sections(days, results_by_day, active):
         for r in DAILY:
             res = results.get(r["key"], {})
             cards.append(card(r, lines_html(res["lines"]) if res.get("lines") else missing_note(r)))
-        out.append(f"""        <section class="lunch-day" data-date="{d.isoformat()}"{"" if d == active else " hidden"}>
+        # id = the date: a feed item links to .../lunch/#2026-10-19 and opens on that day
+        out.append(f"""        <section class="lunch-day" id="{d.isoformat()}" data-date="{d.isoformat()}"{"" if d == active else " hidden"}>
             <h2 class="lunch-day-title">{WEEKDAYS[d.weekday()].capitalize()} {d.day}.{d.month}.</h2>
 {chr(10).join(cards)}
         </section>""")
@@ -388,11 +395,27 @@ def page_html(days, updated, results_by_day, images):
                 panels.forEach(function (sec) {{ sec.hidden = sec.dataset.date !== date; }});
             }}
 
-            // the page is built ahead of time, so the viewer's clock picks the open tab
-            var pick = tabs.filter(function (t) {{ return t.dataset.date === today; }})[0]
+            function hashDate() {{
+                var h = location.hash.replace("#", "");
+                return tabs.some(function (t) {{ return t.dataset.date === h; }}) ? h : "";
+            }}
+
+            // a feed item links to #<date>, so that day wins; otherwise the page is built
+            // ahead of time and the viewer's own clock picks the open tab
+            var fallback = tabs.filter(function (t) {{ return t.dataset.date === today; }})[0]
                 || tabs.filter(function (t) {{ return !t.hasAttribute("data-empty"); }})[0]
                 || tabs[0];
-            if (pick) show(pick.dataset.date);
+            var pick = hashDate() || (fallback ? fallback.dataset.date : "");
+            if (pick) show(pick);
+            // the panel was hidden while the browser handled the anchor, so scroll it in now
+            if (hashDate()) {{
+                var target = document.getElementById(hashDate());
+                if (target) target.scrollIntoView();
+            }}
+            window.addEventListener("hashchange", function () {{
+                var d = hashDate();
+                if (d) show(d);
+            }});
             tabs.forEach(function (t) {{
                 t.addEventListener("click", function () {{ show(t.dataset.date); }});
             }});
@@ -414,16 +437,29 @@ def page_html(days, updated, results_by_day, images):
 """
 
 
+def pub_date(day):
+    """06.00 Helsinki on the lunch day itself.
+
+    Not the moment the scrape found it: one Sunday run finds the whole week, and five items
+    stamped the same second arrive as one indistinguishable batch. Pinned to the day instead,
+    each morning delivers exactly its own item. ZoneInfo gives +0300 or +0200 as the date
+    falls either side of the October change, so it is 06.00 local all year.
+    """
+    return format_datetime(datetime(day.year, day.month, day.day, 6, 0, tzinfo=TZ))
+
+
+def released(day, now):
+    """Whether the day's item belongs in the feed yet — its own 06.00 has come."""
+    return datetime(day.year, day.month, day.day, 6, 0, tzinfo=TZ) <= now
+
+
 def feed_xml(items):
     entries = []
     for it in items:
-        d = date.fromisoformat(it["date"])
-        # pubDate = when the day's item first appeared, so RSS triggers (Power Automate) that
-        # only pick up items newer than their last poll see it even when the run was late
-        pub = it.get("pub") or format_datetime(datetime(d.year, d.month, d.day, 6, 0, tzinfo=TZ))
+        pub = pub_date(date.fromisoformat(it["date"]))
         entries.append(f"""  <item>
     <title>{html.escape(it["title"])}</title>
-    <link>{SITE_URL}</link>
+    <link>{SITE_URL}#{it["date"]}</link>
     <guid isPermaLink="false">lounas-{it["date"]}</guid>
     <pubDate>{pub}</pubDate>
     <description><![CDATA[{it["html"].replace("]]>", "]]&gt;")}]]></description>
@@ -493,27 +529,30 @@ def main():
             print(f"{wk} {r['key']}: {'found' if img else 'missing'}")
 
     rendered = [d.isoformat() for d in shown]
-    if not new and state.get("rendered") == rendered and state.get("format") == FORMAT:
+    # the feed changes at 06.00 even when nothing was scraped — that is when the day's item
+    # is due — so the released set is part of what decides whether to write
+    release = [d.isoformat() for d in targets if released(d, now)]
+    if (not new and state.get("rendered") == rendered and state.get("format") == FORMAT
+            and state.get("released") == release):
         print("Nothing new, no changes written.")
         return
 
     updated = f"{now.day}.{now.month}. klo {now:%H.%M}"  # %-d is glibc-only, breaks on Windows
     target_isos = [d.isoformat() for d in targets]
-    feed = [f for f in state.get("feed", []) if f["date"] not in target_isos]
+    # "pub" is no longer stored: feed_xml derives it from the date, so an item kept from an
+    # earlier state must not carry an old first-appearance stamp
+    feed = [{k: v for k, v in f.items() if k != "pub"}
+            for f in state.get("feed", []) if f["date"] not in target_isos]
     for d in targets:
         iso = d.isoformat()
-        # an item is published only once the day has menus: pubDate is pinned to first
-        # appearance, so an empty item would notify now and never again when it fills in
-        if not has_lists(results_by_day[iso]):
+        # a day enters the feed on its own morning, with menus: the week is usually scraped
+        # in one go days ahead, and a reader should get one item per morning, not five at once
+        if not has_lists(results_by_day[iso]) or not released(d, now):
             continue
-        old = next((f for f in state.get("feed", []) if f["date"] == iso), {})
         feed.append({"date": iso,
                      # the full date in the title too: a reader may group items by their own
                      # fetch time, and then "ma 12.10." is the only thing naming the day
                      "title": f"Lounas {SHORT[d.weekday()]} {d.day}.{d.month}.{d.year}",
-                     # pubDate = when the day's item first appeared, so RSS triggers (Power
-                     # Automate) that only pick up items newer than their last poll still see it
-                     "pub": old.get("pub") or format_datetime(now.replace(microsecond=0)),
                      "html": menus_html(d, results_by_day[iso], images)})
     feed = sorted(feed, key=lambda f: f["date"], reverse=True)[:FEED_DAYS]
     images = {k: v for k, v in images.items() if k in {week_key(d) for d in targets}}
@@ -522,7 +561,8 @@ def main():
     (OUT / "index.html").write_text(page_html(shown, updated, results_by_day, images), encoding="utf-8")
     (OUT / "feed.xml").write_text(feed_xml(feed), encoding="utf-8")
     state_file.write_text(json.dumps(
-        {"updated": updated, "format": FORMAT, "rendered": rendered, "images": images,
+        {"updated": updated, "format": FORMAT, "rendered": rendered, "released": release,
+         "images": images,
          "days": results_by_day, "feed": feed}, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     got = sum(found(v) for d in rendered for v in results_by_day[d].values())
     print(f"Wrote {OUT} (week {week_key(shown[0])}: {got}/{len(DAILY) * len(shown)} lists, "
