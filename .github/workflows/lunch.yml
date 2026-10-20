@@ -4,24 +4,14 @@ on:
     # One successful run fetches the whole week, so the runs cluster where the new week
     # actually appears instead of spreading evenly. Once every restaurant is in, a run makes
     # no requests at all; the cost is only paid while something is still missing. Times are
-    # UTC and off the full hour, where GitHub delays/drops runs most — and it does drop them,
-    # so each window has more than one attempt.
+    # UTC and off the full hour, where GitHub delays/drops runs most.
     # Sunday evening, 18.17 + 21.17 Helsinki: the new week usually lands here.
     - cron: '17 15,18 * * 0'
-    # Monday, hourly 06.17–12.17 Helsinki: the chef may not have posted until then, and a
-    # list found even at noon is still worth a mail while lunch is served until 14.
-    - cron: '17 3-9 * * 1'
-    # Mon–Fri daily publish: each day's feed item is due at 06.00 Helsinki, and it is due
-    # whether or not anything was scraped, so these runs exist to rebuild the feed alone.
-    #
-    # GitHub's scheduler is the unreliable part here: cron is UTC and ignores DST, runs are
-    # delayed under load — most at the top of the hour, hence :07/:37 — and some are dropped
-    # altogether. So the window is wide rather than precise. 03 UTC is 06.00 summer time and
-    # 04 UTC is 06.00 winter time, 05 UTC is one more attempt in both, and whichever run gets
-    # there first publishes: the day is released once its own 06.00 local has passed, and
-    # every later run that day writes nothing. A delayed run is harmless — it stamps the item
-    # with its own time, which is still ahead of any reader's bookmark.
-    - cron: '7,37 3,4,5 * * 1-5'
+    # One run per weekday, to top up whatever Sunday did not get. Nothing waits on a precise
+    # time: the page and the feed both carry every day that has been scraped, so a run is
+    # early or late, never wrong. Piling on crons would buy nothing anyway — observed here,
+    # these runs land 2–7 hours after their cron and a morning's crons collapse into one.
+    - cron: '17 4 * * 1-5'
   workflow_dispatch: # Allow manual trigger
 
 permissions:

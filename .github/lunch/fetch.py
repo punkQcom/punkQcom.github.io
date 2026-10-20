@@ -8,12 +8,14 @@ the day ahead is Monday, so the weekend's runs keep trying for it. Results alrea
 kept and nothing is written if nothing changed. The day ahead stays off the page until it has
 menus. Set LUNCH_DATE=YYYY-MM-DD to fetch one specific day.
 
-The page shows the whole week at once, but the feed is a diary: a day's item appears only
-once its own 06.00 Helsinki has passed, stamped with that time, so a reader gets one item
-each morning rather than the whole week in the batch the Sunday scrape found it in. That
-makes the feed change at 06.00 with nothing scraped, which is why the workflow also runs
-every weekday morning. A list posted later than that keeps the run time as its pubDate
-instead, so a late Monday still reaches a trigger that only looks forward.
+Neither the page nor the feed depends on when a run happens, and for the same reason: both
+carry every day that has been scraped and leave the choice of day to whoever is reading.
+The page ships all five and its script opens the tab the viewer's own clock points at. The
+feed ships all five as separate items, each named by its day and stamped 06.00 on that day,
+so they sort a day apart and say which day they are. Releasing days one at a time was tried
+and reverted: GitHub's scheduler runs 2–7 hours after its cron and collapses a morning's
+crons into one run, so a feed that decides when a day may be read is only as punctual as
+that, while a feed that simply holds the week is never wrong.
 
 Hansasali publishes one picture per week, so it is stored per ISO week and shown once.
 """
@@ -24,7 +26,7 @@ import re
 import sys
 import urllib.request
 from datetime import date, datetime, timedelta
-from email.utils import format_datetime
+from email.utils import format_datetime, parsedate_to_datetime
 from html.parser import HTMLParser
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -35,7 +37,7 @@ SITE_URL = "https://punkq.com/products/lunch/"
 FEED_DAYS = 10
 # Bumped whenever the page or feed markup changes: a week already fetched is otherwise never
 # rewritten (nothing new to find), so the old markup would linger until the next week.
-FORMAT = 3
+FORMAT = 5
 WEEKDAYS = ["maanantai", "tiistai", "keskiviikko", "torstai", "perjantai", "lauantai", "sunnuntai"]
 SHORT = ["ma", "ti", "ke", "to", "pe", "la", "su"]
 
@@ -438,39 +440,28 @@ def page_html(days, updated, results_by_day, images):
 """
 
 
-def six(day):
-    """06.00 Helsinki on that date — +0300 or +0200 either side of the October change."""
-    return datetime(day.year, day.month, day.day, 6, 0, tzinfo=TZ)
-
-
 def pub_date(day, seen=None):
-    """06.00 Helsinki on the lunch day — or when the item really appeared, if that is later.
+    """06.00 Helsinki on the lunch day itself.
 
-    Not the moment the scrape found it: one Sunday run finds the whole week, and five items
-    stamped the same second arrive as one indistinguishable batch. Pinned to the day instead,
-    each morning delivers exactly its own item.
+    The feed carries whatever has been scraped, so it cannot also decide when a day is read:
+    runs land 2–7 hours after their cron, and several crons in a morning collapse into one
+    run, so any attempt to release a day at a chosen hour just made the delivery as erratic
+    as the scheduler. Stamping each item with its own day instead leaves that to the reader —
+    the same bargain the page makes, where all five days ship and the browser's own clock
+    picks the one on screen. The stamps are a day apart, so ordering is unambiguous.
 
-    But a Monday list is sometimes not posted at 06.00, and the item can then only appear on
-    a later run. A pubDate of 06.00 would by then be in the past, behind the bookmark of a
-    trigger that polls for items newer than its last check, and the mail would never arrive.
-    So 06.00 is a floor, not a fixed stamp: on time it is 06.00, late it is the run that
-    found it. 'seen' is stored on first appearance so a rebuild never moves it again.
+    ZoneInfo gives +0300 or +0200 as the date falls either side of the October change, so it
+    is 06.00 local all year. 'seen' is a stamp from an earlier version of this script: a day
+    already delivered under it keeps it, rather than being mailed a second time.
     """
-    stamp = six(day)
-    if seen:
-        stamp = max(stamp, datetime.fromisoformat(seen))
-    return format_datetime(stamp)
+    return format_datetime(datetime.fromisoformat(seen) if seen
+                           else datetime(day.year, day.month, day.day, 6, 0, tzinfo=TZ))
 
 
-def released(day, now):
-    """Whether the day's item belongs in the feed yet — its own 06.00 has come."""
-    return six(day) <= now
-
-
-def feed_xml(items):
+def feed_xml(items, seen):
     entries = []
     for it in items:
-        pub = pub_date(date.fromisoformat(it["date"]), it.get("seen"))
+        pub = pub_date(date.fromisoformat(it["date"]), seen.get(it["date"]))
         entries.append(f"""  <item>
     <title>{html.escape(it["title"])}</title>
     <link>{SITE_URL}#{it["date"]}</link>
@@ -543,45 +534,43 @@ def main():
             print(f"{wk} {r['key']}: {'found' if img else 'missing'}")
 
     rendered = [d.isoformat() for d in shown]
-    # the feed changes at 06.00 even when nothing was scraped — that is when the day's item
-    # is due — so the released set is part of what decides whether to write
-    release = [d.isoformat() for d in targets if released(d, now)]
-    if (not new and state.get("rendered") == rendered and state.get("format") == FORMAT
-            and state.get("released") == release):
+    if not new and state.get("rendered") == rendered and state.get("format") == FORMAT:
         print("Nothing new, no changes written.")
         return
 
     updated = f"{now.day}.{now.month}. klo {now:%H.%M}"  # %-d is glibc-only, breaks on Windows
     target_isos = [d.isoformat() for d in targets]
-    # "pub" is no longer stored: feed_xml derives it from the date, so an item kept from an
-    # earlier state must not carry an old first-appearance stamp
-    feed = [{k: v for k, v in f.items() if k != "pub"}
+    # Stamps from the versions that pinned pubDate to the run: a day already delivered under
+    # one keeps it, so moving to a 06.00 stamp does not mail this week over again. No new
+    # entries are added, so the map empties as those days leave the feed.
+    seen = {f["date"]: (f["seen"] if f.get("seen") else parsedate_to_datetime(f["pub"]).isoformat())
+            for f in state.get("feed", []) if f.get("seen") or f.get("pub")}
+    seen.update(state.get("seen", {}))
+
+    feed = [{"date": f["date"], "title": f["title"], "html": f["html"]}
             for f in state.get("feed", []) if f["date"] not in target_isos]
     for d in targets:
         iso = d.isoformat()
-        # a day enters the feed on its own morning, with menus: the week is usually scraped
-        # in one go days ahead, and a reader should get one item per morning, not five at once
-        if not has_lists(results_by_day[iso]) or not released(d, now):
+        # every day that has menus, as far ahead as the scrape got: the feed is a copy of
+        # what is known, and which day to read is the reader's business, not the scheduler's
+        if not has_lists(results_by_day[iso]):
             continue
-        old = next((f for f in state.get("feed", []) if f["date"] == iso), {})
         feed.append({"date": iso,
                      # the full date in the title too: a reader may group items by their own
                      # fetch time, and then "ma 12.10." is the only thing naming the day
                      "title": f"Lounas {SHORT[d.weekday()]} {d.day}.{d.month}.{d.year}",
-                     # when this item first entered the feed; pub_date uses it when a late
-                     # list means the day's own 06.00 has already gone by
-                     "seen": old.get("seen") or now.replace(microsecond=0).isoformat(),
                      "html": menus_html(d, results_by_day[iso], images)})
     feed = sorted(feed, key=lambda f: f["date"], reverse=True)[:FEED_DAYS]
+    seen = {k: v for k, v in seen.items() if k in {f["date"] for f in feed}}
     images = {k: v for k, v in images.items() if k in {week_key(d) for d in targets}}
 
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "index.html").write_text(page_html(shown, updated, results_by_day, images), encoding="utf-8")
-    (OUT / "feed.xml").write_text(feed_xml(feed), encoding="utf-8")
+    (OUT / "feed.xml").write_text(feed_xml(feed, seen), encoding="utf-8")
     state_file.write_text(json.dumps(
-        {"updated": updated, "format": FORMAT, "rendered": rendered, "released": release,
-         "images": images,
-         "days": results_by_day, "feed": feed}, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        {"updated": updated, "format": FORMAT, "rendered": rendered, "seen": seen,
+         "images": images, "days": results_by_day, "feed": feed},
+        ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     got = sum(found(v) for d in rendered for v in results_by_day[d].values())
     print(f"Wrote {OUT} (week {week_key(shown[0])}: {got}/{len(DAILY) * len(shown)} lists, "
           f"{len(images)} week image(s))")
