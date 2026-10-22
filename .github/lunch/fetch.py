@@ -37,7 +37,7 @@ SITE_URL = "https://punkq.com/products/lunch/"
 FEED_DAYS = 10
 # Bumped whenever the page or feed markup changes: a week already fetched is otherwise never
 # rewritten (nothing new to find), so the old markup would linger until the next week.
-FORMAT = 5
+FORMAT = 6
 WEEKDAYS = ["maanantai", "tiistai", "keskiviikko", "torstai", "perjantai", "lauantai", "sunnuntai"]
 SHORT = ["ma", "ti", "ke", "to", "pe", "la", "su"]
 
@@ -471,10 +471,12 @@ def feed_xml(items, seen):
   </item>""")
     built = format_datetime(datetime.now(TZ).replace(microsecond=0))
     return f"""<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
   <title>Lounaslista</title>
   <link>{SITE_URL}</link>
+  <!-- where the feed itself lives: a reader handed a copy can still find the original -->
+  <atom:link href="{SITE_URL}feed.xml" rel="self" type="application/rss+xml"/>
   <description>Päivän lounaslistat lähiravintoloista</description>
   <language>fi</language>
   <lastBuildDate>{built}</lastBuildDate>
