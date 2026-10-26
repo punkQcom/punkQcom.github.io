@@ -25,6 +25,25 @@ second rule — **several crons in one morning collapse into a single run**:
 | Mon 19.10 | 03:17–07:17 (5 crons) | 09:02 | one run only, +1h45 |
 | Wed 21.10 | 04:17 | 12:21 | +8h04 |
 
+Re-measured 26.10.2026, and the weekday lateness is **much tighter than the
+"2–7 hours" above suggests** — four consecutive runs off the same `17 4` cron:
+
+| day | cron (UTC) | actually started | late by |
+|---|---|---|---|
+| Mon 19.10 | 04:17 | 09:02 | +4h45 |
+| Wed 21.10 | 04:17 | 09:21 | +5h04 |
+| Thu 22.10 | 04:17 | 09:24 | +5h07 |
+| Fri 23.10 | 04:17 | 09:20 | +5h03 |
+
+Four samples inside a 22-minute band, all ≈ **+5h**. Two consequences:
+
+- A weekday cron at `17 4` lands ~09:20 UTC — **11:20 Helsinki**, essentially
+  at lunchtime. It can never feed an 06:00 delivery, so do not try to tune it
+  into doing so.
+- Sunday drift is *not* this consistent: +8 min on 25.10. (18:17 → 18:25) but
+  +2h51 and +2h30 on 18.10. So the band is a weekday-morning phenomenon and
+  cannot be used to aim a Sunday-night run.
+
 So piling on crons to "make sure one lands" does not work — six were tried on
 20.10. and produced no extra runs. One cron per day is what GitHub gives you,
 at an hour of its choosing. Check with:
@@ -67,6 +86,40 @@ multi-attempt windows were removed once the measurements above showed they
 produce no extra runs. Nothing waits on a precise time any more — see
 *Delivery* below — so a run is early or late, never wrong.
 
+**The weekday runs are insurance that has not yet paid out (measured
+26.10.2026).** Every bot commit since this design went in on 09.10. was
+checked, and no weekday run has ever found new menu data:
+
+| weekday run | what actually changed |
+|---|---|
+| Mon 12.10. 11:01 | `format` → 2 — a markup change, nothing found |
+| Wed 21.10. 09:21 | `format` → 5 — ditto |
+| Thu 22.10. 09:24 | `format` → 6 — ditto |
+
+All three committed only because a `FORMAT` bump forced a rewrite. Not one
+added a day, a list or an image; `"images"` never changed in any of them. The
+Sunday runs have done all the real work every week so far — 25/25 lists on
+Sunday evening, week 44 included. Check this yourself with:
+
+    git log --format='%h|%ad|%s' --date=format:'%a %d.%m %H:%M' \
+      -- products/lunch/lunch.json
+
+**Keep them anyway.** They cost essentially nothing — zero HTTP requests once
+the week is complete, just a few Actions seconds — and the one item that does
+arrive at an unpredictable hour is the Hansasali picture. That is the straggler
+they insure against.
+
+**Considered and rejected 26.10.2026: a Sunday-night `17 22 * * 0` cron.** The
+idea was to exploit the ≈+5h weekday band to land ~03:00 UTC (05:00 Helsinki)
+and so beat the 06:00 delivery, covering a chef who republishes after Sunday
+20:17. Dropped because (a) Sunday drift is not in that band — it was +8 min on
+25.10., which would land the run *earlier* than the existing 20:17 one and buy
+nothing; (b) the collapse rule would likely merge it into the existing Sunday
+crons; and (c) the gap it addresses has never occurred. Both measured weeks had
+the picture up well inside the existing window — week 43 at 15:32 and week 44
+at 15:49 Helsinki, caught at 21:08 and 20:25. If a Monday message does turn up
+short, the fix is the external trigger in *Open items*, not another cron.
+
 **Known trade-off:** there is no Saturday run, and Sunday starts at 18.17.
 A restaurant that publishes next week on a Saturday is therefore not seen
 until Sunday evening. This was deliberate — next week's lists were measured
@@ -105,6 +158,31 @@ gets to it. Handling:
   one** — the scrape had run, seen the file, and thrown it away. When the
   picture is missing, check the filename on the restaurant page against
   `WEEK_IMAGE` *before* suspecting the cron.
+- **How to find out when the chef actually published** — this is what settled
+  the 26.10. diagnosis, and it needs no credentials. Two *different* moments
+  matter and they can be days apart:
+
+      # when the picture file landed on the CDN
+      curl -sI "<image url>" | grep -iE "last-modified|^date|age"
+      # when the page that links it was last republished
+      curl -sIL "https://www.pegasus-ravintolat.fi/hansasali" \
+        | grep -iE "last-modified|^date|age"
+
+  For week 44 the file was up Fri 23.10. 15:52 UTC but the page did not link
+  it until Sun 25.10. 13:49 UTC. **The page timestamp is the one that counts** —
+  a file on the CDN that nothing links to is invisible to the scrape, and
+  mistaking the upload time for the publish time will make a real timing
+  problem look like a parser bug or vice versa.
+
+  Corroborate the upload time three ways if it matters; they agreed within 4
+  seconds on 26.10.: the `Last-Modified` header, `Date` minus `Age` (when the
+  edge first cached it), and decoding the first 4 bytes of the Webflow asset id
+  as a Unix timestamp — `date -u -d "@$((0x6adb82b9))"`.
+
+  Caveat: the page's `Last-Modified` says the HTML changed, not *what* changed
+  in it. It is an upper bound — if the page links the picture now and has not
+  been touched since that stamp, the link has been there since at least then.
+  Mind the DST change, too: 23.10. was EEST (+3), 25.10. onwards EET (+2).
 - **Known gaps that remain** (both leave the card blank for the week, by
   choice): a two-week range name like `vko 41-42`, and the chef uploading the
   new picture under the *old* week number. Blank-and-retrying was preferred
