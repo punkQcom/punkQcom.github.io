@@ -197,9 +197,15 @@ def lines_html(lines):
     return "<ul>" + "".join(items) + "</ul>"
 
 
-# "vko 41", "vko41", "vk_41", "viikko 41"; the number must be followed straight by the
-# extension, which keeps out Webflow's -p-500/-p-800 downscaled copies of the same picture
-WEEK_IMAGE = re.compile(r'https://[^"\s]+?(?:viikko|vko|vk)(?:%20|[\s_-])*(\d{1,2})\.(?:png|jpe?g|webp)', re.I)
+# "vko 41", "vko41", "vk_41", "viikko 41". After the number only a Webflow duplicate-name
+# suffix is tolerated — "vko 44(1).png", which is what the CMS appends when the chef uploads
+# over a name that already exists (seen 26.10.2026, it blanked the whole week). Anything else
+# between the number and the extension is still rejected, which is what keeps out Webflow's
+# -p-500/-p-800 downscaled copies of the same picture.
+WEEK_IMAGE = re.compile(
+    r'https://[^"\s]+?(?:viikko|vko|vk)(?:%20|[\s_-])*(\d{1,2})'
+    r'(?:(?:\(|%28)\d+(?:\)|%29))?'
+    r'\.(?:png|jpe?g|webp)', re.I)
 
 
 def today_image(page, day):

@@ -90,11 +90,25 @@ gets to it. Handling:
   fast it is picked up follows the schedule above: within the hour on a
   Monday morning, but only once a day Tue–Fri.
 - Recognised name forms: `vko 41`, `vko41`, `vk 41`, `vk_41`, `vko-41`,
-  `viikko 41`, in .png/.jpg/.jpeg/.webp.
-- **Known gaps** (both leave the card blank for the week, by choice): a
-  two-week range name like `vko 41-42`, and the chef uploading the new
-  picture under the *old* week number. Blank-and-retrying was preferred over
-  risking the wrong week's menu.
+  `viikko 41`, in .png/.jpg/.jpeg/.webp, optionally with a Webflow
+  duplicate-name suffix — `vko 44(1).png`, also percent-encoded as
+  `vko%2044%281%29.png`.
+- **Fixed 26.10.2026: the `(1)` suffix blanked a whole week.** Week 44's
+  picture was uploaded as `Hansa ig vko 44(1).png` — Webflow appends `(1)`
+  when the chef uploads over a filename that already exists. The regex
+  required the week number to be followed *straight* by the extension, so the
+  picture was on the restaurant's site from Fri 23.10. 15.52 UTC and still
+  rejected by every run after it, including Sun 25.10. 18.25 UTC. The card
+  read "Viikon 44 lista ei ole vielä julkaistu" all the way into Monday
+  lunchtime, and the Teams message carried five text menus and an empty
+  Pegasus block. **This looked exactly like a scheduling problem and was not
+  one** — the scrape had run, seen the file, and thrown it away. When the
+  picture is missing, check the filename on the restaurant page against
+  `WEEK_IMAGE` *before* suspecting the cron.
+- **Known gaps that remain** (both leave the card blank for the week, by
+  choice): a two-week range name like `vko 41-42`, and the chef uploading the
+  new picture under the *old* week number. Blank-and-retrying was preferred
+  over risking the wrong week's menu.
 
 ## The feed contract (settled 19.–22.10.2026)
 The complaint that started this: menus arrived with **no date in them**, five
