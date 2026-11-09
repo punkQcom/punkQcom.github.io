@@ -2,10 +2,10 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1791117100';
-import { confidenceLevel, splitPicks, confidenceTitle, confidenceLegendTooltip } from './suggested-bets-format.js?v=1791117100';
-import { TRANSLATIONS } from './translations.js?v=1791117100';
-import { computePLBars } from './pl-simulation-format.js?v=1791117100';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1794257355';
+import { confidenceLevel, splitPicks, confidenceTitle, confidenceLegendHtml } from './suggested-bets-format.js?v=1794257355';
+import { TRANSLATIONS } from './translations.js?v=1794257355';
+import { computePLBars } from './pl-simulation-format.js?v=1794257355';
 
 /**
  * Translate a bet/outcome label for display. Labels stay English internally
@@ -2090,12 +2090,10 @@ export function renderSuggestedBets(data, containerId) {
     html += picksTableHtml(reliable);
   }
 
-  // Confidence legend, one line. The dot is about league data volume, not pick quality
-  // ("Cold" reads as "bad bet" otherwise), but spelling that out in full took more space
-  // than it earned — so the explanation lives in the tooltip and the page keeps a hint.
+  // Confidence legend, one line that expands on click. The dot is about league data
+  // volume, not pick quality ("Cold" reads as "bad bet" otherwise).
   if (reliable.length > 0 || speculative.length > 0) {
-    html += `<p class="muted sb-legend-compact" title="${escAttr(confidenceLegendTooltip(t))}">` +
-      `${t('sb.confLegendTitle')}</p>`;
+    html += confidenceLegendHtml(t);
   }
 
   // Speculative / high-risk overrides

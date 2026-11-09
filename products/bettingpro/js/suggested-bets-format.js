@@ -21,17 +21,21 @@ export function confidenceTitle(level, matchesPlayed, t) {
 }
 
 /**
- * One tooltip covering all three confidence levels, for the compact legend line.
+ * The confidence legend: one line on the page that expands on click.
  *
- * The levels used to be rendered as a five-row block under the picks; that took more
- * space than it earned, so the text lives on hover and the page keeps one short line.
+ * A five-row block took more space than it earned; the replacement hid the text in a
+ * hover-only title tooltip styled like a link, so clicking did nothing and touch screens
+ * never showed it. <details> keeps the single line and opens anywhere, with no JS.
  */
-export function confidenceLegendTooltip(t) {
-  const level = (lvl) => {
+export function confidenceLegendHtml(t) {
+  const row = (lvl) => {
     const suffix = lvl[0].toUpperCase() + lvl.slice(1);
-    return `${t('sb.conf' + suffix)}: ${t('sb.conf' + suffix + 'Tip')}`;
+    return `<li><span class="conf-dot conf-${lvl}"></span>` +
+      `<strong>${t('sb.conf' + suffix)}</strong>: ${t('sb.conf' + suffix + 'Tip')}</li>`;
   };
-  return [t('sb.confLegendLead'), ...['warm', 'warming', 'cold'].map(level)].join(' ');
+  return `<details class="sb-legend"><summary class="muted">${t('sb.confLegendTitle')}</summary>` +
+    `<p>${t('sb.confLegendLead')}</p>` +
+    `<ul>${['warm', 'warming', 'cold'].map(row).join('')}</ul></details>`;
 }
 
 /** Split picks into the reliable core and the flagged high-risk overrides. */

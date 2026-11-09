@@ -191,7 +191,7 @@ export const TRANSLATIONS = {
   // The dot is about how much of the league's season the model has seen, not about how
   // strongly it likes this particular pick — users read "cold" as "bad bet" otherwise.
   'sb.confLegendTitle': {
-    fi: 'Mitä Varmuus-sarake tarkoittaa',
+    fi: 'Mitä Luottamus-sarake tarkoittaa',
     en: 'What the Confidence column means',
   },
   'sb.confLegendLead': {
