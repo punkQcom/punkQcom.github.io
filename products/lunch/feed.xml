@@ -7,7 +7,7 @@
   <atom:link href="https://punkq.com/products/lunch/feed.xml" rel="self" type="application/rss+xml"/>
   <description>Päivän lounaslistat lähiravintoloista</description>
   <language>fi</language>
-  <lastBuildDate>Sun, 08 Nov 2026 21:43:04 +0200</lastBuildDate>
+  <lastBuildDate>Tue, 10 Nov 2026 21:20:34 +0200</lastBuildDate>
   <item>
     <title>Lounas pe 13.11.2026</title>
     <link>https://punkq.com/products/lunch/#2026-11-13</link>
@@ -17,7 +17,7 @@
 <h3><a href="https://kolmaslinja.fi/lounas-turku/">3. Linja</a></h3>
 <ul><li>Paahdettu maissi-valkosipulikeitto L,G</li><li>Mac &amp; cheese, rapeaa sipulia ja jalapeñoa L</li><li>Grillattuja porsaan ulkofilepihvejä &amp; café de Paris -voita L, G</li><li>BBQ-kanaa ja paahdettua valkosipulia L, G</li><li>Steakhouse-ranskalaisia M, G</li><li>Aiolia ja chilimajoneesia M, G</li><li>Paahdettua maissia, paprikaa ja limeä M, G</li><li>Lakritsipannacottaa ja vadelmamelbaa L, G</li></ul>
 <h3><a href="https://gatoradecenter.fi/fi/lounas">Gatorade Center (TPS-lounas)</a></h3>
-<p>Ei löytynyt vielä. <a href="https://gatoradecenter.fi/fi/lounas">Katso ravintolan sivu</a></p>
+<ul><li>Hulihuli-broileria, yrtti-jogurttikastiketta &amp; riisiä (L, G)</li><li>Lohipastaa (L)</li><li>Paahdettua bataattia (M, G)</li><li>Palsternakka-omenakeittoa (L, G)</li></ul>
 <h3><a href="https://www.lounasverkko.fi/lounasravintelivarikko">Lounasravinteli Varikko</a></h3>
 <p>Ei löytynyt vielä. <a href="https://www.lounasverkko.fi/lounasravintelivarikko">Katso ravintolan sivu</a></p>
 <h3><a href="https://www.tbherkku.fi/ravintola/">Teboil Herkku</a></h3>
@@ -36,7 +36,7 @@
 <h3><a href="https://kolmaslinja.fi/lounas-turku/">3. Linja</a></h3>
 <ul><li>Perinteistä hernekeittoa M, G</li><li>Kermaista savuporopastaa ja timjamiöljyä L</li><li>Ylikypsää härän briskettiä &amp; punaviinikastiketta L, G</li><li>Rapeaa frittikanaa ja currymajoneesia L</li><li>Valkosipulikermaperunoita L, G</li><li>Paahdettua kauden kasvista M, G</li><li>Pannukakkua, kuningatarhilloa ja kermavaahtoa L</li></ul>
 <h3><a href="https://gatoradecenter.fi/fi/lounas">Gatorade Center (TPS-lounas)</a></h3>
-<p>Ei löytynyt vielä. <a href="https://gatoradecenter.fi/fi/lounas">Katso ravintolan sivu</a></p>
+<ul><li>Karjalanpaistia ja perunamuusia (L, G)</li><li>Silakkapihvejä ja sipuli-voisulaa (L)</li><li>Uunijuureksia ja papuja (V, G)</li><li>Fenkolikeittoa (L, G)</li></ul>
 <h3><a href="https://www.lounasverkko.fi/lounasravintelivarikko">Lounasravinteli Varikko</a></h3>
 <ul><li>Ylikypsää nautaa, savuinen sweet&amp;sour-kastike, perunamuusi (L,G)</li><li>Paneroitu turska (L) sitruskermaviilikastike (L,G)</li><li>Hernekeitto (M,G)</li><li>Pannukakku(L) hillo, kermavaahto (L,G) Gluteeniton jälkiruoka keittiöstä</li></ul>
 <h3><a href="https://www.tbherkku.fi/ravintola/">Teboil Herkku</a></h3>
@@ -55,7 +55,7 @@
 <h3><a href="https://kolmaslinja.fi/lounas-turku/">3. Linja</a></h3>
 <ul><li>Samettista tomaatti-tuorejuustokeittoa L,G</li><li>Kolmen juuston pastaa, chili-hunajaa ja rucolaa L</li><li>Uunilohta, piparjuuri-sitruunacrèmeä ja tilliä L, G</li><li>Talon lihapullia ja kermaista sipulikastiketta L, G</li><li>Ruskistetulla voilla maustettua perunamuusia L,G</li><li>Balsamicolla paahdettua punajuurta M, G</li><li>Mustikkamoussea ja valkosuklaata L, G</li></ul>
 <h3><a href="https://gatoradecenter.fi/fi/lounas">Gatorade Center (TPS-lounas)</a></h3>
-<p>Ei löytynyt vielä. <a href="https://gatoradecenter.fi/fi/lounas">Katso ravintolan sivu</a></p>
+<ul><li>Lohipyöryköitä, rapukastiketta ja keitettyä perunaa (L, G)</li><li>Kanakiusausta (L, G)</li><li>Kasviskiusausta (V, G)</li><li>Valkopapukeittoa (L, G)</li></ul>
 <h3><a href="https://www.lounasverkko.fi/lounasravintelivarikko">Lounasravinteli Varikko</a></h3>
 <ul><li>Parmesan pastavuoka (L)</li><li>BBQ possua, timjamiperuat (L,G)</li><li>Mustikkapiirakka (L) Gluteeniton jälkiruoka keittiöstä</li></ul>
 <h3><a href="https://www.tbherkku.fi/ravintola/">Teboil Herkku</a></h3>
@@ -74,7 +74,7 @@
 <h3><a href="https://kolmaslinja.fi/lounas-turku/">3. Linja</a></h3>
 <ul><li>Kermaista lohikeittoa L, G</li><li>Paprika-fetapastaa, paahdettua tomaattia ja basilikaa L</li><li>Pitkään haudutettua naudan niskaa &amp; pippurikastiketta L, G</li><li>Rapeaksi paneroitua kanaa ja chili-hunajamajoneesia L</li><li>Paahdettuja perunoita M, G</li><li>Paahdettua porkkanaa ja yrttiöljyä M, G</li><li>Suklaakakkua ja Marianne-cremeä L,G</li></ul>
 <h3><a href="https://gatoradecenter.fi/fi/lounas">Gatorade Center (TPS-lounas)</a></h3>
-<p>Ei löytynyt vielä. <a href="https://gatoradecenter.fi/fi/lounas">Katso ravintolan sivu</a></p>
+<ul><li>Kermaista porsaanlihapataa ja perunaa (L, G)</li><li>Mozzarella-kanapastaa (L)</li><li>Kasvispihvejä (V, G)</li><li>Lohikeittoa (L, G)</li></ul>
 <h3><a href="https://www.lounasverkko.fi/lounasravintelivarikko">Lounasravinteli Varikko</a></h3>
 <ul><li>Talon jauhelihapihvit (L)pippurikastike, perunamuusi (L,G) Glut pihvi keittiöstä</li><li>Corn flakes kuorrutettu kala, jugurttikastike (L,G)</li><li>Omenakiisseli, kermavaahto (L,G)</li></ul>
 <h3><a href="https://www.tbherkku.fi/ravintola/">Teboil Herkku</a></h3>
@@ -93,7 +93,7 @@
 <h3><a href="https://kolmaslinja.fi/lounas-turku/">3. Linja</a></h3>
 <ul><li>Paahdettua juures–Koskenlaskijakeittoa L, G</li><li>Kermaista kana-pestopastaa, parmesaania ja rucolaa L</li><li>BBQ-glaseerattua porsaankylkeä L, G</li><li>Paahdettua sitruuna-yrttikanaa L, G</li><li>Rapeita lohkoperunoita ja lime-aiolia M, G</li><li>Hunaja-timjamipaahdettuja juureksia M, G</li><li>Jälkiruokalajitelma L</li></ul>
 <h3><a href="https://gatoradecenter.fi/fi/lounas">Gatorade Center (TPS-lounas)</a></h3>
-<p>Ei löytynyt vielä. <a href="https://gatoradecenter.fi/fi/lounas">Katso ravintolan sivu</a></p>
+<ul><li>Pestobroileria, sitruskermaviiliä ja riisiä (L, G)</li><li>Jauhelihakastiketta ja pastaa (L)</li><li>Kasvispaistosta ja halloumia (L, G)</li><li>Tomaatti-fetakeittoa (L, G)</li></ul>
 <h3><a href="https://www.lounasverkko.fi/lounasravintelivarikko">Lounasravinteli Varikko</a></h3>
 <ul><li>Juustoinen uunimakkara, paistetut perunat (L,G)</li><li>Currykanaa, keitetty riisi (L,G)</li><li>Mangorahka (L,G)</li></ul>
 <h3><a href="https://www.tbherkku.fi/ravintola/">Teboil Herkku</a></h3>
