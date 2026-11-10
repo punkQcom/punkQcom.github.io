@@ -1401,24 +1401,9 @@ details.card[open] summary h2::before {
 .conf-warming { background: #fbbf24; }
 .conf-warm { background: #f87171; }
 
-/* Confidence legend — one line that expands on click (<details>), so it works on touch too. */
-.sb-legend {
-  margin: 6px 0 14px;
-  font-size: 0.85em;
-}
-.sb-legend summary {
-  cursor: pointer;
-  display: inline-block;
-  text-decoration: underline dotted;
-  text-underline-offset: 3px;
-}
-.sb-legend summary::-webkit-details-marker { display: none; }
-.sb-legend summary::before { content: '▸ '; }
-.sb-legend[open] summary::before { content: '▾ '; }
-.sb-legend p { margin: 8px 0 4px; }
-.sb-legend ul { list-style: none; margin: 0; padding: 0; }
-.sb-legend li { margin-top: 4px; }
-.sb-legend .conf-dot { margin-right: 6px; }
+/* Confidence explanation, inside the help modal opened from the column header. */
+.conf-help-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.conf-help-list li { margin-top: 6px; }
 
 .suggested-bet-row { cursor: pointer; }
 .suggested-bet-row:hover,
@@ -1914,4 +1899,14 @@ details.card[open] summary h2::before {
     grid-column: 1 / -1;
     justify-content: center;
   }
+}
+
+/* Season over — shown above the match list once a league has no fixtures left. */
+.season-over-banner {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  border-radius: 6px;
+  background: rgba(96, 165, 250, 0.08);
+  font-size: 0.95em;
 }

@@ -58,6 +58,9 @@ export const TRANSLATIONS = {
   'list.loading': { fi: 'Ladataan...', en: 'Loading...' },
   'list.all': { fi: 'Kaikki', en: 'All' },
   'list.showEarlier': { fi: 'Näytä aiemmat päivät', en: 'Show earlier dates' },
+  'season.over': { fi: 'Kausi {season} on päättynyt.', en: 'The {season} season is over.' },
+  'season.champion': { fi: 'Mestari: {team}', en: 'Champion: {team}' },
+  'season.tournamentOver': { fi: '{tournament} on päättynyt.', en: '{tournament} is over.' },
   'list.hideEarlier': { fi: 'Piilota aiemmat päivät', en: 'Hide earlier dates' },
   'list.showLater': { fi: 'Näytä myöhemmät päivät', en: 'Show later dates' },
   'list.hideLater': { fi: 'Piilota myöhemmät päivät', en: 'Hide later dates' },
@@ -190,17 +193,9 @@ export const TRANSLATIONS = {
   'sb.confWarm': { fi: 'Lämmin', en: 'Warm' },
   // The dot is about how much of the league's season the model has seen, not about how
   // strongly it likes this particular pick — users read "cold" as "bad bet" otherwise.
-  'sb.confLegendTitle': {
-    fi: 'Mitä Luottamus-sarake tarkoittaa',
-    en: 'What the Confidence column means',
-  },
   'sb.confLegendLead': {
     fi: 'Kertoo kuinka paljon kyseisen sarjan kautta malli on ehtinyt nähdä, ei sitä kuinka hyvä vihje on.',
     en: "It shows how much of that league's season the model has seen, not how good the pick is.",
-  },
-  'sb.confTip': {
-    fi: 'Kuinka paljon tämän sarjan kautta malli on ehtinyt nähdä. Mitä enemmän pelattuja otteluita, sitä luotettavammat joukkuearviot. Ei kerro tämän vihjeen vahvuudesta.',
-    en: "How much of this league's season the model has seen. More completed matches means more reliable team ratings. It does not rate this particular pick.",
   },
   'sb.confMatchesPlayed': { fi: 'ottelua pelattu tällä kaudella', en: 'matches played this season' },
   'sb.confColdTip': {

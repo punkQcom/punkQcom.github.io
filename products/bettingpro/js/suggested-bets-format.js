@@ -21,21 +21,20 @@ export function confidenceTitle(level, matchesPlayed, t) {
 }
 
 /**
- * The confidence legend: one line on the page that expands on click.
+ * What the confidence column means, for its "?" help in the column header.
  *
- * A five-row block took more space than it earned; the replacement hid the text in a
- * hover-only title tooltip styled like a link, so clicking did nothing and touch screens
- * never showed it. <details> keeps the single line and opens anywhere, with no JS.
+ * It used to sit under the table — first as a five-row block, then as a line with a
+ * hover-only tooltip that did nothing on click or touch. The shared help modal opens
+ * on click everywhere and keeps the section clean.
  */
-export function confidenceLegendHtml(t) {
+export function confidenceExplanationHtml(t) {
   const row = (lvl) => {
     const suffix = lvl[0].toUpperCase() + lvl.slice(1);
-    return `<li><span class="conf-dot conf-${lvl}"></span>` +
+    return `<li><span class="conf-dot conf-${lvl}"></span> ` +
       `<strong>${t('sb.conf' + suffix)}</strong>: ${t('sb.conf' + suffix + 'Tip')}</li>`;
   };
-  return `<details class="sb-legend"><summary class="muted">${t('sb.confLegendTitle')}</summary>` +
-    `<p>${t('sb.confLegendLead')}</p>` +
-    `<ul>${['warm', 'warming', 'cold'].map(row).join('')}</ul></details>`;
+  return `<p>${t('sb.confLegendLead')}</p>` +
+    `<ul class="conf-help-list">${['warm', 'warming', 'cold'].map(row).join('')}</ul>`;
 }
 
 /** Split picks into the reliable core and the flagged high-risk overrides. */

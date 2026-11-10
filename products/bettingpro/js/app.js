@@ -3,20 +3,21 @@
  * Predictions are precomputed on the backend; detailed analysis via /api/predict.
  */
 
-import { shinProbabilities } from './shin.js?v=1794257355';
-import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1794257355';
-import { buildEloTable, renderEloTable } from './elo-display.js?v=1794257355';
+import { shinProbabilities } from './shin.js?v=1794337577';
+import { calculateEdge, kellyFraction, kellyStake } from './kelly.js?v=1794337577';
+import { buildEloTable, renderEloTable } from './elo-display.js?v=1794337577';
 
-import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1794257355';
-import { getSportDefaults } from './sport-config.js?v=1794257355';
-import { computeSplitGroups } from './split-stage.js?v=1794257355';
-import { computeNhlGroups } from './nhl-structure.js?v=1794257355';
-import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1794257355';
-import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1794257355';
-import { lookupPrediction } from './prediction-lookup.js?v=1794257355';
-import { localMatchDate } from './match-date.js?v=1794257355';
-import { getConsensusOdds } from './odds-consensus.js?v=1794257355';
-import { initTeam as coreInitTeam, accumulateMatch, rowPoints } from './standings-core.js?v=1794257355';
+import { loadMeta, loadLeagueData, loadPreviousSeasons, loadPredictions, loadSuggestedBets, API_BASE } from './data-loader.js?v=1794337577';
+import { getSportDefaults } from './sport-config.js?v=1794337577';
+import { computeSplitGroups } from './split-stage.js?v=1794337577';
+import { computeNhlGroups } from './nhl-structure.js?v=1794337577';
+import { isKnockoutStage, KNOCKOUT_STAGE_ORDER } from './knockout.js?v=1794337577';
+import { t, getLang, onLangChange, applyStaticTranslations, translateCountrySuffix } from './i18n.js?v=1794337577';
+import { lookupPrediction } from './prediction-lookup.js?v=1794337577';
+import { localMatchDate } from './match-date.js?v=1794337577';
+import { seasonStatus, tournamentStatus } from './season-status.js?v=1794337577';
+import { getConsensusOdds } from './odds-consensus.js?v=1794337577';
+import { initTeam as coreInitTeam, accumulateMatch, rowPoints } from './standings-core.js?v=1794337577';
 import {
   showResults, renderScoreMatrix, renderMatchOutcome,
   renderOverUnder, renderValueBets, renderAllBets, renderFades,
@@ -24,7 +25,7 @@ import {
   renderTracker, renderPLSimulation, renderTournamentFilter,
   renderMatchContext, renderStandings, renderKnockoutResults,
   renderSuggestedBets
-} from './ui.js?v=1794257355';
+} from './ui.js?v=1794337577';
 
 /** Escape HTML to prevent XSS when inserting into innerHTML/attributes. */
 function esc(str) {
@@ -956,9 +957,35 @@ function initDateView(data) {
   renderDateView();
 }
 
+/** "The 2026 season is over. Champion: …" above the match list, or '' while it runs. */
+function seasonOverBannerHtml() {
+  const leagueCfg = (currentMeta?.leagues || []).find(l => l.id === currentLeagueId);
+  if (!leagueCfg) return '';
+  const matches = currentLeagueData?.matches || [];
+  const upcoming = currentLeagueData?.upcoming || [];
+  const champLine = s => (s.champion ? ` <strong>${t('season.champion', { team: esc(s.champion) })}</strong>` : '');
+
+  // Internationals end tournament by tournament (e.g. World Cup 2026), never as a whole.
+  if (leagueCfg.isInternational) {
+    if (currentTournamentFilter === 'all') return '';
+    const ts = tournamentStatus(filterByTournament(matches), filterByTournament(upcoming));
+    if (!ts) return '';
+    return `<div class="season-over-banner">${t('season.tournamentOver', { tournament: esc(activeTournamentLabel()) })}${champLine(ts)}</div>`;
+  }
+
+  const status = seasonStatus({
+    matches, upcoming,
+    sport: leagueCfg.sport,
+    isInternational: leagueCfg.isInternational,
+    standings: buildStandings(matches, leagueCfg.sport, upcoming, currentLeagueId, leagueCfg.pointsAdjustments || {}),
+  });
+  if (!status) return '';
+  return `<div class="season-over-banner">${t('season.over', { season: esc(leagueCfg.season) })}${champLine(status)}</div>`;
+}
+
 function renderDateView({ skipAutoScroll = false } = {}) {
   const listEl = document.getElementById('match-list');
-  let html = '';
+  let html = seasonOverBannerHtml();
 
   if (visibleRange.start > 0) {
     html += `<button class="round-nav-btn" id="show-earlier">${t('list.showEarlier')}</button>`;

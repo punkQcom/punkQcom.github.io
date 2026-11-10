@@ -2,10 +2,10 @@
  * DOM rendering — takes calculation results and renders them into the page.
  */
 
-import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1794257355';
-import { confidenceLevel, splitPicks, confidenceTitle, confidenceLegendHtml } from './suggested-bets-format.js?v=1794257355';
-import { TRANSLATIONS } from './translations.js?v=1794257355';
-import { computePLBars } from './pl-simulation-format.js?v=1794257355';
+import { pickHelp, getLang, setLang, onLangChange, t } from './i18n.js?v=1794337577';
+import { confidenceLevel, splitPicks, confidenceTitle, confidenceExplanationHtml } from './suggested-bets-format.js?v=1794337577';
+import { TRANSLATIONS } from './translations.js?v=1794337577';
+import { computePLBars } from './pl-simulation-format.js?v=1794337577';
 
 /**
  * Translate a bet/outcome label for display. Labels stay English internally
@@ -1708,6 +1708,18 @@ export const helpContent = {
     `,
   },
 
+  // The dot is about league data volume, not pick quality ("Cold" reads as "bad bet").
+  'confidence': {
+    title: 'Confidence',
+    titleFi: 'Luottamus',
+    body: `
+      ${confidenceExplanationHtml(k => TRANSLATIONS[k].en)}
+      <hr>
+      <p><strong>Suomeksi:</strong></p>
+      ${confidenceExplanationHtml(k => TRANSLATIONS[k].fi)}
+    `,
+  },
+
   'knockout-results': {
     title: 'Knockout Results',
     titleFi: 'Pudotuspelien tulokset',
@@ -2048,7 +2060,7 @@ export function renderSuggestedBets(data, containerId) {
   // Local helper — renders a picks array into the shared table markup
   const picksTableHtml = (rows) => {
     let s = '<div class="tracker-scroll"><table class="results-table tracker-table sb-table">';
-    s += `<thead><tr><th>${t('col.date')}</th><th>${t('sb.colLeague')}</th><th>${t('col.match')}</th><th>${t('col.bet')}</th><th>${t('col.odds')}</th><th>${t('sb.colBook')}</th><th>${t('col.edge')}</th><th title="${escAttr(t('sb.confTip'))}">${t('sb.colConfidence')}</th></tr></thead><tbody>`;
+    s += `<thead><tr><th>${t('col.date')}</th><th>${t('sb.colLeague')}</th><th>${t('col.match')}</th><th>${t('col.bet')}</th><th>${t('col.odds')}</th><th>${t('sb.colBook')}</th><th>${t('col.edge')}</th><th>${t('sb.colConfidence')} <button type="button" class="help-tip" data-help="confidence">?</button></th></tr></thead><tbody>`;
     for (const p of rows) {
       const lvl = confidenceLevel(p.matchesPlayed);
       const book = p.bestBook ? `${esc(formatBookmaker(p.bestBook))} @${p.bestOdds.toFixed(2)}` : '—';
@@ -2088,12 +2100,6 @@ export function renderSuggestedBets(data, containerId) {
     html += `<p class="muted">${t('sb.empty')}</p>`;
   } else if (reliable.length > 0) {
     html += picksTableHtml(reliable);
-  }
-
-  // Confidence legend, one line that expands on click. The dot is about league data
-  // volume, not pick quality ("Cold" reads as "bad bet" otherwise).
-  if (reliable.length > 0 || speculative.length > 0) {
-    html += confidenceLegendHtml(t);
   }
 
   // Speculative / high-risk overrides
