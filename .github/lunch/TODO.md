@@ -44,6 +44,25 @@ Four samples inside a 22-minute band, all ≈ **+5h**. Two consequences:
   +2h51 and +2h30 on 18.10. So the band is a weekday-morning phenomenon and
   cannot be used to aim a Sunday-night run.
 
+**Re-measured again 10.11.2026 — the drift has grown to ≈+8h and the band has
+moved past lunch.** Same unchanged `17 4` cron:
+
+| day | cron (UTC) | actually started | late by |
+|---|---|---|---|
+| Mon 2.11 | 04:17 | 12:22 | +8h05 |
+| Tue 3.11 | 04:17 | 11:54 | +7h37 |
+| Wed 4.11 | 04:17 | 12:06 | +7h49 |
+| Thu 5.11 | 04:17 | 12:18 | +8h01 |
+| Fri 6.11 | 04:17 | 12:05 | +7h48 |
+| Mon 9.11 | 04:17 | 12:50 | +8h33 |
+
+Still a tight band, but ~3h later than two weeks earlier: runs now land
+**14:00–14:50 Helsinki**, and three of the six restaurants stop serving at
+14:00–14:30. **The weekday run now finishes after lunch is over.** So the band
+being predictable is no longer much use — do not read the +5h figure above as
+current, and re-measure before relying on any of these numbers. The drift is
+GitHub's to change at will and it has changed once already.
+
 So piling on crons to "make sure one lands" does not work — six were tried on
 20.10. and produced no extra runs. One cron per day is what GitHub gives you,
 at an hour of its choosing. Check with:
@@ -108,6 +127,30 @@ Sunday evening, week 44 included. Check this yourself with:
 the week is complete, just a few Actions seconds — and the one item that does
 arrive at an unpredictable hour is the Hansasali picture. That is the straggler
 they insure against.
+
+**10.11.2026: the insurance paid out for the first time — and still arrived
+too late to help.** Gatorade published week 46 sometime after Mon 9.11. 14:50
+Helsinki, i.e. after that day's run. The parser handled it correctly once it
+was there (`gatorade: +5 of 10 missing days`), so no code was involved; it was
+purely a question of when a run next happened. The sequence:
+
+| when (Helsinki) | what |
+|---|---|
+| Sun 8.11. 21:42 | run — Gatorade had not published week 46 |
+| Mon 9.11. 14:50 | run — still not published |
+| Mon 9.11. 06:00 + Tue 10.11. 06:00 | **both Teams messages read "Ei löytynyt vielä"** |
+| Tue 10.11. ~14:00–14:50 | next run — picks it up, after lunch |
+
+So a single late restaurant costs **two** bad messages in a row, because the
+06:00 delivery is always built from the *previous* day's ≈14:30 scrape — a
+~17-hour lag. Worth keeping in mind before blaming the parser: the first thing
+to check is whether a run has happened since the restaurant published, which
+the runs API answers in one call.
+
+**Also confirmed here:** Gatorade has no `week_check`, but its headings carry
+dates (`Maanantai  9.11.`), so when the page still showed week 45 the parser
+declined to match rather than republishing last week's food as this week's.
+The blank card was the correct outcome, not the failure.
 
 **Considered and rejected 26.10.2026: a Sunday-night `17 22 * * 0` cron.** The
 idea was to exploit the ≈+5h weekday band to land ~03:00 UTC (05:00 Helsinki)
@@ -305,10 +348,17 @@ DST-aware, and under our control). Anything that needs to happen at a
 wall-clock time belongs in the flow, never in `lunch.yml`.
 
 ## Open items
-- **Not needed unless the above proves insufficient:** an external trigger
-  (cron-job.org or similar POSTing to GitHub's `workflow_dispatch` API with a
-  fine-grained PAT scoped to this repo, Actions: write). Only worth doing if
-  menus still turn up missing at lunchtime.
+- **The external trigger is now the one open lever (re-assessed 10.11.2026).**
+  cron-job.org or similar POSTing to GitHub's `workflow_dispatch` API with a
+  fine-grained PAT scoped to this repo, Actions: write. It was parked as "only
+  worth doing if menus still turn up missing at lunchtime" — they now do, twice
+  in a fortnight (Hansasali 26.10., Gatorade 10.11.), and the weekday run has
+  drifted to ≈14:30 Helsinki, i.e. past the end of lunch. Nothing else moves a
+  run before 06:00: more crons were measured as producing no extra runs, and
+  Power Automate cannot trigger GitHub without the premium HTTP action. A
+  dispatch at ~05:00 Helsinki would feed the 06:00 delivery the same morning
+  and make both incidents above non-events. **Not built — decide first**, since
+  it means a PAT living outside the repo.
 - Power Automate as a *trigger* for GitHub still needs the premium HTTP
   action, so that remains ruled out. **But the delivery side turned out not
   to need it** (22.10.2026): the **RSS connector is standard**, so a scheduled
