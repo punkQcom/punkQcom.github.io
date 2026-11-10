@@ -128,29 +128,40 @@ the week is complete, just a few Actions seconds — and the one item that does
 arrive at an unpredictable hour is the Hansasali picture. That is the straggler
 they insure against.
 
-**10.11.2026: the insurance paid out for the first time — and still arrived
-too late to help.** Gatorade published week 46 sometime after Mon 9.11. 14:50
-Helsinki, i.e. after that day's run. The parser handled it correctly once it
-was there (`gatorade: +5 of 10 missing days`), so no code was involved; it was
-purely a question of when a run next happened. The sequence:
+**10.11.2026: Gatorade blank all week 46 — not late publishing, a 403 block.**
+An earlier version of this note blamed a late publish and claimed the Tue
+10.11. run picked the menu up. Both were wrong: that run committed nothing, and
+the `gatorade: +5 of 10 missing days` line came from a *local* test run, not
+from GitHub. The Actions logs show what actually happened:
 
-| when (Helsinki) | what |
+| run (Helsinki) | Gatorade |
 |---|---|
-| Sun 8.11. 21:42 | run — Gatorade had not published week 46 |
-| Mon 9.11. 14:50 | run — still not published |
-| Mon 9.11. 06:00 + Tue 10.11. 06:00 | **both Teams messages read "Ei löytynyt vielä"** |
-| Tue 10.11. ~14:00–14:50 | next run — picks it up, after lunch |
+| Mon 2.11. 14:22, Tue 3.11. 13:54 | OK |
+| Wed 4.11. 14:06 and **every run since** | `HTTP Error 403: Forbidden` |
 
-So a single late restaurant costs **two** bad messages in a row, because the
-06:00 delivery is always built from the *previous* day's ≈14:30 scrape — a
-~17-hour lag. Worth keeping in mind before blaming the parser: the first thing
-to check is whether a run has happened since the restaurant published, which
-the runs API answers in one call.
+From a home connection the same URL with the same User-Agent returns 200, and
+the unchanged parser finds all five days of week 46. So gatoradecenter.fi
+(nginx) started refusing **GitHub's servers** between 3.11. and 4.11. — an IP
+block, not a parser or timing problem. Week 45 escaped only because it had been
+fetched on Sun 1.11.
 
-**Also confirmed here:** Gatorade has no `week_check`, but its headings carry
-dates (`Maanantai  9.11.`), so when the page still showed week 45 the parser
-declined to match rather than republishing last week's food as this week's.
-The blank card was the correct outcome, not the failure.
+Two causes overlapped, which is what made it confusing. On **Mon 9.11. morning**
+Gatorade's own page still showed week 45 (checked by hand), so Monday's blank
+card was correct: the dated headings (`Maanantai  9.11.`) did not match and
+the parser declined. By **Tuesday** week 46 was up on their site, but the 403
+meant no GitHub run could see it, so Tuesday's blank was the block. Without a
+fix the rest of the week would have stayed blank too. Filled by hand from a
+home connection on 10.11. 21:20 (commit `ebca35b3`).
+
+**10.11.: User-Agent changed** from `punkq-lunch/1.0` to plain Chrome headers
+(`fetch()` in `fetch.py`), in case the block is name + cloud address together.
+If GitHub runs still log 403 after this, it is a pure address block, and the
+choices are asking Gatorade to allow it or fetching through a middleman service.
+
+**The failure is silent:** `fetch_page` swallows the error, the run ends green,
+and no failure email is sent. Check the logs first when a card stays blank:
+
+    gh run view <run id> --log | grep -E "gatorade|Error"
 
 **Considered and rejected 26.10.2026: a Sunday-night `17 22 * * 0` cron.** The
 idea was to exploit the ≈+5h weekday band to land ~03:00 UTC (05:00 Helsinki)
@@ -356,9 +367,10 @@ wall-clock time belongs in the flow, never in `lunch.yml`.
   drifted to ≈14:30 Helsinki, i.e. past the end of lunch. Nothing else moves a
   run before 06:00: more crons were measured as producing no extra runs, and
   Power Automate cannot trigger GitHub without the premium HTTP action. A
-  dispatch at ~05:00 Helsinki would feed the 06:00 delivery the same morning
-  and make both incidents above non-events. **Not built — decide first**, since
-  it means a PAT living outside the repo.
+  dispatch at ~05:00 Helsinki would feed the 06:00 delivery the same morning.
+  It would have fixed the Hansasali 26.10. case, but **not** Gatorade 10.11.,
+  which was a 403 block, not timing. **Not built — decide first**, since it
+  means a PAT living outside the repo.
 - Power Automate as a *trigger* for GitHub still needs the premium HTTP
   action, so that remains ruled out. **But the delivery side turned out not
   to need it** (22.10.2026): the **RSS connector is standard**, so a scheduled

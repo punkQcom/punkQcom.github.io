@@ -86,8 +86,13 @@ def has_lists(results):
 
 
 def fetch(url):
+    # Plain browser headers. The old "punkq-lunch/1.0" name got 403 from gatoradecenter.fi
+    # on GitHub's servers from 4.11.2026 (fine from a home connection) — see TODO.md.
     req = urllib.request.Request(url, headers={
-        "User-Agent": "Mozilla/5.0 (compatible; punkq-lunch/1.0; +https://punkq.com/products/lunch/)"})
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                      "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "fi-FI,fi;q=0.9,en;q=0.8"})
     with urllib.request.urlopen(req, timeout=30) as resp:
         return resp.read().decode("utf-8", errors="replace")
 
