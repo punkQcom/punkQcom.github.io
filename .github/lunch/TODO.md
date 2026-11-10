@@ -155,8 +155,22 @@ home connection on 10.11. 21:20 (commit `ebca35b3`).
 
 **10.11.: User-Agent changed** from `punkq-lunch/1.0` to plain Chrome headers
 (`fetch()` in `fetch.py`), in case the block is name + cloud address together.
-If GitHub runs still log 403 after this, it is a pure address block, and the
-choices are asking Gatorade to allow it or fetching through a middleman service.
+A manual run right after (21:29) still got 403, so it is a **pure address
+block** — run times were already irregular (14:06:49, 14:38:05, …), so timing
+is not it either.
+
+**Decided 10.11.: live with it.** We do not contact the restaurant, and we do
+not route around the block (proxies, reader/middleman services, rotating IPs) —
+that is dodging a block they chose to put up. Instead:
+
+- The scheduled runs keep trying, unchanged, so Gatorade fills itself again if
+  the block is ever lifted. Until then its card shows the "Katso ravintolan
+  sivu" link — the normal fallback, no code change.
+- When wanted, fill the week by hand from a home connection (not blocked):
+  `git pull`, `python3 .github/lunch/fetch.py`, commit `products/lunch`, push.
+  Or transcribe a screenshot of their menu into `lunch.json`
+  (`days[date].gatorade = {"lines": [...]}`), drop the `rendered` key so the
+  next run rewrites the outputs, run `fetch.py`, push.
 
 **The failure is silent:** `fetch_page` swallows the error, the run ends green,
 and no failure email is sent. Check the logs first when a card stays blank:
