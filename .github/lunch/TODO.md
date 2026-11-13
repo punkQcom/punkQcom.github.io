@@ -1,5 +1,45 @@
 # Lunch feed: notes & open items
 
+## Where things stand (13.11.2026)
+
+A status block, so the next person does not have to reconstruct it from the
+sections below. Everything here is covered in detail further down.
+
+**Working:** week 46 is complete, 25/25 lists, live. Four of the five text
+restaurants and the Hansasali picture come in by themselves on the Sunday
+run. The parser is not the weak part — it has not been wrong since the
+weekday-typo case below was fixed.
+
+**Broken, knowingly:** gatoradecenter.fi 403s GitHub's runners (since
+4.11.2026) and answers a home connection. Decided 10.11. to live with it —
+no proxies, no middleman services, no rotating IPs. Gatorade therefore has
+to be filled by hand each week, which is what the npm scripts and VS Code
+tasks exist for.
+
+**Off:** the Power Automate flow `LounasDaily2` was disabled 13.11. Nothing
+is delivered to Teams or by mail until it is switched back on. The page and
+feed keep updating regardless. **Re-enable it before a Monday 06:00 if the
+message is wanted.**
+
+**Done 13.11.2026:**
+
+- The weekday fallback for a mistyped date — Varikko headed Friday
+  `Perjantai 12.11.`, which cost that day's card until it was fixed.
+- Measured when Gatorade publishes, from 31 historical versions of
+  `lunch.json`: Friday evening to Sunday evening, there by Sunday
+  ~20:00–21:45 in 4 of 4 observable weeks. No schedule change warranted.
+- Wrote down why the runs still fetch daily when the week is in hand, and
+  rejected replacing the daily top-up with one weekly fetch.
+- `npm run lunch` / `lunch:gatorade`, the matching VS Code tasks, and
+  `--only` / `--strict` / `--list` with a failure summary.
+- Corrected the delivery section: three actions in the True branch, two of
+  them test targets.
+
+**The weekend ahead:** as of Fri 13.11. 09:00 no restaurant had week 47 up,
+Gatorade included, so there is nothing to fetch early. The Sunday evening
+run should collect the other five; Gatorade needs a manual run from a home
+connection after it appears.
+
 ## The original problem (now worked around)
 `lunch.yml`'s `schedule:` cron is unreliable — GitHub delays or drops most
 scheduled runs. Confirmed by comparing intended cron times vs actual run
@@ -515,6 +555,15 @@ In VS Code without node: **Terminal → Run Task → `lunch: fetch all`** (or
 **`uv` is the only prerequisite** — it fetches its own Python, so nothing
 else needs installing. node is needed for the `npm run` spellings only; the
 VS Code tasks and the direct command do not use it.
+
+VS Code's **NPM Scripts** panel (bottom of the Explorer) is contributed by
+the built-in npm extension and only renders when node/npm is on PATH — so
+the scripts are listed on the home machine and simply absent on one without
+node. That is the panel's behaviour, not a missing `package.json`. If node
+is installed and the panel still does not appear, it is hidden rather than
+missing: Explorer `...` menu → tick **NPM Scripts**, or set
+`"npm.autoDetect": "on"`. The VS Code tasks are the node-free route and work
+on any machine with `uv`.
 
 Flags on `fetch.py`:
 
