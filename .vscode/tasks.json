@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "lunch: fetch all",
+      "type": "shell",
+      "command": "uv run --no-project --python 3.12 --with tzdata .github/lunch/fetch.py --strict",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "detail": "Scrape every restaurant into products/lunch. Needs uv, not node."
+    },
+    {
+      "label": "lunch: fetch Gatorade only",
+      "type": "shell",
+      "command": "uv run --no-project --python 3.12 --with tzdata .github/lunch/fetch.py --only gatorade --strict",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "detail": "Gatorade blocks GitHub's runners; run this from a home connection."
+    },
+    {
+      "label": "lunch: list restaurants",
+      "type": "shell",
+      "command": "uv run --no-project --python 3.12 --with tzdata .github/lunch/fetch.py --list",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "detail": "Print the restaurant keys that --only accepts."
+    }
+  ]
+}

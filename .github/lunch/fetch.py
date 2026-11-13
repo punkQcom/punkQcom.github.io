@@ -297,12 +297,16 @@ def today_image(page, day):
     return None
 
 
+FAILED = {}  # key -> the error, for the summary and for --strict
+
+
 def fetch_page(r):
     """The restaurant's page, or None. One broken site must never break the run."""
     try:
         return fetch(r["url"])
     except Exception as e:
         print(f"{r['key']}: {e}", file=sys.stderr)
+        FAILED[r["key"]] = e
         return None
 
 
@@ -568,8 +572,76 @@ def feed_xml(items, seen):
 </rss>
 """
 
+USAGE = """Usage: fetch.py [--only KEY[,KEY...]] [--strict] [--list]
 
-def main():
+  --only   fetch just these restaurants (e.g. --only gatorade). Days already
+           held for the others are kept and still rendered, so the page and
+           feed stay complete; only the fetching is narrowed.
+  --strict exit 1 if any restaurant could not be fetched. For manual runs —
+           the scheduled run leaves this off on purpose, so a known block
+           does not paint every run red.
+  --list   print the restaurant keys and exit.
+
+Env: LUNCH_DATE=YYYY-MM-DD renders the week containing that date.
+"""
+
+
+def parse_args(argv):
+    """--only/--strict/--list, hand-rolled: the script is stdlib-only by design."""
+    only, strict = None, False
+    rest = list(argv)
+    while rest:
+        a = rest.pop(0)
+        if a in ("-h", "--help"):
+            print(USAGE)
+            raise SystemExit(0)
+        elif a == "--list":
+            for r in RESTAURANTS:
+                print(f"{r['key']:<10} {r['name']}")
+            raise SystemExit(0)
+        elif a == "--strict":
+            strict = True
+        elif a == "--only":
+            if not rest:
+                raise SystemExit("--only needs a value, e.g. --only gatorade")
+            only = rest.pop(0)
+        elif a.startswith("--only="):
+            only = a.split("=", 1)[1]
+        else:
+            raise SystemExit(f"Unknown argument {a!r}\n\n{USAGE}")
+    keys = None
+    if only is not None:
+        keys = [k.strip() for k in only.split(",") if k.strip()]
+        known = {r["key"] for r in RESTAURANTS}
+        bad = [k for k in keys if k not in known]
+        if bad:
+            raise SystemExit(
+                f"Unknown restaurant key(s): {', '.join(bad)}\n"
+                f"Known keys: {', '.join(sorted(known))}")
+    return keys, strict
+
+
+def report(wanted, strict):
+    """What could not be fetched. Printed last so it is the thing left on screen."""
+    if not FAILED:
+        return 0
+    print()
+    print(f"{len(FAILED)} of {len(wanted)} site(s) could not be fetched:")
+    for key, err in FAILED.items():
+        name = next((r["name"] for r in RESTAURANTS if r["key"] == key), key)
+        print(f"  {key:<10} {name}: {err}")
+        if "403" in str(err):
+            print("             403 = refused. gatoradecenter.fi has blocked GitHub's")
+            print("             runners since 4.11.2026; it answers a home connection.")
+            print("             See .github/lunch/TODO.md. Do not route around it.")
+    print()
+    print("Whatever was already held is still rendered — the page and feed are")
+    print("never left half-written by a failed fetch.")
+    return 1 if strict else 0
+
+
+def main(keys=None, strict=False):
+    wanted = [r for r in RESTAURANTS if keys is None or r["key"] in keys]
     now = datetime.now(TZ)
     if os.environ.get("LUNCH_DATE"):
         shown = week_days(date.fromisoformat(os.environ["LUNCH_DATE"]))
@@ -591,7 +663,7 @@ def main():
     new = 0
     for d in targets:
         results_by_day.setdefault(d.isoformat(), {})
-    for r in DAILY:
+    for r in [x for x in DAILY if keys is None or x["key"] in keys]:
         missing = [d for d in targets if not found(results_by_day[d.isoformat()].get(r["key"], {}))]
         if not missing:
             continue
@@ -610,7 +682,7 @@ def main():
         if images.get(wk):
             continue
         d = next(x for x in targets if week_key(x) == wk)
-        for r in WEEKLY:
+        for r in [x for x in WEEKLY if keys is None or x["key"] in keys]:
             page = fetch_page(r)
             img = today_image(page, d) if page else None
             if img:
@@ -621,7 +693,7 @@ def main():
     rendered = [d.isoformat() for d in shown]
     if not new and state.get("rendered") == rendered and state.get("format") == FORMAT:
         print("Nothing new, no changes written.")
-        return
+        return report(wanted, strict)
 
     updated = f"{now.day}.{now.month}. klo {now:%H.%M}"  # %-d is glibc-only, breaks on Windows
     target_isos = [d.isoformat() for d in targets]
@@ -659,7 +731,8 @@ def main():
     got = sum(found(v) for d in rendered for v in results_by_day[d].values())
     print(f"Wrote {OUT} (week {week_key(shown[0])}: {got}/{len(DAILY) * len(shown)} lists, "
           f"{len(images)} week image(s))")
+    return report(wanted, strict)
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main(*parse_args(sys.argv[1:])))

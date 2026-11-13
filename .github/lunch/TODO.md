@@ -497,6 +497,47 @@ wall-clock time belongs in the flow, never in `lunch.yml`.
 - Feed items list the five text menus first and the Hansasali week picture
   last, matching the page.
 
+## Running it by hand (13.11.2026)
+
+Because Gatorade answers a home connection but not GitHub's runners, filling
+a week by hand is a routine job rather than an emergency. Three ways in, all
+the same underlying command:
+
+    npm run lunch              # every restaurant
+    npm run lunch:gatorade     # just Gatorade
+    npm run lunch:list         # the keys --only accepts
+
+In VS Code without node: **Terminal → Run Task → `lunch: fetch all`** (or
+`lunch: fetch Gatorade only`), from `.vscode/tasks.json`. Or run it directly:
+
+    uv run --no-project --python 3.12 --with tzdata .github/lunch/fetch.py --strict
+
+**`uv` is the only prerequisite** — it fetches its own Python, so nothing
+else needs installing. node is needed for the `npm run` spellings only; the
+VS Code tasks and the direct command do not use it.
+
+Flags on `fetch.py`:
+
+| flag | what it does |
+|---|---|
+| `--only KEY[,KEY...]` | fetch just these; everything already held is still rendered, so the page and feed stay complete — only the *fetching* is narrowed |
+| `--strict` | exit 1 if any site could not be fetched |
+| `--list` | print the restaurant keys |
+| `--help` | usage |
+
+**`--strict` is deliberately off in `lunch.yml`.** A manual run should go red
+when Gatorade 403s, because the person running it wants to know. A scheduled
+run should not, because that block is known and accepted (see above) and a
+permanently red workflow trains you to ignore it. The npm scripts and the VS
+Code tasks all pass `--strict`; CI passes nothing.
+
+A failed fetch now prints a summary last, after the per-restaurant lines, so
+it is the thing left on screen — with the 403 explained in place, including
+the reminder not to route around it. Nothing is half-written: whatever was
+already held is still rendered.
+
+After a successful run, commit and push `products/lunch`.
+
 ## Testing locally
 No system Python on the dev machine; `uv` is installed, which can fetch an
 interpreter on demand. Windows needs `tzdata` (no system zoneinfo):

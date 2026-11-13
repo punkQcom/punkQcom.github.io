@@ -1,0 +1,12 @@
+{
+  "name": "punkqcom-github-io",
+  "private": true,
+  "version": "1.0.0",
+  "description": "punkQ.com site. The npm scripts here are conveniences for the lunch-menu scraper; the site itself is static and needs no build.",
+  "scripts": {
+    "lunch": "uv run --no-project --python 3.12 --with tzdata .github/lunch/fetch.py --strict",
+    "lunch:gatorade": "uv run --no-project --python 3.12 --with tzdata .github/lunch/fetch.py --only gatorade --strict",
+    "lunch:list": "uv run --no-project --python 3.12 --with tzdata .github/lunch/fetch.py --list",
+    "lunch:help": "uv run --no-project --python 3.12 --with tzdata .github/lunch/fetch.py --help"
+  }
+}
