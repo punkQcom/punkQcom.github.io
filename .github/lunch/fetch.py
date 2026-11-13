@@ -133,6 +133,81 @@ def page_lines(page):
 CLOCK = re.compile(r"\b\d{1,2}:\d{2}\b")
 
 
+HEADING_DATE = re.compile(r"(\d{1,2})\.(\d{1,2})\b")
+
+
+def headings(lines):
+    """Every weekday heading on the page as (line index, weekday, (day, month) or None).
+
+    Fixture lines are dropped here, not later: Gatorade lists home games the same way a
+    menu heading looks, "Perjantai 16.10. 18:30", and only the clock tells them apart.
+    """
+    out = []
+    for i, line in enumerate(lines):
+        low = line.lower()
+        wd = next((w for w, name in enumerate(WEEKDAYS) if low.startswith(name)), None)
+        if wd is None or CLOCK.search(line):
+            continue
+        m = HEADING_DATE.search(line)
+        out.append((i, wd, (int(m.group(1)), int(m.group(2))) if m else None))
+    return out
+
+
+def off_by(day, dm):
+    """Days between `day` and the (day, month) written in a heading, or None if unreadable.
+
+    Both years around are tried, so a 2.1. heading read on 30.12. is one day out rather
+    than a year, and an impossible date like 31.11. is simply not a date.
+    """
+    diffs = []
+    for year in (day.year - 1, day.year, day.year + 1):
+        try:
+            diffs.append(abs((date(year, dm[1], dm[0]) - day).days))
+        except ValueError:
+            pass
+    return min(diffs) if diffs else None
+
+
+def this_week(heads, day):
+    """True if some other heading carries the date its weekday has in `day`'s week.
+
+    That is the proof the page really is this week's list, which is what makes it safe to
+    believe a weekday name over the date printed beside it.
+    """
+    monday = day - timedelta(days=day.weekday())
+    return any(wd != day.weekday() and dm is not None
+               and dm == ((monday + timedelta(days=wd)).day, (monday + timedelta(days=wd)).month)
+               for _, wd, dm in heads)
+
+
+def heading_for(heads, day, r):
+    """The heading line that starts `day`'s menu, or None.
+
+    The date decides when it is right. When it is not, the weekday name can still be
+    trusted, but only under conditions that leave no other day it could mean: the chef
+    mistypes the date now and then — "Torstai 12.11." followed by "Perjantai 12.11." —
+    and a whole day of menus should not be lost to a typo. So the weekday may stand in
+    for the date only when the rest of the page is demonstrably this week's list, that
+    weekday occurs exactly once on it, and the date written is a near miss rather than
+    another week's. Anything else keeps the old answer: nothing, and retry tomorrow.
+    """
+    same = [h for h in heads if h[1] == day.weekday()]
+    want = (day.day, day.month)
+    for h in same:
+        if h[2] == want:
+            return h, False
+    if r.get("week_check"):
+        # 3. Linja dates nothing: the page states its week number, checked by the caller
+        for h in same:
+            if h[2] is None:
+                return h, False
+    if len(same) == 1 and same[0][2] is not None and this_week(heads, day):
+        slip = off_by(day, same[0][2])
+        if slip is not None and slip <= 3:
+            return same[0], True
+    return None, False
+
+
 def today_text(page, day, r):
     """Lines between today's weekday heading and the next weekday heading (or a stop marker)."""
     lines = page_lines(page)
@@ -140,27 +215,24 @@ def today_text(page, day, r):
         weeks = [int(m.group(1)) for l in lines if (m := re.match(r"vko\s*(\d+)$", l, re.I))]
         if day.isocalendar().week not in weeks:
             return None
-    name = WEEKDAYS[day.weekday()]
-    for i, line in enumerate(lines):
-        if not line.lower().startswith(name):
-            continue
-        if CLOCK.search(line):
-            continue  # a fixture, not a menu: Gatorade lists home games as "Perjantai 16.10. 18:30"
-        m = re.search(r"(\d{1,2})\.(\d{1,2})\b", line)
-        if m and (int(m.group(1)), int(m.group(2))) != (day.day, day.month):
-            continue  # same weekday, other date (e.g. next week or an event list)
-        if not m and not r.get("week_check"):
-            continue
-        # keep extra words in the heading, e.g. "PERJANTAI – STEAK FRIDAY"
-        extra = re.sub(r"^\w+\s*|\d{1,2}\.\d{1,2}\.?(\d{4})?|[*–-]", " ", line).strip()
-        found = [extra.title()] if extra else []
-        for nxt in lines[i + 1:]:
-            low = nxt.lower()
-            if any(low.startswith(w) for w in WEEKDAYS) or any(nxt.startswith(s) for s in r.get("stops", [])):
-                break
-            found.append(nxt.lstrip("•· ").strip())
-        return structure([l for l in found if l], r.get("notes", [])) or None
-    return None
+    heads = headings(lines)
+    head, typo = heading_for(heads, day, r)
+    if head is None:
+        return None
+    i, _, dm = head
+    if typo:
+        print(f"{r['key']}: {WEEKDAYS[day.weekday()]} {day.day}.{day.month}. is headed "
+              f"{dm[0]}.{dm[1]}. on the page — taking the weekday", file=sys.stderr)
+    line = lines[i]
+    # keep extra words in the heading, e.g. "PERJANTAI – STEAK FRIDAY"
+    extra = re.sub(r"^\w+\s*|\d{1,2}\.\d{1,2}\.?(\d{4})?|[*–-]", " ", line).strip()
+    found = [extra.title()] if extra else []
+    for nxt in lines[i + 1:]:
+        low = nxt.lower()
+        if any(low.startswith(w) for w in WEEKDAYS) or any(nxt.startswith(s) for s in r.get("stops", [])):
+            break
+        found.append(nxt.lstrip("•· ").strip())
+    return structure([l for l in found if l], r.get("notes", [])) or None
 
 
 PRICE = re.compile(r"\d+,\d{2}\s*€$")
