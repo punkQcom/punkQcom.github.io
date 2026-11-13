@@ -177,6 +177,61 @@ and no failure email is sent. Check the logs first when a card stays blank:
 
     gh run view <run id> --log | grep -E "gatorade|Error"
 
+### When does Gatorade publish? (measured 13.11.2026)
+
+Mined from all 31 historical versions of `products/lunch/lunch.json` — for
+each ISO week, the first commit in which Gatorade had lines, and the last run
+before it that had none:
+
+| week | last run with nothing | first run with all 5 days |
+|---|---|---|
+| 42 | **Fri 9.10. 18:45** | **Sun 11.10. 21:34** |
+| 43 | Mon 12.10. 13:01 | Sun 18.10. 20:08 |
+| 44 | Thu 22.10. 11:24 | Sun 25.10. 20:25 |
+| 45 | Mon 26.10. 08:03 | Sun 1.11. 21:42 |
+
+Week 41 is excluded (system was new, 2 days only) and **week 46 is excluded
+because it was filled by hand** on 10.11., which is not an observation of
+their publishing.
+
+**Gatorade was never the straggler.** In every week observed it arrived in the
+*same run* as everyone else, five days at once, by the Sunday-evening run.
+Hansasali is the one that turns up at an unpredictable hour.
+
+Week 42 brackets it tightest — nothing at Friday 18:45, complete by Sunday
+21:34 — so **Friday evening to Sunday evening** is consistent with all four
+weeks, and week 44 independently rules out anything before Thursday midday.
+Two limits: there is no Saturday run (see *Known trade-off* below), so
+Friday-evening / Saturday / Sunday cannot be separated; and the "not before
+Friday evening" leg rests on week 42 alone. What is solid, 4 of 4, is that it
+is **there by Sunday ~20:00–21:45** — which is where the `17 18 * * 0` cron
+lands after drift. This corroborates the existing measurement that next week's
+lists are never up before Sunday, and means no schedule change is warranted.
+
+### Why the runs still fetch daily, when the week is already in hand
+
+The state file makes it look like a daily re-scrape; it is not. A run only
+fetches a restaurant that still has a missing day (`if not missing: continue`),
+so week 46's Linja, Varikko, Herkku and Siskot were fetched **once**, on Sun
+8.11., and not requested again. Three things keep requests going out:
+
+1. **Next week.** `targets` is the shown week *plus* the one after, so Mon–Fri
+   of week N+1 are empty until the chefs publish and every restaurant is
+   probed once per run to find out.
+2. **Next week's Hansasali picture**, for the same reason.
+3. **Gatorade.** The 403 means it is never *found*, so it stays in `missing`
+   permanently and is retried every run, for every target day, indefinitely.
+   That is the accepted cost of the 10.11. decision to keep trying so it
+   refills itself if the block is ever lifted — worth knowing, not a fault.
+
+So the "zero HTTP requests once the week is complete" claim above holds only
+when **both** weeks are complete, and while the 403 stands it is never true.
+
+**All five text restaurants publish the whole week on one page** (verified
+13.11.2026: Linja by `vko NN` with undated days, Herkku `Maanantai 9.11.2026`,
+Siskot `MAANANTAI 09.11`, Varikko and Gatorade `Maanantai 9.11.`). Siskot is
+the early one — week 46 was already up on Wed 4.11.
+
 **Considered and rejected 26.10.2026: a Sunday-night `17 22 * * 0` cron.** The
 idea was to exploit the ≈+5h weekday band to land ~03:00 UTC (05:00 Helsinki)
 and so beat the 06:00 delivery, covering a chef who republishes after Sunday
@@ -324,6 +379,26 @@ bot. Four blocks:
    **If no:** "Lounaslistaa ei ole vielä julkaistu" + link — a *visible*
    signal that the scrape is behind, which the old RSS trigger never gave.
 
+   **As deployed (seen 13.11.2026) the True branch holds three actions, not
+   one:**
+
+   | action | purpose |
+   |---|---|
+   | `Julkaise viesti keskustelussa tai kanavassa` | the real delivery |
+   | `Julkaise viesti keskustelussa tai kanavassa 2` | a test target |
+   | `Lähetä sähköpostiviesti (V2)` | a test target |
+
+   The second Teams post and the email are **test fan-out**, not part of the
+   intended delivery. Two consequences before touching the flow: a manual
+   *Run* sends **three** messages, so re-running to correct a bad morning
+   costs three duplicates; and anyone checking "did the 06:00 message
+   arrive" should be clear which of the three they mean. Strip the two test
+   actions once the flow is trusted.
+
+   **The flow was disabled on 13.11.2026** while the Gatorade block was being
+   worked through. Nothing is delivered until it is switched back on — the
+   page and feed keep updating regardless.
+
 Gotchas found while building it:
 
 - The Teams **Message** box is a rich-text editor: HTML typed into it is
@@ -355,6 +430,17 @@ Nothing on the GitHub side changes — the feed carries every day either way.
   downscaled copies of the same picture.
 - A day is only considered found if it has lists; empty days are kept off the
   page and out of the feed rather than published blank.
+- **A chef mistypes the date and a whole day is lost.** Varikko's week 46 list
+  headed Friday `Perjantai 12.11.` — Thursday's date, repeated. The strict
+  date match declined it and the Friday card read "Päivän listaa ei löytynyt".
+  `heading_for` now falls back to the **weekday name**, but only when all four
+  hold, which is what stops it republishing another week's food: no heading on
+  the page carries the right date; some *other* heading does carry the correct
+  date for its own slot in that week (`this_week`, the proof the page is this
+  week's list); that weekday occurs exactly **once** on the page; and the date
+  printed is within **3 days** of the target (`off_by`, year-wrap safe), i.e. a
+  typo rather than a different week. A rescue prints a line to stderr. A page
+  showing only next week fails the anchor test and still yields nothing.
 
 ## Constraint: scheduling must be external
 There is no local scheduler available — the dev machine cannot be relied on
@@ -373,6 +459,19 @@ DST-aware, and under our control). Anything that needs to happen at a
 wall-clock time belongs in the flow, never in `lunch.yml`.
 
 ## Open items
+- **Gate the next-week probe to Sunday and Monday (13.11.2026, not built).**
+  All five text restaurants publish the whole week at once and next week is
+  never up before Sunday, so probing week N+1 on a Wednesday buys nothing.
+  Worth little while Gatorade's 403 keeps the daily fetch alive regardless —
+  revisit if that block is ever lifted.
+- **Do not replace the daily top-up with a single weekly fetch.** Considered
+  13.11.2026 and rejected. The data would allow it — every page carries the
+  whole week — but the top-up is what catches (a) a restaurant publishing
+  after the Sunday window, (b) a chef correcting a list mid-week, which is not
+  hypothetical: the Varikko `Perjantai 12.11.` typo would have stayed broken
+  all week, and (c) a site being down for the one scheduled attempt. If it
+  ever *were* cut to one run a week, Sunday ~20:00 is the only defensible
+  slot — see *When does Gatorade publish?* above.
 - **The external trigger is now the one open lever (re-assessed 10.11.2026).**
   cron-job.org or similar POSTing to GitHub's `workflow_dispatch` API with a
   fine-grained PAT scoped to this repo, Actions: write. It was parked as "only
