@@ -17,10 +17,10 @@ to be filled by hand each week — one click on `npm run lunch:publish` (or
 the VS Code task `lunch: fetch all and publish`) from a home connection.
 Declined 14.11.: a scheduled job on the user's own machine. Stays manual.
 
-**Power Automate:** the flow `LounasDaily2` was disabled 13.11. Nothing is
-delivered to Teams or by mail while it is off; the page and feed keep
-updating regardless. On 14.11. the user planned to switch it back on for
-Monday 16.11. 06:00 — check the flow before assuming either way.
+**Power Automate:** the flow `LounasDaily2` is **on** again (re-enabled
+14.11.2026, after being off since 13.11.). First delivery Monday 16.11.
+06:00. While it is off nothing goes to Teams or by mail; the page and feed
+update regardless.
 
 **Done 13.11.2026:**
 
