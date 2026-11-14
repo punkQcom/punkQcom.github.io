@@ -1,6 +1,6 @@
 # Lunch feed: notes & open items
 
-## Where things stand (13.11.2026)
+## Where things stand (14.11.2026)
 
 A status block, so the next person does not have to reconstruct it from the
 sections below. Everything here is covered in detail further down.
@@ -13,13 +13,14 @@ weekday-typo case below was fixed.
 **Broken, knowingly:** gatoradecenter.fi 403s GitHub's runners (since
 4.11.2026) and answers a home connection. Decided 10.11. to live with it —
 no proxies, no middleman services, no rotating IPs. Gatorade therefore has
-to be filled by hand each week, which is what the npm scripts and VS Code
-tasks exist for.
+to be filled by hand each week — one click on `npm run lunch:publish` (or
+the VS Code task `lunch: fetch all and publish`) from a home connection.
+Declined 14.11.: a scheduled job on the user's own machine. Stays manual.
 
-**Off:** the Power Automate flow `LounasDaily2` was disabled 13.11. Nothing
-is delivered to Teams or by mail until it is switched back on. The page and
-feed keep updating regardless. **Re-enable it before a Monday 06:00 if the
-message is wanted.**
+**Power Automate:** the flow `LounasDaily2` was disabled 13.11. Nothing is
+delivered to Teams or by mail while it is off; the page and feed keep
+updating regardless. On 14.11. the user planned to switch it back on for
+Monday 16.11. 06:00 — check the flow before assuming either way.
 
 **Done 13.11.2026:**
 
@@ -35,10 +36,19 @@ message is wanted.**
 - Corrected the delivery section: three actions in the True branch, two of
   them test targets.
 
-**The weekend ahead:** as of Fri 13.11. 09:00 no restaurant had week 47 up,
-Gatorade included, so there is nothing to fetch early. The Sunday evening
-run should collect the other five; Gatorade needs a manual run from a home
-connection after it appears.
+**Done 14.11.2026:**
+
+- Week 47 Gatorade fetched from home and pushed. It was already online by
+  Saturday afternoon, earlier than the Sunday-evening pattern above —
+  a hand run from Saturday on is worth trying.
+- Week 47 Linja came in on the same local run, also pushed.
+- `npm run lunch:publish` / VS Code task `lunch: fetch all and publish`:
+  pull, fetch all, commit and push `products/lunch` in one click. Works
+  without uv (falls back to plain Python). See "Running it by hand".
+
+**The weekend ahead:** as of Sat 14.11. ~17:30 week 47 is 10/25 —
+Gatorade and Linja in; Varikko, Herkku, Siskot and Hansasali not yet
+published. The Sunday evening run should collect those four.
 
 ## The original problem (now worked around)
 `lunch.yml`'s `schedule:` cron is unreliable — GitHub delays or drops most
@@ -586,6 +596,16 @@ the reminder not to route around it. Nothing is half-written: whatever was
 already held is still rendered.
 
 After a successful run, commit and push `products/lunch`.
+
+**One click instead (14.11.2026):** `npm run lunch:publish`, or the VS Code
+task `lunch: fetch all and publish`, does the whole thing — `git pull`, fetch
+every restaurant, then commit and push `products/lunch` if it changed
+(message `lunch: D.M. HH.MM (local run)`). Only that folder is committed.
+Extra args go to `fetch.py` (`npm run lunch:publish -- --only gatorade`).
+It is `.github/lunch/publish.mjs`: needs node, and uses uv if installed,
+otherwise plain `python3` / `python` / `py -3` — so it also works on the Mac,
+which has Homebrew Python but no uv. If a site fails it still publishes what
+did come in, then exits 1 so the failure is not missed.
 
 ## Testing locally
 No system Python on the dev machine; `uv` is installed, which can fetch an

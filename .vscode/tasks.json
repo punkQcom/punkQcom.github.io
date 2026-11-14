@@ -2,6 +2,14 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "lunch: fetch all and publish",
+      "type": "shell",
+      "command": "node .github/lunch/publish.mjs",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true },
+      "detail": "Pull, fetch every restaurant, commit and push products/lunch. Needs node; uses uv or plain Python."
+    },
+    {
       "label": "lunch: fetch all",
       "type": "shell",
       "command": "uv run --no-project --python 3.12 --with tzdata .github/lunch/fetch.py --strict",
