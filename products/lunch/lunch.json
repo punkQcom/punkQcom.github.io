@@ -1,5 +1,5 @@
 {
- "updated": "14.11. klo 17.05",
+ "updated": "14.11. klo 17.06",
  "format": 6,
  "rendered": [
   "2026-11-16",
@@ -12,7 +12,17 @@
  "images": {},
  "days": {
   "2026-11-16": {
-   "linja": {},
+   "linja": {
+    "lines": [
+     "Tomaatti-vuohenjuustokeitto VL,G",
+     "Spaghetti carbonaraa, parmesaania ja rucolaa L",
+     "Pitkään haudutettua naudan briskettiä & pippurikastiketta L,G",
+     "Paahdettua kanan sisäfilettä ja sitruuna-hollandaisea L,G",
+     "Makkaraperunat kaikilla mausteilla M,G",
+     "Paahdettua porkkanaa ja valkosipuliöljyä M,G,V",
+     "Jälkiruokalajitelma L"
+    ]
+   },
    "varikko": {},
    "herkku": {},
    "siskot": {},
@@ -26,7 +36,17 @@
    }
   },
   "2026-11-17": {
-   "linja": {},
+   "linja": {
+    "lines": [
+     "Kermaista savulohikeittoa ja tilliöljyä L,G",
+     "Neljän juuston pastaa, chiliöljyä ja rucolaa L",
+     "Paneroituja porsaanleikkeitä ja chilimajoneesia L",
+     "Paahdettuja kanan reisipaloja ja cafe de paris-kastiketta L,G",
+     "Grillimaustettuja lohkoperunoita M,G,V",
+     "Tryffeliöljyllä maustettuja kirsikkatomaatteja ja pinaattia M,G,V",
+     "Tyrnirahkaa ja paahdettua valkosuklaamurua L,G"
+    ]
+   },
    "varikko": {},
    "herkku": {},
    "siskot": {},
@@ -40,7 +60,17 @@
    }
   },
   "2026-11-18": {
-   "linja": {},
+   "linja": {
+    "lines": [
+     "Kukkakaali-parmesaanikeittoa L, G",
+     "Talon lasagnea L",
+     "Paneroitua puna-ahventa & tartar-kastiketta L",
+     "Pannupihvejä ja viherpippuri-smetanakastiketta L,G",
+     "Kermaista perunamuusia L,G",
+     "Hunaja-rosmariinipaahdettuja juureksia M,G",
+     "Porkkanakakkua L"
+    ]
+   },
    "varikko": {},
    "herkku": {},
    "siskot": {},
@@ -54,7 +84,17 @@
    }
   },
   "2026-11-19": {
-   "linja": {},
+   "linja": {
+    "lines": [
+     "Samettista paprika-tomaattikeittoa L,G",
+     "Kebabkiusausta L,G",
+     "Ylikypsää härän briskettiä ja ponzu-kastiketta M, G",
+     "Crispy wings ja texas pete-cremeä L",
+     "Cajun-paahdettuja perunoita M, G",
+     "Hot honey-paahdettua kukkakaalia ja seesamia M,G",
+     "Lettuja, mansikka-vadelmahilloa ja kermavaahtoa L"
+    ]
+   },
    "varikko": {},
    "herkku": {},
    "siskot": {},
@@ -68,7 +108,16 @@
    }
   },
   "2026-11-20": {
-   "linja": {},
+   "linja": {
+    "lines": [
+     "Paahdettua maissi-valkosipulikeittoa M,G",
+     "Savuporo-peltipizzaa, sipulia, bearnaisea ja rucolaa L",
+     "Kebabbia, mango-habanerokastiketta ja jogurttia L,G",
+     "Chipotle-kastikkeella glaseerattua kanan sisäfilettä M,G",
+     "Ranskalaisia ja paprikamajoneesia M,G",
+     "“Churros”-pannacottaa ja suklaakastiketta L,G"
+    ]
+   },
    "varikko": {},
    "herkku": {},
    "siskot": {},
@@ -82,46 +131,66 @@
    }
   },
   "2026-11-23": {
-   "gatorade": {}
+   "gatorade": {},
+   "linja": {},
+   "varikko": {},
+   "herkku": {},
+   "siskot": {}
   },
   "2026-11-24": {
-   "gatorade": {}
+   "gatorade": {},
+   "linja": {},
+   "varikko": {},
+   "herkku": {},
+   "siskot": {}
   },
   "2026-11-25": {
-   "gatorade": {}
+   "gatorade": {},
+   "linja": {},
+   "varikko": {},
+   "herkku": {},
+   "siskot": {}
   },
   "2026-11-26": {
-   "gatorade": {}
+   "gatorade": {},
+   "linja": {},
+   "varikko": {},
+   "herkku": {},
+   "siskot": {}
   },
   "2026-11-27": {
-   "gatorade": {}
+   "gatorade": {},
+   "linja": {},
+   "varikko": {},
+   "herkku": {},
+   "siskot": {}
   }
  },
  "feed": [
   {
    "date": "2026-11-20",
    "title": "Lounas pe 20.11.2026",
-   "html": "<p><strong>Lounaslista perjantai 20.11.2026</strong> · viikko 47</p>\n<h3><a href=\"https://kolmaslinja.fi/lounas-turku/\">3. Linja</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://kolmaslinja.fi/lounas-turku/\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://gatoradecenter.fi/fi/lounas\">Gatorade Center (TPS-lounas)</a></h3>\n<ul><li>Naudanlihapyöryköitä, kermakastiketta ja paahdettua perunaa (L, G)</li><li>Bbq-broileria, limejogurttia ja riisiä (L, G)</li><li>Juurescurrya (M, G)</li><li>Myskikurpitsakeittoa (L, G)</li></ul>\n<h3><a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Lounasravinteli Varikko</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.tbherkku.fi/ravintola/\">Teboil Herkku</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.tbherkku.fi/ravintola/\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.umai.fi/siskot\">Ravintola Siskot</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.umai.fi/siskot\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Pegasus Hansasali – koko viikon lista</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Katso ravintolan sivu</a></p>"
+   "html": "<p><strong>Lounaslista perjantai 20.11.2026</strong> · viikko 47</p>\n<h3><a href=\"https://kolmaslinja.fi/lounas-turku/\">3. Linja</a></h3>\n<ul><li>Paahdettua maissi-valkosipulikeittoa M,G</li><li>Savuporo-peltipizzaa, sipulia, bearnaisea ja rucolaa L</li><li>Kebabbia, mango-habanerokastiketta ja jogurttia L,G</li><li>Chipotle-kastikkeella glaseerattua kanan sisäfilettä M,G</li><li>Ranskalaisia ja paprikamajoneesia M,G</li><li>“Churros”-pannacottaa ja suklaakastiketta L,G</li></ul>\n<h3><a href=\"https://gatoradecenter.fi/fi/lounas\">Gatorade Center (TPS-lounas)</a></h3>\n<ul><li>Naudanlihapyöryköitä, kermakastiketta ja paahdettua perunaa (L, G)</li><li>Bbq-broileria, limejogurttia ja riisiä (L, G)</li><li>Juurescurrya (M, G)</li><li>Myskikurpitsakeittoa (L, G)</li></ul>\n<h3><a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Lounasravinteli Varikko</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.tbherkku.fi/ravintola/\">Teboil Herkku</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.tbherkku.fi/ravintola/\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.umai.fi/siskot\">Ravintola Siskot</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.umai.fi/siskot\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Pegasus Hansasali – koko viikon lista</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Katso ravintolan sivu</a></p>"
   },
   {
    "date": "2026-11-19",
    "title": "Lounas to 19.11.2026",
-   "html": "<p><strong>Lounaslista torstai 19.11.2026</strong> · viikko 47</p>\n<h3><a href=\"https://kolmaslinja.fi/lounas-turku/\">3. Linja</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://kolmaslinja.fi/lounas-turku/\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://gatoradecenter.fi/fi/lounas\">Gatorade Center (TPS-lounas)</a></h3>\n<ul><li>Broilerinkoipia, currymajoneesia ja riisiä (M, G)</li><li>Paistettua kirjolohta, rapukastiketta ja perunaa (L, G)</li><li>Linssidahl (M, G)</li><li>Siskonmakkarakeittoa (L, G)</li></ul>\n<h3><a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Lounasravinteli Varikko</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.tbherkku.fi/ravintola/\">Teboil Herkku</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.tbherkku.fi/ravintola/\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.umai.fi/siskot\">Ravintola Siskot</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.umai.fi/siskot\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Pegasus Hansasali – koko viikon lista</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Katso ravintolan sivu</a></p>"
+   "html": "<p><strong>Lounaslista torstai 19.11.2026</strong> · viikko 47</p>\n<h3><a href=\"https://kolmaslinja.fi/lounas-turku/\">3. Linja</a></h3>\n<ul><li>Samettista paprika-tomaattikeittoa L,G</li><li>Kebabkiusausta L,G</li><li>Ylikypsää härän briskettiä ja ponzu-kastiketta M, G</li><li>Crispy wings ja texas pete-cremeä L</li><li>Cajun-paahdettuja perunoita M, G</li><li>Hot honey-paahdettua kukkakaalia ja seesamia M,G</li><li>Lettuja, mansikka-vadelmahilloa ja kermavaahtoa L</li></ul>\n<h3><a href=\"https://gatoradecenter.fi/fi/lounas\">Gatorade Center (TPS-lounas)</a></h3>\n<ul><li>Broilerinkoipia, currymajoneesia ja riisiä (M, G)</li><li>Paistettua kirjolohta, rapukastiketta ja perunaa (L, G)</li><li>Linssidahl (M, G)</li><li>Siskonmakkarakeittoa (L, G)</li></ul>\n<h3><a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Lounasravinteli Varikko</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.tbherkku.fi/ravintola/\">Teboil Herkku</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.tbherkku.fi/ravintola/\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.umai.fi/siskot\">Ravintola Siskot</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.umai.fi/siskot\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Pegasus Hansasali – koko viikon lista</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Katso ravintolan sivu</a></p>"
   },
   {
    "date": "2026-11-18",
    "title": "Lounas ke 18.11.2026",
-   "html": "<p><strong>Lounaslista keskiviikko 18.11.2026</strong> · viikko 47</p>\n<h3><a href=\"https://kolmaslinja.fi/lounas-turku/\">3. Linja</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://kolmaslinja.fi/lounas-turku/\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://gatoradecenter.fi/fi/lounas\">Gatorade Center (TPS-lounas)</a></h3>\n<ul><li>Broilerinpaistia, curry-kermakastiketta ja riisiä (L, G)</li><li>Jauhelihakastiketta ja pastaa (L)</li><li>Kasvispaistosta (V, G)</li><li>Tomaattikeittoa (L, G)</li></ul>\n<h3><a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Lounasravinteli Varikko</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.tbherkku.fi/ravintola/\">Teboil Herkku</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.tbherkku.fi/ravintola/\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.umai.fi/siskot\">Ravintola Siskot</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.umai.fi/siskot\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Pegasus Hansasali – koko viikon lista</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Katso ravintolan sivu</a></p>"
+   "html": "<p><strong>Lounaslista keskiviikko 18.11.2026</strong> · viikko 47</p>\n<h3><a href=\"https://kolmaslinja.fi/lounas-turku/\">3. Linja</a></h3>\n<ul><li>Kukkakaali-parmesaanikeittoa L, G</li><li>Talon lasagnea L</li><li>Paneroitua puna-ahventa &amp; tartar-kastiketta L</li><li>Pannupihvejä ja viherpippuri-smetanakastiketta L,G</li><li>Kermaista perunamuusia L,G</li><li>Hunaja-rosmariinipaahdettuja juureksia M,G</li><li>Porkkanakakkua L</li></ul>\n<h3><a href=\"https://gatoradecenter.fi/fi/lounas\">Gatorade Center (TPS-lounas)</a></h3>\n<ul><li>Broilerinpaistia, curry-kermakastiketta ja riisiä (L, G)</li><li>Jauhelihakastiketta ja pastaa (L)</li><li>Kasvispaistosta (V, G)</li><li>Tomaattikeittoa (L, G)</li></ul>\n<h3><a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Lounasravinteli Varikko</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.tbherkku.fi/ravintola/\">Teboil Herkku</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.tbherkku.fi/ravintola/\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.umai.fi/siskot\">Ravintola Siskot</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.umai.fi/siskot\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Pegasus Hansasali – koko viikon lista</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Katso ravintolan sivu</a></p>"
   },
   {
    "date": "2026-11-17",
    "title": "Lounas ti 17.11.2026",
-   "html": "<p><strong>Lounaslista tiistai 17.11.2026</strong> · viikko 47</p>\n<h3><a href=\"https://kolmaslinja.fi/lounas-turku/\">3. Linja</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://kolmaslinja.fi/lounas-turku/\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://gatoradecenter.fi/fi/lounas\">Gatorade Center (TPS-lounas)</a></h3>\n<ul><li>Porsaan kassleria, chimichurria ja paahdettua perunaa (L, G)</li><li>Härkäpastaa (L)</li><li>Munakoisopastaa (V)</li><li>Jauhelihakeittoa (L, G)</li></ul>\n<h3><a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Lounasravinteli Varikko</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.tbherkku.fi/ravintola/\">Teboil Herkku</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.tbherkku.fi/ravintola/\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.umai.fi/siskot\">Ravintola Siskot</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.umai.fi/siskot\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Pegasus Hansasali – koko viikon lista</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Katso ravintolan sivu</a></p>"
+   "html": "<p><strong>Lounaslista tiistai 17.11.2026</strong> · viikko 47</p>\n<h3><a href=\"https://kolmaslinja.fi/lounas-turku/\">3. Linja</a></h3>\n<ul><li>Kermaista savulohikeittoa ja tilliöljyä L,G</li><li>Neljän juuston pastaa, chiliöljyä ja rucolaa L</li><li>Paneroituja porsaanleikkeitä ja chilimajoneesia L</li><li>Paahdettuja kanan reisipaloja ja cafe de paris-kastiketta L,G</li><li>Grillimaustettuja lohkoperunoita M,G,V</li><li>Tryffeliöljyllä maustettuja kirsikkatomaatteja ja pinaattia M,G,V</li><li>Tyrnirahkaa ja paahdettua valkosuklaamurua L,G</li></ul>\n<h3><a href=\"https://gatoradecenter.fi/fi/lounas\">Gatorade Center (TPS-lounas)</a></h3>\n<ul><li>Porsaan kassleria, chimichurria ja paahdettua perunaa (L, G)</li><li>Härkäpastaa (L)</li><li>Munakoisopastaa (V)</li><li>Jauhelihakeittoa (L, G)</li></ul>\n<h3><a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Lounasravinteli Varikko</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.tbherkku.fi/ravintola/\">Teboil Herkku</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.tbherkku.fi/ravintola/\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.umai.fi/siskot\">Ravintola Siskot</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.umai.fi/siskot\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Pegasus Hansasali – koko viikon lista</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Katso ravintolan sivu</a></p>"
   },
   {
    "date": "2026-11-16",
    "title": "Lounas ma 16.11.2026",
-   "html": "<p><strong>Lounaslista maanantai 16.11.2026</strong> · viikko 47</p>\n<h3><a href=\"https://kolmaslinja.fi/lounas-turku/\">3. Linja</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://kolmaslinja.fi/lounas-turku/\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://gatoradecenter.fi/fi/lounas\">Gatorade Center (TPS-lounas)</a></h3>\n<ul><li>Paneroitua kalaa, ruohosipulikermaviiliä ja keitettyä perunaa (L)</li><li>Kinkkukiusausta (L, G)</li><li>Paahdettua punajuurta ja fetaa (L, G)</li><li>Intialaista kasvissosekeittoa (L, G)</li></ul>\n<h3><a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Lounasravinteli Varikko</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.tbherkku.fi/ravintola/\">Teboil Herkku</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.tbherkku.fi/ravintola/\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.umai.fi/siskot\">Ravintola Siskot</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.umai.fi/siskot\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Pegasus Hansasali – koko viikon lista</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Katso ravintolan sivu</a></p>"
+   "html": "<p><strong>Lounaslista maanantai 16.11.2026</strong> · viikko 47</p>\n<h3><a href=\"https://kolmaslinja.fi/lounas-turku/\">3. Linja</a></h3>\n<ul><li>Tomaatti-vuohenjuustokeitto VL,G</li><li>Spaghetti carbonaraa, parmesaania ja rucolaa L</li><li>Pitkään haudutettua naudan briskettiä &amp; pippurikastiketta L,G</li><li>Paahdettua kanan sisäfilettä ja sitruuna-hollandaisea L,G</li><li>Makkaraperunat kaikilla mausteilla M,G</li><li>Paahdettua porkkanaa ja valkosipuliöljyä M,G,V</li><li>Jälkiruokalajitelma L</li></ul>\n<h3><a href=\"https://gatoradecenter.fi/fi/lounas\">Gatorade Center (TPS-lounas)</a></h3>\n<ul><li>Paneroitua kalaa, ruohosipulikermaviiliä ja keitettyä perunaa (L)</li><li>Kinkkukiusausta (L, G)</li><li>Paahdettua punajuurta ja fetaa (L, G)</li><li>Intialaista kasvissosekeittoa (L, G)</li></ul>\n<h3><a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Lounasravinteli Varikko</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.lounasverkko.fi/lounasravintelivarikko\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.tbherkku.fi/ravintola/\">Teboil Herkku</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.tbherkku.fi/ravintola/\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.umai.fi/siskot\">Ravintola Siskot</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.umai.fi/siskot\">Katso ravintolan sivu</a></p>\n<h3><a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Pegasus Hansasali – koko viikon lista</a></h3>\n<p>Ei löytynyt vielä. <a href=\"https://www.pegasus-ravintolat.fi/hansasali#lounaslista\">Katso ravintolan sivu</a></p>"
   },
   {
    "date": "2026-11-13",
