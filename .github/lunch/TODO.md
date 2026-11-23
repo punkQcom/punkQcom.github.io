@@ -1,26 +1,36 @@
 # Lunch feed: notes & open items
 
-## Where things stand (14.11.2026)
+## Where things stand (23.11.2026)
 
 A status block, so the next person does not have to reconstruct it from the
 sections below. Everything here is covered in detail further down.
 
-**Working:** week 46 is complete, 25/25 lists, live. Four of the five text
-restaurants and the Hansasali picture come in by themselves on the Sunday
-run. The parser is not the weak part — it has not been wrong since the
-weekday-typo case below was fixed.
+**Working:** week 48 is complete — 25/25 lists plus the Hansasali picture,
+live. Four of the five text restaurants come in by themselves on the Sunday
+run.
+
+**The parser needed two fixes in a fortnight, both filename/heading shapes
+rather than logic**, so the earlier "the parser is not the weak part" has not
+held: the Varikko date typo (13.11.) and the Hansasali filename order
+(23.11.). Both failed the same way — the page was fetched, the right text was
+on it, and the match threw it away — and both looked like scheduling problems
+first. **Suspect the match before the cron.**
 
 **Broken, knowingly:** gatoradecenter.fi 403s GitHub's runners (since
-4.11.2026) and answers a home connection. Decided 10.11. to live with it —
-no proxies, no middleman services, no rotating IPs. Gatorade therefore has
-to be filled by hand each week — one click on `npm run lunch:publish` (or
-the VS Code task `lunch: fetch all and publish`) from a home connection.
-Declined 14.11.: a scheduled job on the user's own machine. Stays manual.
+4.11.2026) but answers an ordinary connection — the home machine and, as of
+23.11., the work machine too. Decided 10.11. to live with it — no proxies, no
+middleman services, no rotating IPs. Gatorade therefore has to be filled by
+hand each week: `npm run lunch:publish` or the VS Code task `lunch: fetch all
+and publish` where node exists, otherwise the `uv run … fetch.py` command
+("Which machine has what"). Declined 14.11.: a scheduled job on the user's
+own machine. Stays manual.
 
-**Power Automate:** the flow `LounasDaily2` is **on** again (re-enabled
-14.11.2026, after being off since 13.11.). First delivery Monday 16.11.
-06:00. While it is off nothing goes to Teams or by mail; the page and feed
-update regardless.
+**Power Automate:** the flow `LounasDaily2` is **on** (re-enabled
+14.11.2026, after being off since 13.11.). While it is off nothing goes to
+Teams or by mail; the page and feed update regardless. It fires at 06:00 and
+the weekday run lands ~11:20 Helsinki, so each morning's message carries
+what was committed the night before — a fill done after 06:00 shows on the
+page that day but not in that day's message.
 
 **Done 13.11.2026:**
 
@@ -46,9 +56,28 @@ update regardless.
   pull, fetch all, commit and push `products/lunch` in one click. Works
   without uv (falls back to plain Python). See "Running it by hand".
 
-**The weekend ahead:** as of Sat 14.11. ~17:30 week 47 is 10/25 —
-Gatorade and Linja in; Varikko, Herkku, Siskot and Hansasali not yet
-published. The Sunday evening run should collect those four.
+**Done 23.11.2026:**
+
+- Week 48 Gatorade (five days) and the Hansasali week 48 picture, both
+  filled by hand from this machine and pushed; week 48 went 20/25 → 25/25
+  plus the picture.
+- `WEEK_IMAGE` rewritten: the week number may now sit anywhere in the
+  filename, with anything after it except a `-p-<digits>` size variant. Week
+  48's picture was `vko 48 Hansa ig.png` where every earlier week was
+  `Hansa ig vko NN.png`, and the old pattern could not see it at all.
+- Established what this machine can and cannot run: no node, no system
+  Python, but `uv` is there — so the direct `uv run … fetch.py` command
+  works and Gatorade answers it. The `npm run …` routes do not work here.
+- Wrote down the "Nothing new, no changes written" trap: a hand edit to
+  `lunch.json` alone is never rendered, so all three files have to be
+  edited — or the run given a reason to write.
+
+**The week ahead:** as of Mon 23.11. 09:30 nothing of week 49 is published —
+a run then reached all six sites and found none of it, Hansasali included.
+The Sunday evening run should collect the five text restaurants; Gatorade
+needs a hand run after it appears (Friday evening to Sunday ~21:45, measured
+below), and the Hansasali picture should now come in by itself whichever way
+round the chef names the file.
 
 ## The original problem (now worked around)
 `lunch.yml`'s `schedule:` cron is unreliable — GitHub delays or drops most
@@ -316,9 +345,35 @@ gets to it. Handling:
   fast it is picked up follows the schedule above: within the hour on a
   Monday morning, but only once a day Tue–Fri.
 - Recognised name forms: `vko 41`, `vko41`, `vk 41`, `vk_41`, `vko-41`,
-  `viikko 41`, in .png/.jpg/.jpeg/.webp, optionally with a Webflow
-  duplicate-name suffix — `vko 44(1).png`, also percent-encoded as
-  `vko%2044%281%29.png`.
+  `viikko 41`, in .png/.jpg/.jpeg/.webp. Since 23.11.2026 the number may sit
+  **anywhere** in the name, with any text after it — including Webflow's
+  duplicate-name suffix `vko 44(1).png`, percent-encoded or not, which no
+  longer needs a special case.
+- **Fixed 23.11.2026: the chef reordered the filename and the picture became
+  invisible.** Weeks 40–47 were all `Hansa ig vko NN.png`; week 48 arrived as
+  `vko 48 Hansa ig.png` — the same picture, the words swapped. The regex
+  required the number to be followed straight by the extension, so:
+
+      Hansa%20ig%20vko%2047.png  -> match, 47
+      vko%2048%20Hansa%20ig.png  -> no match
+
+  Nothing was wrong with the fetch, the schedule or the CDN: the run read the
+  page, saw the file and threw it away, exactly as in the `(1)` case of
+  26.10.2026. **This is now the second time a filename change has done this**,
+  so the pattern was loosened rather than extended for one more shape: the
+  number may be anywhere, and anything may follow it except `-p-<digits>`,
+  which is the Webflow size-variant marker and the only thing the strictness
+  was ever protecting against. A `(?!\d)` guard keeps `vko 148` from being
+  read as week 14, which the old form got for free by anchoring to the
+  extension. Checked against every URL in this repo's history (weeks 40–48,
+  including `vko 44(1)`), the `vko 41` / `vk_41` / `viikko 41` shapes, and
+  against `-p-500` / `-p-800` / `-p-1080` variants of both filename orders
+  plus the ten non-menu images on the Pegasus page — matches and rejections
+  as intended, with `today_image()` exercised end to end.
+- A week's picture is looked for **only while `images[week]` is unset**, so a
+  URL put there by hand is never re-examined or overwritten by a later run.
+  That is what makes filling it manually safe — and it is also why a *wrong*
+  URL stays wrong until someone clears the entry.
 - **Fixed 26.10.2026: the `(1)` suffix blanked a whole week.** Week 44's
   picture was uploaded as `Hansa ig vko 44(1).png` — Webflow appends `(1)`
   when the chef uploads over a filename that already exists. The regex
@@ -475,9 +530,13 @@ Nothing on the GitHub side changes — the feed carries every day either way.
   kick-off times as that day's food. Headings containing a clock time are now
   skipped. The test is **colon only** (`18:30`): a dot form would also match
   the date `16.10.` and silently blank every restaurant.
-- The weekly-image regex requires the week number to be followed directly by
-  the extension, which is what keeps out Webflow's `-p-500` / `-p-800`
-  downscaled copies of the same picture.
+- **The weekly-image regex must reject Webflow's `-p-500` / `-p-800`
+  downscaled copies** of the same upload, which sit next to the original. It
+  used to do that by demanding the week number directly before the extension;
+  since 23.11.2026 it instead allows anything after the number *except* a
+  `-p-<digits>` suffix, because the chef reordered the filename and the strict
+  form stopped seeing the picture at all. Keep the `-p-` exclusion whatever
+  else is relaxed — see *Hansasali weekly picture*.
 - A day is only considered found if it has lists; empty days are kept off the
   page and out of the feed rather than published blank.
 - **A chef mistypes the date and a whole day is lost.** Varikko's week 46 list
@@ -606,6 +665,47 @@ It is `.github/lunch/publish.mjs`: needs node, and uses uv if installed,
 otherwise plain `python3` / `python` / `py -3` — so it also works on the Mac,
 which has Homebrew Python but no uv. If a site fails it still publishes what
 did come in, then exits 1 so the failure is not missed.
+
+### Which machine has what (checked 23.11.2026)
+
+The work machine (`c:\temp\github\punkQcom.github.io`) has **no node and no
+system Python** — `python` / `python3` / `py` resolve only to the Windows
+Store stubs, which print "Python ei löytynyt" and install nothing. So the
+`npm run …` spellings and VS Code's NPM Scripts panel are unavailable there,
+and `publish.mjs` cannot run either, since it is driven by node.
+
+**`uv` is installed, though** (`~/.local/bin/uv`, with a `python3.12.exe`
+beside it), so the direct command above is the route on that machine and the
+one to reach for first:
+
+    uv run --no-project --python 3.12 --with tzdata .github/lunch/fetch.py --strict
+
+Verified there on 23.11.2026: the run reached all six sites, **Gatorade
+included — no 403 from this connection**, so a by-hand Gatorade fill does not
+require the home machine specifically. Only node-dependent routes do.
+
+### Hand-editing the output files (23.11.2026)
+
+Avoid it — use the command above. But if the three files in
+`products/lunch/` are ever edited by hand, edit **all three**, because
+*waiting for the next run will not render the change*:
+
+`main()` returns early with "Nothing new, no changes written." when it found
+nothing new and `rendered` / `format` are unchanged. Data added to
+`lunch.json` alone therefore never reaches `index.html` or `feed.xml` — and
+once the days in question are no longer empty, the fetch has nothing left to
+find, so the early return is exactly what happens. The change sits in the
+state file, invisible, until the next `FORMAT` bump or a new week.
+
+To make a run render it instead, give it a reason to write: bump `FORMAT`
+(the mechanism that exists for this), or clear the relevant day so it is
+fetched again. To check a hand edit afterwards, copy `fetch.py` and
+`products/lunch/` into a scratch tree, drop `format` by one there and run it:
+that rewrites both files from the same state, and a diff against the real
+ones (ignoring the `updated` / `lastBuildDate` stamps) should be empty. Done
+for the week 48 Gatorade and Hansasali fills — `index.html` and `feed.xml`
+came back identical; `lunch.json` differed only by the empty
+`"gatorade": {}` placeholders a real run adds for next week's days.
 
 ## Testing locally
 No system Python on the dev machine; `uv` is installed, which can fetch an

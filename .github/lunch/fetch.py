@@ -274,14 +274,24 @@ def lines_html(lines):
     return "<ul>" + "".join(items) + "</ul>"
 
 
-# "vko 41", "vko41", "vk_41", "viikko 41". After the number only a Webflow duplicate-name
-# suffix is tolerated — "vko 44(1).png", which is what the CMS appends when the chef uploads
-# over a name that already exists (seen 26.10.2026, it blanked the whole week). Anything else
-# between the number and the extension is still rejected, which is what keeps out Webflow's
-# -p-500/-p-800 downscaled copies of the same picture.
+# "vko 41", "vko41", "vk_41", "viikko 41" — and the number may sit anywhere in the name,
+# not only at its end. Weeks 40–47 were all "Hansa ig vko NN.png"; week 48 arrived as
+# "vko 48 Hansa ig.png" (23.11.2026), the same picture with the words reordered, and a
+# pattern that demanded the number directly before the extension simply never saw it.
+#
+# What must still be rejected is Webflow's downscaled copies of the same upload, which is
+# the only reason the old pattern was that strict: the CMS serves "…vko 44-p-500.png" and
+# "-p-800" alongside the original, and accepting one would put a thumbnail on the page. So
+# instead of fixing the number's position, anything may follow it except a "-p-<digits>"
+# size suffix. The CMS's duplicate-name suffix — "vko 44(1).png", appended when the chef
+# uploads over a name that already exists (seen 26.10.2026, it blanked the whole week) —
+# needs no special case any more; it is simply text after the number.
+#
+# (?!\d) keeps a three-digit number from being read as its first two digits, now that the
+# number no longer has to be the last thing in the name.
 WEEK_IMAGE = re.compile(
-    r'https://[^"\s]+?(?:viikko|vko|vk)(?:%20|[\s_-])*(\d{1,2})'
-    r'(?:(?:\(|%28)\d+(?:\)|%29))?'
+    r'https://[^"\s]+?(?:viikko|vko|vk)(?:%20|[\s_-])*(\d{1,2})(?!\d)'
+    r'(?:(?!-p-\d)[^"\s])*?'
     r'\.(?:png|jpe?g|webp)', re.I)
 
 
