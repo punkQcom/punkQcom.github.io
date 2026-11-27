@@ -72,6 +72,18 @@ page that day but not in that day's message.
   `lunch.json` alone is never rendered, so all three files have to be
   edited — or the run given a reason to write.
 
+**Week 49: Gatorade is closed all week (known 27.11.2026).** The TPS-lounas
+is on break Mon 30.11.–Fri 4.12., so there is nothing to scrape and nothing
+to fill by hand. Instead of leaving five "Päivän listaa ei löytynyt" cards,
+each of those days' `gatorade` entry in `lunch.json` was hand-written as a
+single line — "Ei lounasta – TPS-lounas on tauolla koko viikon
+(30.11.–4.12.)". Cached entries are never re-fetched (`found()` keeps them),
+so the Sunday run leaves them alone; it changes `rendered` to week 49 and
+therefore rewrites all three files, which is what puts the note on the page
+and in the feed. No edit to `index.html` was needed, and one would have been
+pointless: on 27.11. the page still renders week 48. If the break is
+extended, add the same line for the following week's dates.
+
 **The week ahead:** as of Mon 23.11. 09:30 nothing of week 49 is published —
 a run then reached all six sites and found none of it, Hansasali included.
 The Sunday evening run should collect the five text restaurants; Gatorade
